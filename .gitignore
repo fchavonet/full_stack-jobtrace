@@ -1,0 +1,33 @@
+# Build output.
+build/
+dist/
+
+# Editor directories and files.
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+
+# Logs
+logs
+*.log
+npm-debug.log*
+
+# Local environment files.
+*.local
+.env
+.env.*
+.env.local
+
+# Node.
+node_modules
+
+# Supabase.
+supabase/.branches
+supabase/.temp
+
+# System files.
+.DS_Store
+
+# Vite.
+.vite/
+
