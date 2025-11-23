@@ -67,15 +67,8 @@ export function AuthProvider({ children }) {
     return result;
   }
 
-  // Google OAuth login.
-  async function googleLogin() {
-    const result = await supabase.auth.signInWithOAuth({ provider: "google", options: { redirectTo: window.location.origin + "/full_stack-jobtrace/dashboard" } });
-
-    return result;
-  }
-
   return (
-    <AuthContext.Provider value={{ user, session, loading, resetPasswordMode, login, signup, logout, updatePassword, googleLogin, setResetPasswordMode }}>
+    <AuthContext.Provider value={{ user, session, loading, resetPasswordMode, login, signup, logout, updatePassword, setResetPasswordMode }}>
       {children}
     </AuthContext.Provider>
   );

@@ -2,11 +2,10 @@ import { Eye, EyeOff, LogIn } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-import Google from "../../assets/brand_icons/google.svg";
 import { useAuth } from "../../hooks/useAuth";
 
 function LoginForm({ setMode }) {
-  const { login, googleLogin } = useAuth();
+  const { login } = useAuth();
   const navigate = useNavigate();
 
   const [email, setEmail] = useState("");
@@ -89,13 +88,6 @@ function LoginForm({ setMode }) {
           </button>
         </fieldset>
       </form>
-
-      <div className="divider m-0">OU</div>
-
-      {/* GOOGLE LOGIN */}
-      <button className="btn w-full text-black rounded-xl border border-base-300 bg-white" type="button" onClick={googleLogin}>
-        <img className="h-5" src={Google} alt="Google" /> Se connecter avec Google
-      </button>
 
       {/* SWITCH TO: SIGNUP */}
       <button className="text-xs text-primary hover:underline cursor-pointer" onClick={function () { setMode("signup"); }}>
