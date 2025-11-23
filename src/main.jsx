@@ -4,6 +4,8 @@ import { RouterProvider, createBrowserRouter } from "react-router-dom";
 import "./global.css";
 
 import App from "./App.jsx";
+import { ThemeProvider } from "./context/ThemeContext";
+import Dashboard from "./pages/dashboard/Dashboard.jsx";
 import Homepage from "./pages/Homepage.jsx";
 import NotFound from "./pages/NotFound.jsx";
 
@@ -15,7 +17,12 @@ const router = createBrowserRouter(
       errorElement: <NotFound />,
 
       children: [
-        { index: true, element: <Homepage /> }
+        { index: true, element: <Homepage /> },
+
+        {
+          path: "dashboard",
+          element: <Dashboard />
+        }
       ],
     },
   ],
@@ -26,5 +33,7 @@ const router = createBrowserRouter(
 );
 
 ReactDOM.createRoot(document.getElementById("root")).render(
-  <RouterProvider router={router} />
+  <ThemeProvider>
+    <RouterProvider router={router} />
+  </ThemeProvider>
 );
