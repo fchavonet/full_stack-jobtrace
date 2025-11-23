@@ -4,6 +4,8 @@ import { RouterProvider, createBrowserRouter } from "react-router-dom";
 import "./global.css";
 
 import App from "./App.jsx";
+import ProtectedRoute from "./components/ProtectedRoute";
+import { AuthProvider } from "./context/AuthContext";
 import { ThemeProvider } from "./context/ThemeContext";
 import Dashboard from "./pages/dashboard/Dashboard.jsx";
 import Homepage from "./pages/Homepage.jsx";
@@ -20,8 +22,13 @@ const router = createBrowserRouter(
         { index: true, element: <Homepage /> },
 
         {
-          path: "dashboard",
-          element: <Dashboard />
+          element: <ProtectedRoute />,
+          children: [
+            {
+              path: "dashboard",
+              element: <Dashboard />
+            }
+          ]
         }
       ],
     },
@@ -34,6 +41,8 @@ const router = createBrowserRouter(
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <ThemeProvider>
-    <RouterProvider router={router} />
+    <AuthProvider>
+      <RouterProvider router={router} />
+    </AuthProvider>
   </ThemeProvider>
 );
