@@ -8,7 +8,7 @@ function Footer() {
       <div className="container mx-auto flex flex-col lg:flex-row justify-between items-center lg:gap-0 gap-2">
         {/* COPYRIGHT */}
         <p className="order-2 lg:order-1">
-          Copyright © {new Date().getFullYear()} - Job<span className="text-primary">Trace</span>
+          Copyright © {new Date().getFullYear()} - <span className="font-bold">Job<span className="text-primary">Trace</span></span>
         </p>
 
         {/* SOCIAL MEDIA LINKS */}

@@ -11,7 +11,7 @@ function HeroSection() {
 
   return (
     <section id="hero-section" className="w-full">
-      <div className="container h-full mx-auto p-4 flex flex-col lg:flex-row justify-center items-center gap-12">
+      <div className="container h-full mx-auto p-4 flex flex-col lg:flex-row justify-center items-center gap-4 lg:gap-12">
         <div className="max-w-xl flex flex-1 flex-col justify-center items-start gap-4">
           {/* TITLE */}
           <h2 className="text-2xl lg:text-4xl font-bold">
@@ -24,7 +24,7 @@ function HeroSection() {
           </p>
 
           {/* CALL TO ACTION */}
-          <div className="w-full lg:w-auto mt-8 lg:mt-4 flex flex-row justify-center lg:justify-start">
+          <div className="w-full lg:w-auto flex flex-row justify-center lg:justify-start">
             {user ? (
               <Link className="btn btn-primary border-none shadow-none" to="/dashboard">
                 Accéder à votre dashboard
