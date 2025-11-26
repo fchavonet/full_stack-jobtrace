@@ -28,7 +28,7 @@ function LoginForm({ setMode }) {
 
     if (!error) {
       document.getElementById("auth-modal").close();
-      navigate("/dashboard");
+      navigate("/dashboard/home");
     }
   }
 

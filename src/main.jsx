@@ -3,6 +3,14 @@ import { RouterProvider, createBrowserRouter } from "react-router-dom";
 
 import "./global.css";
 
+import ApplicationsSection from "../src/pages/dashboard/ApplicationsSection.jsx";
+import CalendarSection from "../src/pages/dashboard/CalendarSection.jsx";
+import ContactsSection from "../src/pages/dashboard/ContactsSection.jsx";
+import DocumentsSection from "../src/pages/dashboard/DocumentsSection.jsx";
+import HomeSection from "../src/pages/dashboard/HomeSection.jsx";
+import SettingsSection from "../src/pages/dashboard/SettingsSection.jsx";
+import StatisticsSection from "../src/pages/dashboard/StatisticsSection.jsx";
+
 import App from "./App.jsx";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { AuthProvider } from "./context/AuthContext";
@@ -26,7 +34,18 @@ const router = createBrowserRouter(
           children: [
             {
               path: "dashboard",
-              element: <Dashboard />
+              element: <Dashboard />,
+
+              children: [
+                { index: true, element: <HomeSection /> },
+                { path: "home", element: <HomeSection /> },
+                { path: "applications", element: <ApplicationsSection /> },
+                { path: "calendar", element: <CalendarSection /> },
+                { path: "contacts", element: <ContactsSection /> },
+                { path: "documents", element: <DocumentsSection /> },
+                { path: "statistics", element: <StatisticsSection /> },
+                { path: "settings", element: <SettingsSection /> },
+              ]
             }
           ]
         }

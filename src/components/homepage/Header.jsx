@@ -10,6 +10,7 @@ function Header() {
 
   const navigate = useNavigate();
 
+  // Handle user logout and redirect to homepage.
   async function handleLogout() {
     await logout();
     navigate("/");
