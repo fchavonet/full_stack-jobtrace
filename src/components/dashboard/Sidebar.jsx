@@ -13,6 +13,8 @@ function Sidebar() {
     const drawer = document.getElementById("sidebar-drawer");
     if (drawer) {
       drawer.checked = false;
+
+      drawer.dispatchEvent(new Event("change"));
     }
   }
 

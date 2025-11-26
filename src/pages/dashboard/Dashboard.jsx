@@ -35,7 +35,7 @@ function Dashboard() {
         <Outlet className="p-0" />
 
         <label className="drawer-button absolute right-4 bottom-4 btn btn-square btn-primary lg:hidden z-50" htmlFor="sidebar-drawer">
-          {isOpen ? <PanelRightClose /> : <PanelRightOpen />}
+          {isOpen ? <PanelRightOpen /> : <PanelRightClose />}
         </label>
       </section>
     </main>
