@@ -7,24 +7,16 @@ import SignupForm from "./SignupForm";
 function AuthModal() {
   const [mode, setMode] = useState("login");
 
-  // Reset to LOGIN every time the modal opens.
+  // Open auth modal with correct mode.
   useEffect(function () {
-    const modal = document.getElementById("auth-modal");
+    window.openSignupModal = function () {
+      setMode("signup");
+      document.getElementById("auth-modal").showModal();
+    };
 
-    if (!modal) {
-      return;
-    }
-
-    const observer = new MutationObserver(function () {
-      if (modal.open) {
-        setMode("login");
-      }
-    });
-
-    observer.observe(modal, { attributes: true, attributeFilter: ["open"] });
-
-    return function () {
-      observer.disconnect();
+    window.openLoginModal = function () {
+      setMode("login");
+      document.getElementById("auth-modal").showModal();
     };
   }, []);
 

@@ -9,6 +9,12 @@ export function ThemeProvider({ children }) {
   // Apply theme to document root on change.
   useEffect(function () {
     document.documentElement.setAttribute("data-theme", theme);
+
+    if (theme === "dark") {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
   }, [theme]);
 
   // Switch light and dark modes and persist to local storage.

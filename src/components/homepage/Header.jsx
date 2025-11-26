@@ -16,8 +16,8 @@ function Header() {
   }
 
   return (
-    <header className="w-full p-4">
-      <div className="container mx-auto flex flex-row justify-between items-center">
+    <header className="w-full bg-base-100">
+      <div className="container p-4 mx-auto flex flex-row justify-between items-center">
         {/* BRAND */}
         <Link className="flex flex-row justify-center items-center gap-2 text-4xl font-bold" to="/">
           <BriefcaseBusiness className="text-primary" size="34" /><h1>Job<span className="text-primary">Trace</span></h1>
@@ -34,18 +34,18 @@ function Header() {
 
               {/* MOBILE LOGOUT BUTTON */}
               <button className="btn btn-square btn-primary flex lg:hidden text-white border-none shadow-none" onClick={handleLogout}>
-                <LogOut className="transform -scale-x-100"/>
+                <LogOut className="transform -scale-x-100" />
               </button>
             </>
           ) : (
             <>
               {/* DESKTOP LOGIN BUTTON */}
-              <button className="btn btn-primary w-40 hidden lg:flex text-white border-none shadow-none" onClick={function () { document.getElementById("auth-modal").showModal(); }}>
+              <button className="btn btn-primary w-40 hidden lg:flex text-white border-none shadow-none" onClick={function () { window.openLoginModal(); }}>
                 Se connecter
               </button>
 
               {/* MOBILE LOGIN BUTTON */}
-              <button className="btn btn-square btn-primary flex lg:hidden text-white border-none shadow-none" onClick={function () { document.getElementById("auth-modal").showModal(); }}>
+              <button className="btn btn-square btn-primary flex lg:hidden text-white border-none shadow-none" onClick={function () { window.openLoginModal(); }}>
                 <LogIn />
               </button>
             </>

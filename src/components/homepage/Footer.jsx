@@ -5,7 +5,7 @@ import LinkedIn from "../../assets/social_media_icons/linkedin.svg";
 function Footer() {
   return (
     <footer className="footer p-4 bg-base-300">
-      <div className="container mx-auto flex flex-col lg:flex-row justify-between items-center gap-4">
+      <div className="container mx-auto flex flex-col lg:flex-row justify-between items-center lg:gap-0 gap-2">
         {/* COPYRIGHT */}
         <p className="order-2 lg:order-1">
           Copyright © {new Date().getFullYear()} - Job<span className="text-primary">Trace</span>
