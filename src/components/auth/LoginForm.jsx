@@ -3,9 +3,12 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { useAuth } from "../../hooks/useAuth";
+import { useToast } from "../../hooks/useToast";
 
 function LoginForm({ setMode }) {
   const { login } = useAuth();
+  const { showToast } = useToast();
+
   const navigate = useNavigate();
 
   const [email, setEmail] = useState("");
@@ -24,11 +27,25 @@ function LoginForm({ setMode }) {
   async function handleLogin(event) {
     event.preventDefault();
 
-    const { error } = await login(email, password);
+    try {
+      const { error } = await login(email, password);
 
-    if (!error) {
-      document.getElementById("auth-modal").close();
+      if (error) {
+        if (error.message === "Invalid login credentials") {
+          showToast("Identifiants incorrects.", "error");
+          return;
+        }
+
+        showToast("Une erreur inconnue est survenue.", "error");
+        return;
+      }
+
+      showToast("Connexion réussie.", "success");
+      window.closeAuthModal();
       navigate("/dashboard/home");
+
+    } catch {
+      showToast("Impossible de contacter le serveur.", "error");
     }
   }
 

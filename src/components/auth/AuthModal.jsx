@@ -11,17 +11,21 @@ function AuthModal() {
   useEffect(function () {
     window.openSignupModal = function () {
       setMode("signup");
-      document.getElementById("auth-modal").showModal();
+      document.getElementById("auth-modal").classList.add("modal-open");
     };
 
     window.openLoginModal = function () {
       setMode("login");
-      document.getElementById("auth-modal").showModal();
+      document.getElementById("auth-modal").classList.add("modal-open");
+    };
+
+    window.closeAuthModal = function () {
+      document.getElementById("auth-modal").classList.remove("modal-open");
     };
   }, []);
 
   return (
-    <dialog id="auth-modal" className="modal">
+    <div id="auth-modal" className="modal">
       <div className="modal-box w-xs lg:w-sm p-4 rounded-2xl">
         {/* SWITCH TO: LOGIN <-> SIGNUP <-> RESET PASSWORD */}
         {mode === "login" && <LoginForm setMode={setMode} />}
@@ -30,10 +34,8 @@ function AuthModal() {
       </div>
 
       {/* CLOSE MODAL */}
-      <form className="modal-backdrop backdrop-blur-xs" method="dialog">
-        <button>close</button>
-      </form>
-    </dialog>
+      <div className="modal-backdrop backdrop-blur-xs" onClick={function () { window.closeAuthModal(); }}></div>
+    </div>
   );
 }
 
