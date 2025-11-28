@@ -3,10 +3,12 @@ import { NavLink, Link, useNavigate } from "react-router-dom";
 
 import { useAuth } from "../../hooks/useAuth";
 import { useTheme } from "../../hooks/useTheme";
+import { useToast } from "../../hooks/useToast";
 
 function Sidebar() {
   const { theme, toggleTheme } = useTheme();
   const { user, logout } = useAuth();
+  const { showToast } = useToast();
 
   // Close drawer on mobile after navigation.
   function closeDrawer() {
@@ -23,6 +25,7 @@ function Sidebar() {
   // Handle user logout and redirect to homepage.
   async function handleLogout() {
     await logout();
+    showToast("Déconnexion réussie", "success");
     navigate("/");
   }
 

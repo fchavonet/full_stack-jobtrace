@@ -3,16 +3,19 @@ import { Link, useNavigate } from "react-router-dom";
 
 import { useAuth } from "../../hooks/useAuth";
 import { useTheme } from "../../hooks/useTheme";
+import { useToast } from "../../hooks/useToast";
 
 function Header() {
   const { theme, toggleTheme } = useTheme();
   const { user, logout } = useAuth();
+  const { showToast } = useToast();
 
   const navigate = useNavigate();
 
   // Handle user logout and redirect to homepage.
   async function handleLogout() {
     await logout();
+    showToast("Déconnexion réussie", "success");
     navigate("/");
   }
 

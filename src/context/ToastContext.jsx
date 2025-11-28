@@ -16,8 +16,21 @@ export function ToastProvider({ children }) {
 
     // Add toast to the stack.
     setToasts(function (prev) {
-      return [...prev, { id, message, type }];
+      return [...prev, { id, message, type, visible: true }];
     });
+
+    // Fade-out.
+    setTimeout(function () {
+      setToasts(function (prev) {
+        return prev.map(function (toast) {
+          if (toast.id === id) {
+            return { ...toast, visible: false };
+          }
+
+          return toast;
+        });
+      });
+    }, 2700);
 
     // Remove toast automatically after 3 seconds.
     setTimeout(function () {
@@ -34,13 +47,16 @@ export function ToastProvider({ children }) {
       {children}
 
       {/* TOAST CONTAINER */}
-      <div className="toast fixed pointer-events-none z-[99999] ">
+      <div className="fixed right-4 bottom-4 flex flex-col justify-center items-end gap-2 pointer-events-none z-[99999]">
         {toasts.map(function (toast) {
           const typeClass = toast.type === "info" ? "alert-info" : toast.type === "success" ? "alert-success" : toast.type === "warning" ? "alert-warning" : "alert-error";
 
+          // Animation CSS class logic.
+          const animationClass = toast.visible ? "toast-enter" : "toast-exit";
+
           return (
             // Render a single toast message.
-            <div className={`alert ${typeClass}`} key={toast.id}>
+            <div className={`alert ${typeClass} py-1 text-white ${animationClass}`} key={toast.id}>
               <span>{toast.message}</span>
             </div>
           );

@@ -12,3 +12,35 @@
     justify-content: center;
     align-items: center;
 }
+
+@keyframes toast-fade-in {
+    0% {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes toast-fade-out {
+    0% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    100% {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+}
+
+.toast-enter {
+    animation: toast-fade-in 0.25s ease-out forwards;
+}
+
+.toast-exit {
+    animation: toast-fade-out 0.25s ease-in forwards;
+}

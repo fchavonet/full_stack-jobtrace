@@ -2,6 +2,7 @@ import { Check, Eye, EyeOff, UserRoundPlus, X } from "lucide-react";
 import { useState } from "react";
 
 import { useAuth } from "../../hooks/useAuth";
+import { useToast } from "../../hooks/useToast";
 
 // Renders password rule with its valid state.
 function Requirement({ label, valid, className = "" }) {
@@ -15,6 +16,7 @@ function Requirement({ label, valid, className = "" }) {
 
 function SignupForm({ setMode }) {
   const { signup } = useAuth();
+  const { showToast } = useToast();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -31,18 +33,64 @@ function SignupForm({ setMode }) {
 
   const passwordsMatch = password === confirm && confirm !== "";
 
+  function translateSignupError(error) {
+    if (!error || !error.message) {
+      return "Une erreur inconnue est survenue.";
+    }
+
+    const message = error.message.toLowerCase();
+
+    if (message.includes("user already registered")) {
+      return "Un compte existe déjà avec cette adresse email.";
+    }
+
+    if (message.includes("invalid email")) {
+      return "L’adresse email est invalide.";
+    }
+
+    if (message.includes("password")) {
+      return "Le mot de passe ne respecte pas les critères requis.";
+    }
+
+    if (message.includes("rate limit") || message.includes("too many")) {
+      return "Trop de tentatives. Veuillez réessayer plus tard.";
+    }
+
+    return "Une erreur est survenue : " + error.message;
+  }
+
   async function handleSignup(event) {
     event.preventDefault();
 
+    if (!isEmailValid) {
+      showToast("L’email est invalide.", "error");
+      return;
+    }
+
+    if (!isPasswordValid) {
+      showToast("Le mot de passe ne respecte pas les critères requis.", "error");
+      return;
+    }
+
+    if (!passwordsMatch) {
+      showToast("Les mots de passe ne correspondent pas.", "error");
+      return;
+    }
+
     const { data, error } = await signup(email, password);
 
-    if (data?.user?.identities?.length === 0) {
+    if (error) {
+      const translated = translateSignupError(error);
+      showToast(translated, "error");
       return;
     }
 
-    if (error) {
+    if (data?.user?.identities?.length === 0) {
+      showToast("Un compte existe déjà avec cette adresse email.", "error");
       return;
     }
+
+    showToast("Compte créé avec succès. Vous pouvez vous connecter.", "success");
 
     setMode("login");
   }
