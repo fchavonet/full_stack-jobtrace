@@ -33,7 +33,7 @@ export function AuthProvider({ children }) {
         if (event === "PASSWORD_RECOVERY") {
           setResetPasswordMode(true);
 
-          window.location.href = "/full_stack-jobtrace/dashboard";
+          window.location.href = "/full_stack-jobtrace/dashboard/settings#password";
         }
       }
     );
@@ -67,8 +67,43 @@ export function AuthProvider({ children }) {
     return result;
   }
 
+  // Update user profile metadata (firstname, lastname).
+  async function updateProfile(first_name, last_name) {
+    const metadata = {};
+
+    if (typeof first_name === "string") {
+      const trimmedFirst = first_name.trim();
+
+      if (trimmedFirst.length > 0) {
+        metadata.first_name = trimmedFirst;
+      } else {
+        metadata.first_name = null;
+      }
+    }
+
+    if (typeof last_name === "string") {
+      const trimmedLast = last_name.trim();
+
+      if (trimmedLast.length > 0) {
+        metadata.last_name = trimmedLast;
+      } else {
+        metadata.last_name = null;
+      }
+    }
+
+    const { data, error } = await supabase.auth.updateUser({
+      data: metadata
+    });
+
+    if (!error && data && data.user) {
+      setUser(data.user);
+    }
+
+    return { data, error };
+  }
+
   return (
-    <AuthContext.Provider value={{ user, session, loading, resetPasswordMode, login, signup, logout, updatePassword, setResetPasswordMode }}>
+    <AuthContext.Provider value={{ user, session, loading, resetPasswordMode, login, signup, logout, updatePassword, updateProfile, setResetPasswordMode }}>
       {children}
     </AuthContext.Provider>
   );

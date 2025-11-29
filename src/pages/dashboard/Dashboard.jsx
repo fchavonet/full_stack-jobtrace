@@ -31,7 +31,7 @@ function Dashboard() {
       </aside>
 
       {/* SECTIONS */}
-      <section className="drawer-content min-h-screen p-4 bg-base-200">
+      <section className="drawer-content min-h-screen p-4 lg:p-8 bg-base-200">
         <Outlet className="p-0" />
 
         <label className="drawer-button absolute right-4 bottom-4 btn btn-square btn-primary lg:hidden z-50" htmlFor="sidebar-drawer">

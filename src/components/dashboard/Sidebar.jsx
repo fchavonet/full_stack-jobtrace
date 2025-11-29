@@ -1,4 +1,4 @@
-import { BriefcaseBusiness, FileChartColumn, FileClock, FilePen, FileText, FileUser, House, Moon, Settings, Sun } from "lucide-react";
+import { BriefcaseBusiness, FileChartColumn, FileClock, FilePen, FileText, FileUser, House, Moon, Settings, Sun, UserRound } from "lucide-react";
 import { NavLink, Link, useNavigate } from "react-router-dom";
 
 import { useAuth } from "../../hooks/useAuth";
@@ -18,6 +18,19 @@ function Sidebar() {
 
       drawer.dispatchEvent(new Event("change"));
     }
+  }
+
+  // Get full name if available, fallback to email.
+  function getDisplayName(user) {
+    if (!user) return "";
+
+    const meta = user.user_metadata;
+
+    if (meta && meta.first_name && meta.last_name) {
+      return meta.first_name + " " + meta.last_name;
+    }
+
+    return user.email;
   }
 
   const navigate = useNavigate();
@@ -80,8 +93,16 @@ function Sidebar() {
       </div>
 
       {/* FOOTER SECTION */}
-      <div className="w-full p-4 flex flex-col justify-center items-center gap-2 border-t border-base-300">
-        {user.email}
+      <div className="w-full p-4 flex flex-col justify-between items-center gap-2 border-t border-base-300">
+        <div className="w-full flex flex-row justify-center items-center gap-2">
+          <div className="avatar avatar-placeholder">
+            <div className="w-8 text-neutral-content rounded-full bg-primary">
+              <UserRound className="mb-0.5" size="20"/>
+            </div>
+          </div>
+
+          <p className="w-full max-w-64 text-ellipsis font-normal overflow-hidden whitespace-nowrap">{getDisplayName(user)}</p>
+        </div>
 
         <div className="w-full flex flex-row justify-between items-center gap-2">
           <NavLink className={({ isActive }) => `btn btn-outline btn-secondary flex flex-grow justify-center items-center gap-2 ${isActive ? "text-white bg-secondary" : "hover:text-white hover:bg-secondary"}`} to="settings" onClick={closeDrawer}>
