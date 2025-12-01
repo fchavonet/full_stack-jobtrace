@@ -34,7 +34,7 @@ function Dashboard() {
       <section className="drawer-content min-h-screen p-4 lg:p-8 bg-base-200">
         <Outlet className="p-0" />
 
-        <label className="drawer-button absolute right-4 bottom-4 btn btn-square btn-primary lg:hidden z-50" htmlFor="sidebar-drawer">
+        <label className="drawer-button fixed right-4 bottom-4 btn btn-square btn-primary lg:hidden shadow z-50" htmlFor="sidebar-drawer">
           {isOpen ? <PanelRightOpen /> : <PanelRightClose />}
         </label>
       </section>

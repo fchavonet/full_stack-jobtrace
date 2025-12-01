@@ -1,7 +1,9 @@
 function CalendarSection() {
   return (
     <>
-      <h2>Calendrier</h2>
+      <div>
+        <h2 className="text-2xl font-bold">Calendrier</h2>
+      </div>
     </>
   );
 }

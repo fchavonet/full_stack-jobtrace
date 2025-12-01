@@ -105,7 +105,7 @@ function Sidebar() {
         </div>
 
         <div className="w-full flex flex-row justify-between items-center gap-2">
-          <NavLink className={({ isActive }) => `btn btn-outline btn-secondary flex flex-grow justify-center items-center gap-2 ${isActive ? "text-white bg-secondary" : "hover:text-white hover:bg-secondary"}`} to="settings" onClick={closeDrawer}>
+          <NavLink className={({ isActive }) => `btn btn-outline btn-secondary flex flex-grow justify-center items-center gap-2 hover:border-none hover:shadow-none ${isActive ? "text-white border-none bg-secondary" : "hover:text-white hover:bg-secondary"}`} to="settings" onClick={closeDrawer}>
             <Settings size="20" /> Paramètres
           </NavLink>
 

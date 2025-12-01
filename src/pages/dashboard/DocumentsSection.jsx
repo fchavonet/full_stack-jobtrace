@@ -1,7 +1,9 @@
 function DocumentsSection() {
   return (
     <>
-      <h2>Documents</h2>
+      <div>
+        <h2 className="text-2xl font-bold">Documents</h2>
+      </div>
     </>
   );
 }

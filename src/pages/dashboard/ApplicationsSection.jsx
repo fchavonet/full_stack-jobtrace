@@ -1,7 +1,9 @@
 function ApplicationsSection() {
   return (
     <>
-      <h2>Candidatures</h2>
+      <div>
+        <h2 className="text-2xl font-bold">Candidatures</h2>
+      </div>
     </>
   );
 }

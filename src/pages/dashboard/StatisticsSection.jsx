@@ -1,7 +1,9 @@
 function StatisticsSection() {
   return (
     <>
-      <h2>Statistiques</h2>
+      <div>
+        <h2 className="text-2xl font-bold">Statistiques</h2>
+      </div>
     </>
   );
 }

@@ -1,7 +1,9 @@
 function HomeSection() {
   return (
     <>
-      <h2>Accueil</h2>
+      <div>
+        <h2 className="text-2xl font-bold">Accueil</h2>
+      </div>
     </>
   );
 }
