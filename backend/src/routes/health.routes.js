@@ -1,6 +1,6 @@
 import express from "express";
 
-import databasePool from "../config/database.js";
+import prisma from "../config/prisma.js";
 
 const router = express.Router();
 
@@ -16,7 +16,7 @@ router.get("/", function (request, response) {
 
 router.get("/db", async function (request, response) {
   try {
-    await databasePool.query("SELECT 1");
+    await prisma.$queryRaw`SELECT 1`;
 
     response.status(200).json({
       success: true,
