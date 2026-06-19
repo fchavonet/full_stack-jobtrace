@@ -25,7 +25,7 @@ router.get("/db", async function (request, response) {
         status: "ok"
       }
     });
-  } catch (error) {
+  } catch {
     response.status(503).json({
       success: false,
       message: "Database connection failed.",
