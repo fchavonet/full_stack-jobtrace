@@ -4,7 +4,7 @@ import authMiddleware from "../middlewares/auth.middleware.js";
 
 import {
   getAuthStatus,
-  getProtectedAuthStatus,
+  getMe,
   login,
   register,
   verifyEmail
@@ -22,6 +22,6 @@ router.get("/status", getAuthStatus);
 router.post("/register", validateRegisterPayload, register);
 router.get("/verify-email", validateEmailVerificationPayload, verifyEmail);
 router.post("/login", validateLoginPayload, login);
-router.get("/protected-status", authMiddleware, getProtectedAuthStatus);
+router.get("/me", authMiddleware, getMe);
 
 export default router;

@@ -1,5 +1,6 @@
 import {
   getAuthModuleStatus,
+  getCurrentUser,
   loginUser,
   registerUser,
   verifyUserEmail
@@ -65,19 +66,25 @@ async function login(request, response, next) {
   }
 }
 
-function getProtectedAuthStatus(request, response) {
-  response.status(200).json({
-    success: true,
-    message: "Protected authentication route is working.",
-    data: {
-      user: request.user
-    }
-  });
+async function getMe(request, response, next) {
+  try {
+    const user = await getCurrentUser(request.user.id);
+
+    response.status(200).json({
+      success: true,
+      message: "Current user retrieved successfully.",
+      data: {
+        user
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
 }
 
 export {
   getAuthStatus,
-  getProtectedAuthStatus,
+  getMe,
   login,
   register,
   verifyEmail
