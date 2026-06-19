@@ -1,0 +1,75 @@
+import {
+  getUserProfile,
+  updateUserPassword,
+  updateUserProfile,
+  updateUserSettings
+} from "../services/profile.service.js";
+
+async function getProfile(request, response, next) {
+  try {
+    const profile = await getUserProfile(request.user.id);
+
+    response.status(200).json({
+      success: true,
+      message: "Profile retrieved successfully.",
+      data: {
+        profile
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+async function updateProfile(request, response, next) {
+  try {
+    const profile = await updateUserProfile(request.user.id, request.body);
+
+    response.status(200).json({
+      success: true,
+      message: "Profile updated successfully.",
+      data: {
+        profile
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+async function updateSettings(request, response, next) {
+  try {
+    const profile = await updateUserSettings(request.user.id, request.body);
+
+    response.status(200).json({
+      success: true,
+      message: "Settings updated successfully.",
+      data: {
+        profile
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+async function updatePassword(request, response, next) {
+  try {
+    await updateUserPassword(request.user.id, request.body);
+
+    response.status(200).json({
+      success: true,
+      message: "Password updated successfully.",
+      data: {}
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+export {
+  getProfile,
+  updatePassword,
+  updateProfile,
+  updateSettings
+};
