@@ -1,4 +1,5 @@
 import {
+  deleteUserAccount,
   exportUserData,
   getAuthModuleStatus,
   getCurrentUser,
@@ -129,7 +130,22 @@ async function exportAccount(request, response, next) {
   }
 }
 
+async function deleteAccount(request, response, next) {
+  try {
+    await deleteUserAccount(request.user.id);
+
+    response.status(200).json({
+      success: true,
+      message: "Account deleted successfully.",
+      data: {}
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
 export {
+  deleteAccount,
   exportAccount,
   forgotPassword,
   getAuthStatus,
