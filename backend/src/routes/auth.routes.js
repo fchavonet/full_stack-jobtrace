@@ -3,6 +3,7 @@ import express from "express";
 import authMiddleware from "../middlewares/auth.middleware.js";
 
 import {
+  exportAccount,
   forgotPassword,
   getAuthStatus,
   getMe,
@@ -27,6 +28,7 @@ router.post("/register", validateRegisterPayload, register);
 router.get("/verify-email", validateEmailVerificationPayload, verifyEmail);
 router.post("/login", validateLoginPayload, login);
 router.get("/me", authMiddleware, getMe);
+router.get("/export", authMiddleware, exportAccount);
 router.post("/forgot-password", validateForgotPasswordPayload, forgotPassword);
 router.post("/reset-password", validateResetPasswordPayload, resetPassword);
 

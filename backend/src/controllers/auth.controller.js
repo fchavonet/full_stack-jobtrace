@@ -1,4 +1,5 @@
 import {
+  exportUserData,
   getAuthModuleStatus,
   getCurrentUser,
   loginUser,
@@ -114,7 +115,22 @@ async function resetPassword(request, response, next) {
   }
 }
 
+async function exportAccount(request, response, next) {
+  try {
+    const exportData = await exportUserData(request.user.id);
+
+    response.status(200).json({
+      success: true,
+      message: "User data exported successfully.",
+      data: exportData
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
 export {
+  exportAccount,
   forgotPassword,
   getAuthStatus,
   getMe,

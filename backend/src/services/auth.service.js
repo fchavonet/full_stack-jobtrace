@@ -276,7 +276,45 @@ async function resetUserPassword(payload) {
   return true;
 }
 
+async function exportUserData(userId) {
+  const user = await prisma.user.findUnique({
+    where: {
+      id: userId
+    },
+    include: {
+      applications: {
+        include: {
+          contacts: true,
+          documents: true,
+          tags: true,
+          history: true
+        }
+      },
+      contacts: true,
+      documents: true,
+      tags: true
+    }
+  });
+
+  if (!user) {
+    const error = new Error("User not found.");
+    error.statusCode = 404;
+
+    throw error;
+  }
+
+  return {
+    exportedAt: new Date(),
+    user: sanitizeUser(user),
+    applications: user.applications,
+    contacts: user.contacts,
+    documents: user.documents,
+    tags: user.tags
+  };
+}
+
 export {
+  exportUserData,
   getAuthModuleStatus,
   getCurrentUser,
   loginUser,
