@@ -1,6 +1,8 @@
 import bcrypt from "bcrypt";
 import crypto from "crypto";
+import jwt from "jsonwebtoken";
 
+import env from "../config/env.js";
 import prisma from "../config/prisma.js";
 
 const PASSWORD_SALT_ROUNDS = 12;
@@ -120,8 +122,62 @@ async function verifyUserEmail(token) {
   return sanitizeUser(updatedUser);
 }
 
+function generateAuthToken(user) {
+  return jwt.sign(
+    {
+      userId: user.id,
+      email: user.email
+    },
+    env.jwtSecret,
+    {
+      expiresIn: env.jwtExpiresIn
+    }
+  );
+}
+
+async function loginUser(payload) {
+  const email = payload.email.trim().toLowerCase();
+
+  const user = await prisma.user.findUnique({
+    where: {
+      email
+    }
+  });
+
+  if (!user) {
+    const error = new Error("Invalid credentials.");
+    error.statusCode = 401;
+
+    throw error;
+  }
+
+  const passwordMatches = await bcrypt.compare(payload.password, user.passwordHash);
+
+  if (!passwordMatches) {
+    const error = new Error("Invalid credentials.");
+    error.statusCode = 401;
+
+    throw error;
+  }
+
+  if (!user.emailVerified) {
+    const error = new Error("Email must be verified before login.");
+    error.statusCode = 403;
+
+    throw error;
+  }
+
+  const token = generateAuthToken(user);
+
+  return {
+    user: sanitizeUser(user),
+    token
+  };
+}
+
 export {
   getAuthModuleStatus,
   registerUser,
-  verifyUserEmail
+  verifyUserEmail,
+  loginUser
 };
