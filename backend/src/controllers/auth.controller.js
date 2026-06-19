@@ -1,4 +1,7 @@
-import { getAuthModuleStatus } from "../services/auth.service.js";
+import {
+  getAuthModuleStatus,
+  registerUser
+} from "../services/auth.service.js";
 
 function getAuthStatus(request, response) {
   const status = getAuthModuleStatus();
@@ -10,4 +13,23 @@ function getAuthStatus(request, response) {
   });
 }
 
-export { getAuthStatus };
+async function register(request, response, next) {
+  try {
+    const user = await registerUser(request.body);
+
+    response.status(201).json({
+      success: true,
+      message: "User registered successfully.",
+      data: {
+        user
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+export {
+  getAuthStatus,
+  register
+};
