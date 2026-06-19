@@ -5,7 +5,10 @@ import jwt from "jsonwebtoken";
 import env from "../config/env.js";
 import prisma from "../config/prisma.js";
 
-import { sendEmailVerificationEmail } from "./email.service.js";
+import {
+  sendEmailVerificationEmail,
+  sendPasswordResetEmail
+} from "./email.service.js";
 
 const PASSWORD_SALT_ROUNDS = 12;
 const EMAIL_VERIFICATION_TOKEN_BYTES = 32;
@@ -242,6 +245,11 @@ async function requestPasswordReset(payload) {
       resetToken: resetTokenHash,
       resetTokenExpires
     }
+  });
+
+  await sendPasswordResetEmail({
+    email: user.email,
+    token: resetToken
   });
 
   return {

@@ -72,7 +72,33 @@ async function sendEmailVerificationEmail(payload) {
   });
 }
 
+async function sendPasswordResetEmail(payload) {
+  const resetUrl = buildPasswordResetUrl(payload.token);
+
+  await sendEmail({
+    to: payload.email,
+    subject: "Reset your JobTrace password",
+    text:
+      "You requested a password reset for your JobTrace account.\n\n" +
+      "You can reset your password by opening this link:\n" +
+      resetUrl + "\n\n" +
+      "This link will expire in 1 hour.\n\n" +
+      "If you did not request a password reset, you can ignore this email.",
+    html:
+      "<p>You requested a password reset for your JobTrace account.</p>" +
+      "<p>You can reset your password by opening this link:</p>" +
+      "<p><a href=\"" + resetUrl + "\">Reset your password</a></p>" +
+      "<p>This link will expire in 1 hour.</p>" +
+      "<p>If you did not request a password reset, you can ignore this email.</p>"
+  });
+}
+
+function buildPasswordResetUrl(token) {
+  return env.frontendUrl + "/reset-password?token=" + token;
+}
+
 export {
   sendEmail,
-  sendEmailVerificationEmail
+  sendEmailVerificationEmail,
+  sendPasswordResetEmail
 };
