@@ -1,5 +1,6 @@
 import {
   getUserProfile,
+  updateUserPassword,
   updateUserProfile,
   updateUserSettings
 } from "../services/profile.service.js";
@@ -52,8 +53,23 @@ async function updateSettings(request, response, next) {
   }
 }
 
+async function updatePassword(request, response, next) {
+  try {
+    await updateUserPassword(request.user.id, request.body);
+
+    response.status(200).json({
+      success: true,
+      message: "Password updated successfully.",
+      data: {}
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
 export {
   getProfile,
+  updatePassword,
   updateProfile,
   updateSettings
 };

@@ -132,7 +132,55 @@ function validateSettingsPayload(request, response, next) {
   next();
 }
 
+function isValidPassword(password) {
+  const hasLength = password.length >= 6;
+  const hasLowercase = /[a-z]/.test(password);
+  const hasUppercase = /[A-Z]/.test(password);
+  const hasDigit = /\d/.test(password);
+
+  return hasLength && hasLowercase && hasUppercase && hasDigit;
+}
+
+function validatePasswordUpdatePayload(request, response, next) {
+  const { currentPassword, newPassword } = request.body;
+
+  if (!currentPassword || typeof currentPassword !== "string") {
+    return response.status(400).json({
+      success: false,
+      message: "Current password is required.",
+      errors: []
+    });
+  }
+
+  if (!newPassword || typeof newPassword !== "string") {
+    return response.status(400).json({
+      success: false,
+      message: "New password is required.",
+      errors: []
+    });
+  }
+
+  if (!isValidPassword(newPassword)) {
+    return response.status(400).json({
+      success: false,
+      message: "New password must contain at least 6 characters, one lowercase letter, one uppercase letter and one digit.",
+      errors: []
+    });
+  }
+
+  if (currentPassword === newPassword) {
+    return response.status(400).json({
+      success: false,
+      message: "New password must be different from current password.",
+      errors: []
+    });
+  }
+
+  next();
+}
+
 export {
+  validatePasswordUpdatePayload,
   validateProfilePayload,
   validateSettingsPayload
 };

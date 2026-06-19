@@ -1,4 +1,7 @@
+import bcrypt from "bcrypt";
 import prisma from "../config/prisma.js";
+
+const PASSWORD_SALT_ROUNDS = 12;
 
 function sanitizeProfile(user) {
   return {
@@ -59,8 +62,46 @@ async function updateUserSettings(userId, payload) {
   return sanitizeProfile(user);
 }
 
+async function updateUserPassword(userId, payload) {
+  const user = await prisma.user.findUnique({
+    where: {
+      id: userId
+    }
+  });
+
+  if (!user) {
+    const error = new Error("User not found.");
+    error.statusCode = 404;
+
+    throw error;
+  }
+
+  const passwordMatches = await bcrypt.compare(payload.currentPassword, user.passwordHash);
+
+  if (!passwordMatches) {
+    const error = new Error("Current password is incorrect.");
+    error.statusCode = 401;
+
+    throw error;
+  }
+
+  const passwordHash = await bcrypt.hash(payload.newPassword, PASSWORD_SALT_ROUNDS);
+
+  await prisma.user.update({
+    where: {
+      id: userId
+    },
+    data: {
+      passwordHash
+    }
+  });
+
+  return true;
+}
+
 export {
   getUserProfile,
+  updateUserPassword,
   updateUserProfile,
   updateUserSettings
 };
