@@ -51,11 +51,26 @@ function validateRegisterPayload(request, response, next) {
   next();
 }
 
+function validateEmailVerificationPayload(request, response, next) {
+  const { token } = request.query;
+
+  if (!token || typeof token !== "string") {
+    return response.status(400).json({
+      success: false,
+      message: "Email verification token is required.",
+      errors: []
+    });
+  }
+
+  next();
+}
+
 function validateLoginPayload(request, response, next) {
   next();
 }
 
 export {
   validateRegisterPayload,
+  validateEmailVerificationPayload,
   validateLoginPayload
 };

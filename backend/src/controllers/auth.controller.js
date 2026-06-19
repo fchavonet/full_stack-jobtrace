@@ -1,6 +1,7 @@
 import {
   getAuthModuleStatus,
-  registerUser
+  registerUser,
+  verifyUserEmail
 } from "../services/auth.service.js";
 
 function getAuthStatus(request, response) {
@@ -15,11 +16,28 @@ function getAuthStatus(request, response) {
 
 async function register(request, response, next) {
   try {
-    const user = await registerUser(request.body);
+    const result = await registerUser(request.body);
 
     response.status(201).json({
       success: true,
       message: "User registered successfully.",
+      data: {
+        user: result.user,
+        verificationToken: result.verificationToken
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+async function verifyEmail(request, response, next) {
+  try {
+    const user = await verifyUserEmail(request.query.token);
+
+    response.status(200).json({
+      success: true,
+      message: "Email verified successfully.",
       data: {
         user
       }
@@ -31,5 +49,6 @@ async function register(request, response, next) {
 
 export {
   getAuthStatus,
-  register
+  register,
+  verifyEmail
 };
