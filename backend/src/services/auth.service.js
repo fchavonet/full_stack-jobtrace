@@ -132,6 +132,13 @@ async function verifyUserEmail(token) {
 }
 
 function generateAuthToken(user) {
+  if (!env.jwtSecret) {
+    const error = new Error("JWT secret is not configured.");
+    error.statusCode = 500;
+
+    throw error;
+  }
+
   return jwt.sign(
     {
       userId: user.id,
