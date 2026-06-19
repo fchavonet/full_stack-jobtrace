@@ -1,0 +1,167 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                 String        @id @default(uuid()) @db.Uuid
+  email              String        @unique
+  passwordHash       String        @map("password_hash")
+  firstName          String?       @map("first_name")
+  lastName           String?       @map("last_name")
+  avatarUrl          String?       @map("avatar_url")
+  emailVerified      Boolean       @default(false) @map("email_verified")
+  emailVerifyToken   String?       @map("email_verify_token")
+  emailVerifyExpires DateTime?     @map("email_verify_expires")
+  resetToken         String?       @map("reset_token")
+  resetTokenExpires  DateTime?     @map("reset_token_expires")
+  theme              String        @default("light")
+  dailyGoal          Int           @default(5) @map("daily_goal")
+  followUpDelayDays  Int           @default(15) @map("follow_up_delay_days")
+  createdAt          DateTime      @default(now()) @map("created_at")
+  updatedAt          DateTime      @updatedAt @map("updated_at")
+  applications       Application[]
+  contacts           Contact[]
+  documents          Document[]
+  tags               Tag[]
+
+  @@map("users")
+}
+
+model Application {
+  id           String                @id @default(uuid()) @db.Uuid
+  userId       String                @map("user_id") @db.Uuid
+  company      String
+  position     String
+  status       String                @default("sent")
+  contractType String?               @map("contract_type")
+  location     String?
+  salary       Int?
+  link         String?
+  notes        String?
+  sentAt       DateTime              @map("sent_at") @db.Date
+  followUpAt   DateTime?             @map("follow_up_at") @db.Date
+  interviewAt  DateTime?             @map("interview_at") @db.Date
+  createdAt    DateTime              @default(now()) @map("created_at")
+  updatedAt    DateTime              @updatedAt @map("updated_at")
+  contacts     ApplicationContact[]
+  documents    ApplicationDocument[]
+  history      ApplicationHistory[]
+  tags         ApplicationTag[]
+  user         User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([status])
+  @@index([company])
+  @@map("applications")
+}
+
+model Contact {
+  id           String               @id @default(uuid()) @db.Uuid
+  userId       String               @map("user_id") @db.Uuid
+  firstName    String?              @map("first_name")
+  lastName     String?              @map("last_name")
+  email        String?
+  phoneNumber  String?              @map("phone_number")
+  company      String?
+  notes        String?
+  createdAt    DateTime             @default(now()) @map("created_at")
+  updatedAt    DateTime             @updatedAt @map("updated_at")
+  applications ApplicationContact[]
+  user         User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([company])
+  @@map("contacts")
+}
+
+model Tag {
+  id           String           @id @default(uuid()) @db.Uuid
+  userId       String           @map("user_id") @db.Uuid
+  name         String
+  slug         String
+  color        String?
+  createdAt    DateTime         @default(now()) @map("created_at")
+  updatedAt    DateTime         @updatedAt @map("updated_at")
+  applications ApplicationTag[]
+  user         User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, slug])
+  @@index([userId])
+  @@map("tags")
+}
+
+model Document {
+  id           String                @id @default(uuid()) @db.Uuid
+  userId       String                @map("user_id") @db.Uuid
+  type         String
+  originalName String                @map("original_name")
+  storedName   String                @map("stored_name")
+  mimeType     String                @map("mime_type")
+  size         Int
+  path         String
+  createdAt    DateTime              @default(now()) @map("created_at")
+  updatedAt    DateTime              @updatedAt @map("updated_at")
+  applications ApplicationDocument[]
+  user         User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([type])
+  @@map("documents")
+}
+
+model ApplicationContact {
+  id            String      @id @default(uuid()) @db.Uuid
+  applicationId String      @map("application_id") @db.Uuid
+  contactId     String      @map("contact_id") @db.Uuid
+  role          String?
+  createdAt     DateTime    @default(now()) @map("created_at")
+  application   Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  contact       Contact     @relation(fields: [contactId], references: [id], onDelete: Cascade)
+
+  @@unique([applicationId, contactId])
+  @@index([contactId])
+  @@map("application_contacts")
+}
+
+model ApplicationTag {
+  id            String      @id @default(uuid()) @db.Uuid
+  applicationId String      @map("application_id") @db.Uuid
+  tagId         String      @map("tag_id") @db.Uuid
+  createdAt     DateTime    @default(now()) @map("created_at")
+  application   Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  tag           Tag         @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@unique([applicationId, tagId])
+  @@index([tagId])
+  @@map("application_tags")
+}
+
+model ApplicationDocument {
+  id            String      @id @default(uuid()) @db.Uuid
+  applicationId String      @map("application_id") @db.Uuid
+  documentId    String      @map("document_id") @db.Uuid
+  createdAt     DateTime    @default(now()) @map("created_at")
+  application   Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  document      Document    @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  @@unique([applicationId, documentId])
+  @@index([documentId])
+  @@map("application_documents")
+}
+
+model ApplicationHistory {
+  id            String      @id @default(uuid()) @db.Uuid
+  applicationId String      @map("application_id") @db.Uuid
+  action        String
+  metadata      Json?
+  createdAt     DateTime    @default(now()) @map("created_at")
+  application   Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  @@index([applicationId])
+  @@map("application_history")
+}

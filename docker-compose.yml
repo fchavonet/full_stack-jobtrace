@@ -1,1 +1,32 @@
-services: {}
+services:
+
+  database:
+    image: postgres:17-alpine
+    container_name: jobtrace-database
+    environment:
+      POSTGRES_DB: jobtrace_db
+      POSTGRES_USER: jobtrace_user
+      POSTGRES_PASSWORD: jobtrace_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  backend:
+    build:
+      context: ./backend
+    container_name: jobtrace-backend
+    env_file:
+      - ./backend/.env
+    environment:
+      DATABASE_URL: postgresql://jobtrace_user:jobtrace_password@database:5432/jobtrace_db
+    ports:
+      - "4000:4000"
+    volumes:
+      - ./backend/src:/app/src
+      - ./backend/package.json:/app/package.json
+      - ./backend/package-lock.json:/app/package-lock.json
+    command: npm run dev
+
+volumes:
+  postgres_data:
