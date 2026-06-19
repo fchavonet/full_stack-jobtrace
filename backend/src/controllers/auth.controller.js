@@ -65,9 +65,20 @@ async function login(request, response, next) {
   }
 }
 
+function getProtectedAuthStatus(request, response) {
+  response.status(200).json({
+    success: true,
+    message: "Protected authentication route is working.",
+    data: {
+      user: request.user
+    }
+  });
+}
+
 export {
   getAuthStatus,
+  getProtectedAuthStatus,
+  login,
   register,
-  verifyEmail,
-  login
+  verifyEmail
 };

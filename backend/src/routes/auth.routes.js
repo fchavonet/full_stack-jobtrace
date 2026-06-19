@@ -1,7 +1,10 @@
 import express from "express";
 
+import authMiddleware from "../middlewares/auth.middleware.js";
+
 import {
   getAuthStatus,
+  getProtectedAuthStatus,
   login,
   register,
   verifyEmail
@@ -19,5 +22,6 @@ router.get("/status", getAuthStatus);
 router.post("/register", validateRegisterPayload, register);
 router.get("/verify-email", validateEmailVerificationPayload, verifyEmail);
 router.post("/login", validateLoginPayload, login);
+router.get("/protected-status", authMiddleware, getProtectedAuthStatus);
 
 export default router;
