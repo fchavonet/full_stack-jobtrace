@@ -3,6 +3,8 @@ import {
   getCurrentUser,
   loginUser,
   registerUser,
+  requestPasswordReset,
+  resetUserPassword,
   verifyUserEmail
 } from "../services/auth.service.js";
 
@@ -82,10 +84,42 @@ async function getMe(request, response, next) {
   }
 }
 
+async function forgotPassword(request, response, next) {
+  try {
+    const result = await requestPasswordReset(request.body);
+
+    response.status(200).json({
+      success: true,
+      message: "Password reset request processed successfully.",
+      data: {
+        resetToken: result.resetToken
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+async function resetPassword(request, response, next) {
+  try {
+    await resetUserPassword(request.body);
+
+    response.status(200).json({
+      success: true,
+      message: "Password reset successfully.",
+      data: {}
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
 export {
+  forgotPassword,
   getAuthStatus,
   getMe,
   login,
   register,
+  resetPassword,
   verifyEmail
 };

@@ -8,6 +8,8 @@ import prisma from "../config/prisma.js";
 const PASSWORD_SALT_ROUNDS = 12;
 const EMAIL_VERIFICATION_TOKEN_BYTES = 32;
 const EMAIL_VERIFICATION_EXPIRATION_HOURS = 24;
+const PASSWORD_RESET_TOKEN_BYTES = 32;
+const PASSWORD_RESET_EXPIRATION_HOURS = 1;
 
 function getAuthModuleStatus() {
   return {
@@ -43,6 +45,13 @@ function hashToken(token) {
 function getEmailVerificationExpirationDate() {
   const expiresAt = new Date();
   expiresAt.setHours(expiresAt.getHours() + EMAIL_VERIFICATION_EXPIRATION_HOURS);
+
+  return expiresAt;
+}
+
+function getPasswordResetExpirationDate() {
+  const expiresAt = new Date();
+  expiresAt.setHours(expiresAt.getHours() + PASSWORD_RESET_EXPIRATION_HOURS);
 
   return expiresAt;
 }
@@ -192,10 +201,87 @@ async function getCurrentUser(userId) {
   return sanitizeUser(user);
 }
 
+async function requestPasswordReset(payload) {
+  const email = payload.email.trim().toLowerCase();
+
+  const user = await prisma.user.findUnique({
+    where: {
+      email
+    }
+  });
+
+  if (!user) {
+    return {
+      resetToken: null
+    };
+  }
+
+  const resetToken = crypto.randomBytes(PASSWORD_RESET_TOKEN_BYTES).toString("hex");
+  const resetTokenHash = hashToken(resetToken);
+  const resetTokenExpires = getPasswordResetExpirationDate();
+
+  await prisma.user.update({
+    where: {
+      id: user.id
+    },
+    data: {
+      resetToken: resetTokenHash,
+      resetTokenExpires
+    }
+  });
+
+  return {
+    resetToken
+  };
+}
+
+async function resetUserPassword(payload) {
+  const tokenHash = hashToken(payload.token);
+
+  const user = await prisma.user.findFirst({
+    where: {
+      resetToken: tokenHash
+    }
+  });
+
+  if (!user) {
+    const error = new Error("Password reset token is invalid.");
+    error.statusCode = 400;
+
+    throw error;
+  }
+
+  const now = new Date();
+
+  if (!user.resetTokenExpires || user.resetTokenExpires < now) {
+    const error = new Error("Password reset token has expired.");
+    error.statusCode = 400;
+
+    throw error;
+  }
+
+  const passwordHash = await bcrypt.hash(payload.password, PASSWORD_SALT_ROUNDS);
+
+  await prisma.user.update({
+    where: {
+      id: user.id
+    },
+    data: {
+      passwordHash,
+      resetToken: null,
+      resetTokenExpires: null
+    }
+  });
+
+  return true;
+}
+
 export {
   getAuthModuleStatus,
   getCurrentUser,
   loginUser,
   registerUser,
+  requestPasswordReset,
+  resetUserPassword,
   verifyUserEmail
 };

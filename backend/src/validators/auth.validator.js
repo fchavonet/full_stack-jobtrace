@@ -95,8 +95,62 @@ function validateLoginPayload(request, response, next) {
   next();
 }
 
+function validateForgotPasswordPayload(request, response, next) {
+  const { email } = request.body;
+
+  if (!email || typeof email !== "string") {
+    return response.status(400).json({
+      success: false,
+      message: "Email is required.",
+      errors: []
+    });
+  }
+
+  if (!isValidEmail(email.trim())) {
+    return response.status(400).json({
+      success: false,
+      message: "Email is invalid.",
+      errors: []
+    });
+  }
+
+  next();
+}
+
+function validateResetPasswordPayload(request, response, next) {
+  const { token, password } = request.body;
+
+  if (!token || typeof token !== "string") {
+    return response.status(400).json({
+      success: false,
+      message: "Password reset token is required.",
+      errors: []
+    });
+  }
+
+  if (!password || typeof password !== "string") {
+    return response.status(400).json({
+      success: false,
+      message: "Password is required.",
+      errors: []
+    });
+  }
+
+  if (!isValidPassword(password)) {
+    return response.status(400).json({
+      success: false,
+      message: "Password must contain at least 6 characters, one lowercase letter, one uppercase letter and one digit.",
+      errors: []
+    });
+  }
+
+  next();
+}
+
 export {
-  validateRegisterPayload,
   validateEmailVerificationPayload,
-  validateLoginPayload
+  validateForgotPasswordPayload,
+  validateLoginPayload,
+  validateRegisterPayload,
+  validateResetPasswordPayload
 };
