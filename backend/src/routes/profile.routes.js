@@ -2,14 +2,19 @@ import express from "express";
 
 import {
   getProfile,
-  updateProfile
+  updateProfile,
+  updateSettings
 } from "../controllers/profile.controller.js";
 import authMiddleware from "../middlewares/auth.middleware.js";
-import { validateProfilePayload } from "../validators/profile.validator.js";
+import {
+  validateProfilePayload,
+  validateSettingsPayload
+} from "../validators/profile.validator.js";
 
 const router = express.Router();
 
 router.get("/", authMiddleware, getProfile);
 router.patch("/", authMiddleware, validateProfilePayload, updateProfile);
+router.patch("/settings", authMiddleware, validateSettingsPayload, updateSettings);
 
 export default router;

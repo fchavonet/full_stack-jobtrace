@@ -1,6 +1,7 @@
 import {
   getUserProfile,
-  updateUserProfile
+  updateUserProfile,
+  updateUserSettings
 } from "../services/profile.service.js";
 
 async function getProfile(request, response, next) {
@@ -35,7 +36,24 @@ async function updateProfile(request, response, next) {
   }
 }
 
+async function updateSettings(request, response, next) {
+  try {
+    const profile = await updateUserSettings(request.user.id, request.body);
+
+    response.status(200).json({
+      success: true,
+      message: "Settings updated successfully.",
+      data: {
+        profile
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
 export {
   getProfile,
-  updateProfile
+  updateProfile,
+  updateSettings
 };

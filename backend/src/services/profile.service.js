@@ -48,7 +48,19 @@ async function updateUserProfile(userId, payload) {
   return sanitizeProfile(user);
 }
 
+async function updateUserSettings(userId, payload) {
+  const user = await prisma.user.update({
+    where: {
+      id: userId
+    },
+    data: payload.settingsData
+  });
+
+  return sanitizeProfile(user);
+}
+
 export {
   getUserProfile,
-  updateUserProfile
+  updateUserProfile,
+  updateUserSettings
 };
