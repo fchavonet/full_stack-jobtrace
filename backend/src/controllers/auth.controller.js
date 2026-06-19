@@ -26,10 +26,9 @@ async function register(request, response, next) {
 
     response.status(201).json({
       success: true,
-      message: "User registered successfully.",
+      message: "User registered successfully. Please check your email to verify your account.",
       data: {
-        user: result.user,
-        verificationToken: result.verificationToken
+        user: result.user
       }
     });
   } catch (error) {
@@ -88,14 +87,12 @@ async function getMe(request, response, next) {
 
 async function forgotPassword(request, response, next) {
   try {
-    const result = await requestPasswordReset(request.body);
+    await requestPasswordReset(request.body);
 
     response.status(200).json({
       success: true,
       message: "Password reset request processed successfully.",
-      data: {
-        resetToken: result.resetToken
-      }
+      data: {}
     });
   } catch (error) {
     next(error);

@@ -97,8 +97,7 @@ async function registerUser(payload) {
   });
 
   return {
-    user: sanitizeUser(user),
-    verificationToken
+    user: sanitizeUser(user)
   };
 }
 
@@ -228,9 +227,7 @@ async function requestPasswordReset(payload) {
   });
 
   if (!user) {
-    return {
-      resetToken: null
-    };
+    return true;
   }
 
   const resetToken = crypto.randomBytes(PASSWORD_RESET_TOKEN_BYTES).toString("hex");
@@ -252,9 +249,7 @@ async function requestPasswordReset(payload) {
     token: resetToken
   });
 
-  return {
-    resetToken
-  };
+  return true;
 }
 
 async function resetUserPassword(payload) {
