@@ -35,6 +35,10 @@ function createEmailTransporter() {
   });
 }
 
+function buildEmailVerificationUrl(token) {
+  return env.frontendUrl + "/verify-email?token=" + token;
+}
+
 async function sendEmail(payload) {
   const transporter = createEmailTransporter();
 
@@ -47,6 +51,28 @@ async function sendEmail(payload) {
   });
 }
 
+async function sendEmailVerificationEmail(payload) {
+  const verificationUrl = buildEmailVerificationUrl(payload.token);
+
+  await sendEmail({
+    to: payload.email,
+    subject: "Verify your JobTrace account",
+    text:
+      "Welcome to JobTrace.\n\n" +
+      "Please verify your email address by opening this link:\n" +
+      verificationUrl + "\n\n" +
+      "This link will expire in 24 hours.\n\n" +
+      "If you did not create a JobTrace account, you can ignore this email.",
+    html:
+      "<p>Welcome to JobTrace.</p>" +
+      "<p>Please verify your email address by opening this link:</p>" +
+      "<p><a href=\"" + verificationUrl + "\">Verify your email address</a></p>" +
+      "<p>This link will expire in 24 hours.</p>" +
+      "<p>If you did not create a JobTrace account, you can ignore this email.</p>"
+  });
+}
+
 export {
-  sendEmail
+  sendEmail,
+  sendEmailVerificationEmail
 };

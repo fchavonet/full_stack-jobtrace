@@ -5,6 +5,8 @@ import jwt from "jsonwebtoken";
 import env from "../config/env.js";
 import prisma from "../config/prisma.js";
 
+import { sendEmailVerificationEmail } from "./email.service.js";
+
 const PASSWORD_SALT_ROUNDS = 12;
 const EMAIL_VERIFICATION_TOKEN_BYTES = 32;
 const EMAIL_VERIFICATION_EXPIRATION_HOURS = 24;
@@ -84,6 +86,11 @@ async function registerUser(payload) {
       emailVerifyToken: verificationTokenHash,
       emailVerifyExpires: verificationExpiresAt
     }
+  });
+
+  await sendEmailVerificationEmail({
+    email: user.email,
+    token: verificationToken
   });
 
   return {
