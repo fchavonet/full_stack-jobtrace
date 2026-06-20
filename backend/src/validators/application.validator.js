@@ -282,7 +282,34 @@ function validateApplicationUpdatePayload(request, response, next) {
   next();
 }
 
+function validateApplicationContactPayload(request, response, next) {
+  const errors = [];
+
+  const contactId = sanitizeOptionalString(request.body.contactId);
+  const role = sanitizeOptionalString(request.body.role);
+
+  if (!contactId) {
+    errors.push("Contact id is required.");
+  }
+
+  if (errors.length > 0) {
+    return response.status(400).json({
+      success: false,
+      message: "Invalid application contact data.",
+      errors
+    });
+  }
+
+  request.body.contactData = {
+    contactId,
+    role
+  };
+
+  next();
+}
+
 export {
+  validateApplicationContactPayload,
   validateApplicationPayload,
   validateApplicationUpdatePayload
 };

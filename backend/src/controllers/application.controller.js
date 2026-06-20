@@ -3,6 +3,8 @@ import {
   deleteUserApplication,
   getUserApplicationById,
   getUserApplications,
+  linkContactToUserApplication,
+  unlinkContactFromUserApplication,
   updateUserApplication
 } from "../services/application.service.js";
 
@@ -123,10 +125,68 @@ async function deleteApplication(request, response, next) {
   }
 }
 
+async function linkContactToApplication(request, response, next) {
+  try {
+    const application = await linkContactToUserApplication(
+      request.user.id,
+      request.params.id,
+      request.body.contactData
+    );
+
+    if (!application) {
+      return response.status(404).json({
+        success: false,
+        message: "Application or contact not found.",
+        errors: []
+      });
+    }
+
+    response.status(200).json({
+      success: true,
+      message: "Contact linked to application successfully.",
+      data: {
+        application
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+async function unlinkContactFromApplication(request, response, next) {
+  try {
+    const application = await unlinkContactFromUserApplication(
+      request.user.id,
+      request.params.id,
+      request.params.contactId
+    );
+
+    if (!application) {
+      return response.status(404).json({
+        success: false,
+        message: "Application contact link not found.",
+        errors: []
+      });
+    }
+
+    response.status(200).json({
+      success: true,
+      message: "Contact unlinked from application successfully.",
+      data: {
+        application
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
 export {
   createApplication,
   deleteApplication,
   getApplication,
   getApplications,
+  linkContactToApplication,
+  unlinkContactFromApplication,
   updateApplication
 };

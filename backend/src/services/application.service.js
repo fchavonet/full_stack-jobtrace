@@ -1,7 +1,21 @@
 import prisma from "../config/prisma.js";
 
-function sanitizeApplication(application) {
+function sanitizeApplicationContact(applicationContact) {
   return {
+    id: applicationContact.contact.id,
+    firstName: applicationContact.contact.firstName,
+    lastName: applicationContact.contact.lastName,
+    email: applicationContact.contact.email,
+    phoneNumber: applicationContact.contact.phoneNumber,
+    company: applicationContact.contact.company,
+    notes: applicationContact.contact.notes,
+    role: applicationContact.role,
+    linkedAt: applicationContact.createdAt
+  };
+}
+
+function sanitizeApplication(application) {
+  const sanitizedApplication = {
     id: application.id,
     company: application.company,
     position: application.position,
@@ -17,6 +31,25 @@ function sanitizeApplication(application) {
     createdAt: application.createdAt,
     updatedAt: application.updatedAt
   };
+
+  if (application.contacts) {
+    sanitizedApplication.contacts = application.contacts.map(sanitizeApplicationContact);
+  }
+
+  return sanitizedApplication;
+}
+
+function getApplicationInclude() {
+  return {
+    contacts: {
+      include: {
+        contact: true
+      },
+      orderBy: {
+        createdAt: "desc"
+      }
+    }
+  };
 }
 
 async function getUserApplications(userId) {
@@ -24,6 +57,7 @@ async function getUserApplications(userId) {
     where: {
       userId
     },
+    include: getApplicationInclude(),
     orderBy: {
       sentAt: "desc"
     }
@@ -37,7 +71,8 @@ async function getUserApplicationById(userId, applicationId) {
     where: {
       id: applicationId,
       userId
-    }
+    },
+    include: getApplicationInclude()
   });
 
   if (!application) {
@@ -62,7 +97,8 @@ async function createUserApplication(userId, applicationData) {
       sentAt: applicationData.sentAt,
       followUpAt: applicationData.followUpAt,
       interviewAt: applicationData.interviewAt
-    }
+    },
+    include: getApplicationInclude()
   });
 
   return sanitizeApplication(application);
@@ -84,7 +120,8 @@ async function updateUserApplication(userId, applicationId, applicationData) {
     where: {
       id: applicationId
     },
-    data: applicationData
+    data: applicationData,
+    include: getApplicationInclude()
   });
 
   return sanitizeApplication(application);
@@ -105,7 +142,123 @@ async function deleteUserApplication(userId, applicationId) {
   const application = await prisma.application.delete({
     where: {
       id: applicationId
+    },
+    include: getApplicationInclude()
+  });
+
+  return sanitizeApplication(application);
+}
+
+async function linkContactToUserApplication(userId, applicationId, contactData) {
+  const existingApplication = await prisma.application.findFirst({
+    where: {
+      id: applicationId,
+      userId
     }
+  });
+
+  if (!existingApplication) {
+    return null;
+  }
+
+  const existingContact = await prisma.contact.findFirst({
+    where: {
+      id: contactData.contactId,
+      userId
+    }
+  });
+
+  if (!existingContact) {
+    return null;
+  }
+
+  const existingLink = await prisma.applicationContact.findUnique({
+    where: {
+      applicationId_contactId: {
+        applicationId,
+        contactId: contactData.contactId
+      }
+    }
+  });
+
+  if (existingLink) {
+    await prisma.applicationContact.update({
+      where: {
+        id: existingLink.id
+      },
+      data: {
+        role: contactData.role
+      }
+    });
+  } else {
+    await prisma.applicationContact.create({
+      data: {
+        applicationId,
+        contactId: contactData.contactId,
+        role: contactData.role
+      }
+    });
+  }
+
+  const application = await prisma.application.findFirst({
+    where: {
+      id: applicationId,
+      userId
+    },
+    include: getApplicationInclude()
+  });
+
+  return sanitizeApplication(application);
+}
+
+async function unlinkContactFromUserApplication(userId, applicationId, contactId) {
+  const existingApplication = await prisma.application.findFirst({
+    where: {
+      id: applicationId,
+      userId
+    }
+  });
+
+  if (!existingApplication) {
+    return null;
+  }
+
+  const existingContact = await prisma.contact.findFirst({
+    where: {
+      id: contactId,
+      userId
+    }
+  });
+
+  if (!existingContact) {
+    return null;
+  }
+
+  const existingLink = await prisma.applicationContact.findUnique({
+    where: {
+      applicationId_contactId: {
+        applicationId,
+        contactId
+      }
+    }
+  });
+
+  if (!existingLink) {
+    return null;
+  }
+
+  await prisma.applicationContact.delete({
+    where: {
+      id: existingLink.id
+    }
+  });
+
+  const application = await prisma.application.findFirst({
+    where: {
+      id: applicationId,
+      userId
+    },
+    include: getApplicationInclude()
   });
 
   return sanitizeApplication(application);
@@ -116,5 +269,7 @@ export {
   deleteUserApplication,
   getUserApplicationById,
   getUserApplications,
+  linkContactToUserApplication,
+  unlinkContactFromUserApplication,
   updateUserApplication
 };
