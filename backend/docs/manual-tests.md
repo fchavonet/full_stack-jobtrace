@@ -25,6 +25,10 @@ Then add ` | jq` at the end of any `curl` command that returns JSON.
 <br>
 This will format the JSON response and make it easier to read in the terminal.
 
+Some response values can change depending on the test environment, the database state, the current date or generated identifiers.
+
+In expected JSON responses, dynamic values are replaced by `*`.
+
 ## Test variables
 
 During validation, the following shell variables may be used:
@@ -1053,7 +1057,886 @@ curl -s -X POST http://localhost:4000/api/auth/login \
 
 Status:
 
-## 11. Current backend validation summary
+## 11. Applications core
+
+### POST `/api/contacts`
+
+#### Goal
+
+Verify that an authenticated user can create a contact.
+
+#### Command to run
+
+```bash
+CONTACT_ID=$(curl -s -X POST http://localhost:4000/api/contacts \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TOKEN" \
+  -d '{
+    "firstName": "Bruce",
+    "lastName": "Wayne",
+    "email": "bruce.wayne@wayne-enterprises.com",
+    "phoneNumber": "0600000000",
+    "company": "Wayne Enterprises",
+    "notes": "Contact used for manual validation."
+  }' | jq -r ".data.contact.id")
+
+echo "$CONTACT_ID"
+```
+
+#### Expected result
+
+A contact is created and a contact id is returned.
+
+Status:
+
+### GET `/api/contacts`
+
+#### Goal
+
+Verify that the authenticated user can list their contacts.
+
+#### Command to run
+
+```bash
+curl -s http://localhost:4000/api/contacts \
+  -H "Authorization: Bearer $TOKEN" | jq
+```
+
+#### Expected result
+
+```json
+{
+  "success": true,
+  "message": "Contacts retrieved successfully.",
+  "data": {
+    "contacts": [
+      {
+        "id": "*",
+        "firstName": "Bruce",
+        "lastName": "Wayne",
+        "email": "bruce.wayne@wayne-enterprises.com",
+        "phoneNumber": "0600000000",
+        "company": "Wayne Enterprises",
+        "notes": "Contact used for manual validation.",
+        "createdAt": "*",
+        "updatedAt": "*"
+      }
+    ]
+  }
+}
+```
+
+Status:
+
+### GET `/api/contacts/:id`
+
+#### Goal
+
+Verify that the authenticated user can retrieve one of their contacts.
+
+#### Command to run
+
+```bash
+curl -s http://localhost:4000/api/contacts/$CONTACT_ID \
+  -H "Authorization: Bearer $TOKEN" | jq
+```
+
+#### Expected result
+
+```json
+{
+  "success": true,
+  "message": "Contact retrieved successfully.",
+  "data": {
+    "contact": {
+      "id": "*",
+      "firstName": "Bruce",
+      "lastName": "Wayne",
+      "email": "bruce.wayne@wayne-enterprises.com",
+      "phoneNumber": "0600000000",
+      "company": "Wayne Enterprises",
+      "notes": "Contact used for manual validation.",
+      "createdAt": "*",
+      "updatedAt": "*"
+    }
+  }
+}
+```
+
+Status:
+
+### PATCH `/api/contacts/:id`
+
+#### Goal
+
+Verify that the authenticated user can update one of their contacts.
+
+#### Command to run
+
+```bash
+curl -s -X PATCH http://localhost:4000/api/contacts/$CONTACT_ID \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TOKEN" \
+  -d '{
+    "company": "Wayne Industries"
+  }' | jq
+```
+
+#### Expected result
+
+```json
+{
+  "success": true,
+  "message": "Contact updated successfully.",
+  "data": {
+    "contact": {
+      "id": "*",
+      "firstName": "Bruce",
+      "lastName": "Wayne",
+      "email": "bruce.wayne@wayne-enterprises.com",
+      "phoneNumber": "0600000000",
+      "company": "Wayne Industries",
+      "notes": "Contact used for manual validation.",
+      "createdAt": "*",
+      "updatedAt": "*"
+    }
+  }
+}
+```
+
+Status:
+
+### POST `/api/applications`
+
+#### Goal
+
+Verify that an authenticated user can create an application.
+
+#### Command to run
+
+```bash
+APPLICATION_ID=$(curl -s -X POST http://localhost:4000/api/applications \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TOKEN" \
+  -d '{
+    "company": "Wayne Enterprises",
+    "position": "Robin",
+    "status": "Envoyée",
+    "contractType": "CDI",
+    "location": "Gotham City",
+    "salary": 50000,
+    "link": "https://careers.wayne-enterprises.example/jobs/robin",
+    "notes": "Application used for manual validation.",
+    "sentAt": "2026-06-20",
+    "followUpAt": "2026-07-05",
+    "interviewAt": null
+  }' | jq -r ".data.application.id")
+
+echo "$APPLICATION_ID"
+```
+
+#### Expected result
+
+An application is created and an application id is returned.
+
+Status:
+
+### GET `/api/applications`
+
+#### Goal
+
+Verify that the authenticated user can list their applications.
+
+#### Command to run
+
+```bash
+curl -s http://localhost:4000/api/applications \
+  -H "Authorization: Bearer $TOKEN" | jq
+```
+
+#### Expected result
+
+```json
+{
+  "success": true,
+  "message": "Applications retrieved successfully.",
+  "data": {
+    "applications": [
+      {
+        "id": "*",
+        "company": "Wayne Enterprises",
+        "position": "Robin",
+        "status": "Envoyée",
+        "contractType": "CDI",
+        "location": "Gotham City",
+        "salary": 50000,
+        "link": "https://careers.wayne-enterprises.example/jobs/robin",
+        "notes": "Application used for manual validation.",
+        "sentAt": "2026-06-20T00:00:00.000Z",
+        "followUpAt": "2026-07-05T00:00:00.000Z",
+        "interviewAt": null,
+        "createdAt": "*",
+        "updatedAt": "*",
+        "contacts": [],
+        "tags": []
+      }
+    ]
+  }
+}
+```
+
+Status:
+
+### GET `/api/applications/:id`
+
+#### Goal
+
+Verify that the authenticated user can retrieve one of their applications.
+
+#### Command to run
+
+```bash
+curl -s http://localhost:4000/api/applications/$APPLICATION_ID \
+  -H "Authorization: Bearer $TOKEN" | jq
+```
+
+#### Expected result
+
+```json
+{
+  "success": true,
+  "message": "Application retrieved successfully.",
+  "data": {
+    "application": {
+      "id": "*",
+      "company": "Wayne Enterprises",
+      "position": "Robin",
+      "status": "Envoyée",
+      "contractType": "CDI",
+      "location": "Gotham City",
+      "salary": 50000,
+      "link": "https://careers.wayne-enterprises.example/jobs/robin",
+      "notes": "Application used for manual validation.",
+      "sentAt": "2026-06-20T00:00:00.000Z",
+      "followUpAt": "2026-07-05T00:00:00.000Z",
+      "interviewAt": null,
+      "createdAt": "*",
+      "updatedAt": "*",
+      "contacts": [],
+      "tags": []
+    }
+  }
+}
+```
+
+Status:
+
+### PATCH `/api/applications/:id`
+
+#### Goal
+
+Verify that the authenticated user can update one of their applications.
+
+#### Command to run
+
+```bash
+curl -s -X PATCH http://localhost:4000/api/applications/$APPLICATION_ID \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TOKEN" \
+  -d '{
+    "status": "Entretien",
+    "interviewAt": "2026-07-12"
+  }' | jq
+```
+
+#### Expected result
+
+```json
+{
+  "success": true,
+  "message": "Application updated successfully.",
+  "data": {
+    "application": {
+      "id": "*",
+      "company": "Wayne Enterprises",
+      "position": "Robin",
+      "status": "Entretien",
+      "contractType": "CDI",
+      "location": "Gotham City",
+      "salary": 50000,
+      "link": "https://careers.wayne-enterprises.example/jobs/robin",
+      "notes": "Application used for manual validation.",
+      "sentAt": "2026-06-20T00:00:00.000Z",
+      "followUpAt": "2026-07-05T00:00:00.000Z",
+      "interviewAt": "2026-07-12T00:00:00.000Z",
+      "createdAt": "*",
+      "updatedAt": "*",
+      "contacts": [],
+      "tags": []
+    }
+  }
+}
+```
+
+Status:
+
+### POST `/api/applications/:id/contacts`
+
+#### Goal
+
+Verify that an authenticated user can link one of their contacts to one of their applications.
+
+#### Command to run
+
+```bash
+curl -s -X POST http://localhost:4000/api/applications/$APPLICATION_ID/contacts \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TOKEN" \
+  -d "{
+    \"contactId\": \"$CONTACT_ID\",
+    \"role\": \"Batman\"
+  }" | jq
+```
+
+#### Expected result
+
+```json
+{
+  "success": true,
+  "message": "Contact linked to application successfully.",
+  "data": {
+    "application": {
+      "id": "*",
+      "company": "Wayne Enterprises",
+      "position": "Robin",
+      "status": "Entretien",
+      "contractType": "CDI",
+      "location": "Gotham City",
+      "salary": 50000,
+      "link": "https://careers.wayne-enterprises.example/jobs/robin",
+      "notes": "Application used for manual validation.",
+      "sentAt": "2026-06-20T00:00:00.000Z",
+      "followUpAt": "2026-07-05T00:00:00.000Z",
+      "interviewAt": "2026-07-12T00:00:00.000Z",
+      "createdAt": "*",
+      "updatedAt": "*",
+      "contacts": [
+        {
+          "id": "*",
+          "firstName": "Bruce",
+          "lastName": "Wayne",
+          "email": "bruce.wayne@wayne-enterprises.com",
+          "phoneNumber": "0600000000",
+          "company": "Wayne Industries",
+          "notes": "Contact used for manual validation.",
+          "role": "Batman",
+          "linkedAt": "*"
+        }
+      ],
+      "tags": []
+    }
+  }
+}
+```
+
+Status:
+
+### POST `/api/tags`
+
+#### Goal
+
+Verify that an authenticated user can create a tag.
+
+#### Command to run
+
+```bash
+TAG_ID=$(curl -s -X POST http://localhost:4000/api/tags \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TOKEN" \
+  -d '{
+    "name": "Priority",
+    "color": "#ff0000"
+  }' | jq -r ".data.tag.id")
+
+echo "$TAG_ID"
+```
+
+### Expected result
+
+A tag is created and a tag id is returned.
+
+Status:
+
+### GET `/api/tags`
+
+#### Goal
+
+Verify that the authenticated user can list their tags.
+
+#### Command to run
+
+```bash
+curl -s http://localhost:4000/api/tags \
+  -H "Authorization: Bearer $TOKEN" | jq
+```
+
+#### Expected result
+
+```json
+{
+  "success": true,
+  "message": "Tags retrieved successfully.",
+  "data": {
+    "tags": [
+      {
+        "id": "*",
+        "name": "Priority",
+        "slug": "priority",
+        "color": "#ff0000",
+        "createdAt": "*",
+        "updatedAt": "*"
+      }
+    ]
+  }
+}
+```
+
+Status:
+
+### PATCH `/api/tags/:id`
+
+#### Goal
+
+Verify that the authenticated user can update one of their tags.
+
+#### Command to run
+
+```bash
+curl -s -X PATCH http://localhost:4000/api/tags/$TAG_ID \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TOKEN" \
+  -d '{
+    "name": "Bat Signal",
+    "color": "#FFAA00"
+  }' | jq
+```
+
+#### Expected result
+
+```json
+{
+  "success": true,
+  "message": "Tag updated successfully.",
+  "data": {
+    "tag": {
+      "id": "*",
+      "name": "Bat Signal",
+      "slug": "bat-signal",
+      "color": "#FFAA00",
+      "createdAt": "*",
+      "updatedAt": "*"
+    }
+  }
+}
+```
+
+Status:
+
+### POST `/api/tags` with duplicate name
+
+#### Goal
+
+Verify that the same user cannot create two tags with the same slug.
+
+#### Command to run
+
+```bash
+curl -s -X POST http://localhost:4000/api/tags \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TOKEN" \
+  -d '{
+    "name": "Bat Signal",
+    "color": "#FFAA00"
+  }' | jq
+```
+
+#### Expected result
+
+```json
+{
+  "success": false,
+  "message": "Tag already exists.",
+  "errors": []
+}
+```
+
+Status:
+
+### POST `/api/applications/:id/tags`
+
+#### Goal
+
+Verify that an authenticated user can link one of their tags to one of their applications.
+
+#### Command to run
+
+```bash
+curl -s -X POST http://localhost:4000/api/applications/$APPLICATION_ID/tags \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TOKEN" \
+  -d "{
+    \"tagId\": \"$TAG_ID\"
+  }" | jq
+```
+
+#### Expected result
+
+```json
+{
+  "success": true,
+  "message": "Tag linked to application successfully.",
+  "data": {
+    "application": {
+      "id": "*",
+      "company": "Wayne Enterprises",
+      "position": "Robin",
+      "status": "Entretien",
+      "contractType": "CDI",
+      "location": "Gotham City",
+      "salary": 50000,
+      "link": "https://careers.wayne-enterprises.example/jobs/robin",
+      "notes": "Application used for manual validation.",
+      "sentAt": "2026-06-20T00:00:00.000Z",
+      "followUpAt": "2026-07-05T00:00:00.000Z",
+      "interviewAt": "2026-07-12T00:00:00.000Z",
+      "createdAt": "*",
+      "updatedAt": "*",
+      "contacts": [
+        {
+          "id": "*",
+          "firstName": "Bruce",
+          "lastName": "Wayne",
+          "email": "bruce.wayne@wayne-enterprises.com",
+          "phoneNumber": "0600000000",
+          "company": "Wayne Industries",
+          "notes": "Contact used for manual validation.",
+          "role": "Batman",
+          "linkedAt": "*"
+        }
+      ],
+      "tags": [
+        {
+          "id": "*",
+          "name": "Bat Signal",
+          "slug": "bat-signal",
+          "color": "#FFAA00",
+          "linkedAt": "*"
+        }
+      ]
+    }
+  }
+}
+```
+
+Status:
+
+### GET `/api/applications/:id/history`
+
+#### Goal
+
+Verify that the authenticated user can read the history of one of their applications.
+
+#### Command to run
+
+```bash
+curl -s http://localhost:4000/api/applications/$APPLICATION_ID/history \
+  -H "Authorization: Bearer $TOKEN" | jq
+```
+
+#### Expected result
+
+```json
+{
+  "success": true,
+  "message": "Application history retrieved successfully.",
+  "data": {
+    "history": [
+      {
+        "id": "*",
+        "action": "tag_linked",
+        "metadata": {
+          "tagId": "*"
+        },
+        "createdAt": "*"
+      },
+      {
+        "id": "*",
+        "action": "contact_linked",
+        "metadata": {
+          "role": "Batman",
+          "contactId": "*"
+        },
+        "createdAt": "*"
+      },
+      {
+        "id": "*",
+        "action": "application_status_updated",
+        "metadata": {
+          "newStatus": "Entretien",
+          "previousStatus": "Envoyée"
+        },
+        "createdAt": "*"
+      },
+      {
+        "id": "*",
+        "action": "application_created",
+        "metadata": {
+          "status": "Envoyée",
+          "company": "Wayne Enterprises",
+          "position": "Robin"
+        },
+        "createdAt": "*"
+      }
+    ]
+  }
+}
+```
+
+Status:
+
+### DELETE `/api/applications/:id/contacts/:contactId`
+
+#### Goal
+
+Verify that an authenticated user can unlink a contact from one of their applications.
+
+#### Command to run
+
+```bash
+curl -s -X DELETE http://localhost:4000/api/applications/$APPLICATION_ID/contacts/$CONTACT_ID \
+  -H "Authorization: Bearer $TOKEN" | jq
+```
+
+#### Expected result
+
+```json
+{
+  "success": true,
+  "message": "Contact unlinked from application successfully.",
+  "data": {
+    "application": {
+      "id": "*",
+      "company": "Wayne Enterprises",
+      "position": "Robin",
+      "status": "Entretien",
+      "contractType": "CDI",
+      "location": "Gotham City",
+      "salary": 50000,
+      "link": "https://careers.wayne-enterprises.example/jobs/robin",
+      "notes": "Application used for manual validation.",
+      "sentAt": "2026-06-20T00:00:00.000Z",
+      "followUpAt": "2026-07-05T00:00:00.000Z",
+      "interviewAt": "2026-07-12T00:00:00.000Z",
+      "createdAt": "*",
+      "updatedAt": "*",
+      "contacts": [],
+      "tags": [
+        {
+          "id": "*",
+          "name": "Bat Signal",
+          "slug": "bat-signal",
+          "color": "#FFAA00",
+          "linkedAt": "*"
+        }
+      ]
+    }
+  }
+}
+```
+
+Status:
+
+### DELETE `/api/applications/:id/tags/:tagId`
+
+#### Goal
+
+Verify that an authenticated user can unlink a tag from one of their applications.
+
+#### Command to run
+
+```bash
+curl -s -X DELETE http://localhost:4000/api/applications/$APPLICATION_ID/tags/$TAG_ID \
+  -H "Authorization: Bearer $TOKEN" | jq
+```
+
+#### Expected result
+
+```json
+{
+  "success": true,
+  "message": "Tag unlinked from application successfully.",
+  "data": {
+    "application": {
+      "id": "*",
+      "company": "Wayne Enterprises",
+      "position": "Robin",
+      "status": "Entretien",
+      "contractType": "CDI",
+      "location": "Gotham City",
+      "salary": 50000,
+      "link": "https://careers.wayne-enterprises.example/jobs/robin",
+      "notes": "Application used for manual validation.",
+      "sentAt": "2026-06-20T00:00:00.000Z",
+      "followUpAt": "2026-07-05T00:00:00.000Z",
+      "interviewAt": "2026-07-12T00:00:00.000Z",
+      "createdAt": "*",
+      "updatedAt": "*",
+      "contacts": [],
+      "tags": []
+    }
+  }
+}
+```
+
+Status:
+
+### Protected business routes without JWT
+
+#### Goal
+
+Verify that business routes reject unauthenticated requests.
+
+#### Commands to run
+
+```bash
+curl -s http://localhost:4000/api/contacts | jq
+curl -s http://localhost:4000/api/applications | jq
+curl -s http://localhost:4000/api/tags | jq
+curl -s http://localhost:4000/api/applications/$APPLICATION_ID/history | jq
+```
+
+#### Expected result
+
+Each request is rejected because no JWT token was provided.
+
+Status:
+
+### DELETE `/api/applications/:id`
+
+#### Goal
+
+Verify that an authenticated user can delete one of their applications.
+
+#### Command to run
+
+```bash
+curl -s -X DELETE http://localhost:4000/api/applications/$APPLICATION_ID \
+  -H "Authorization: Bearer $TOKEN" | jq
+```
+
+#### Expected result
+
+```json
+{
+  "success": true,
+  "message": "Application deleted successfully.",
+  "data": {
+    "application": {
+      "id": "*",
+      "company": "Wayne Enterprises",
+      "position": "Robin",
+      "status": "Entretien",
+      "contractType": "CDI",
+      "location": "Gotham City",
+      "salary": 50000,
+      "link": "https://careers.wayne-enterprises.example/jobs/robin",
+      "notes": "Application used for manual validation.",
+      "sentAt": "2026-06-20T00:00:00.000Z",
+      "followUpAt": "2026-07-05T00:00:00.000Z",
+      "interviewAt": "2026-07-12T00:00:00.000Z",
+      "createdAt": "*",
+      "updatedAt": "*",
+      "contacts": [],
+      "tags": []
+    }
+  }
+}
+```
+
+Status:
+
+### DELETE `/api/contacts/:id`
+
+#### Goal
+
+Verify that an authenticated user can delete one of their contacts.
+
+#### Command to run
+
+```bash
+curl -s -X DELETE http://localhost:4000/api/contacts/$CONTACT_ID \
+  -H "Authorization: Bearer $TOKEN" | jq
+```
+
+#### Expected result
+
+```json
+{
+  "success": true,
+  "message": "Contact deleted successfully.",
+  "data": {
+    "contact": {
+      "id": "*",
+      "firstName": "Bruce",
+      "lastName": "Wayne",
+      "email": "bruce.wayne@wayne-enterprises.com",
+      "phoneNumber": "0600000000",
+      "company": "Wayne Industries",
+      "notes": "Contact used for manual validation.",
+      "createdAt": "*",
+      "updatedAt": "*"
+    }
+  }
+}
+```
+
+Status:
+
+### DELETE `/api/tags/:id`
+
+#### Goal
+
+Verify that an authenticated user can delete one of their tags.
+
+#### Command to run
+
+```bash
+curl -s -X DELETE http://localhost:4000/api/tags/$TAG_ID \
+  -H "Authorization: Bearer $TOKEN" | jq
+```
+
+#### Expected result
+
+```json
+{
+  "success": true,
+  "message": "Tag deleted successfully.",
+  "data": {
+    "tag": {
+      "id": "*",
+      "name": "Bat Signal",
+      "slug": "bat-signal",
+      "color": "#FFAA00",
+      "createdAt": "*",
+      "updatedAt": "*"
+    }
+  }
+}
+```
+
+Status:
+
+## 12. Current backend validation summary
 
 The following backend features have been manually validated:
 
@@ -1078,3 +1961,14 @@ The following backend features have been manually validated:
 - Password reset.
 - User data export without sensitive fields.
 - Account deletion.
+- Contacts CRUD.
+- Applications CRUD.
+- Tags CRUD.
+- Contact and application linking.
+- Tag and application linking.
+- Application history.
+- Business routes protected by JWT.
+- User data isolation on business resources.
+- Validation errors on business routes.
+- Duplicate tag protection.
+- Coherent API responses.
