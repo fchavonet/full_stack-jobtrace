@@ -332,8 +332,33 @@ function validateApplicationTagPayload(request, response, next) {
   next();
 }
 
+function validateApplicationDocumentPayload(request, response, next) {
+  const errors = [];
+
+  const documentId = sanitizeOptionalString(request.body.documentId);
+
+  if (!documentId) {
+    errors.push("Document id is required.");
+  }
+
+  if (errors.length > 0) {
+    return response.status(400).json({
+      success: false,
+      message: "Invalid application document data.",
+      errors
+    });
+  }
+
+  request.body.documentData = {
+    documentId
+  };
+
+  next();
+}
+
 export {
   validateApplicationContactPayload,
+  validateApplicationDocumentPayload,
   validateApplicationPayload,
   validateApplicationTagPayload,
   validateApplicationUpdatePayload

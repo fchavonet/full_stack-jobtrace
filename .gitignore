@@ -17,6 +17,7 @@ npm-debug.log*
 
 # Uploads
 backend/uploads/*
+backend/uploads/documents/*
 !backend/uploads/.gitkeep
 !backend/uploads/documents/
 !backend/uploads/documents/.gitkeep

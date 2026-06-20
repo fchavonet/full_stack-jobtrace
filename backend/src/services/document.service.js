@@ -1,0 +1,141 @@
+import fs from "fs/promises";
+
+import prisma from "../config/prisma.js";
+
+function sanitizeDocument(document) {
+  return {
+    id: document.id,
+    type: document.type,
+    originalName: document.originalName,
+    storedName: document.storedName,
+    mimeType: document.mimeType,
+    size: document.size,
+    createdAt: document.createdAt,
+    updatedAt: document.updatedAt
+  };
+}
+
+async function removeStoredFile(filePath) {
+  try {
+    await fs.unlink(filePath);
+  } catch (error) {
+    if (error.code !== "ENOENT") {
+      throw error;
+    }
+  }
+}
+
+async function getUserDocuments(userId) {
+  const documents = await prisma.document.findMany({
+    where: {
+      userId
+    },
+    orderBy: {
+      createdAt: "desc"
+    }
+  });
+
+  return documents.map(sanitizeDocument);
+}
+
+async function getUserDocumentById(userId, documentId) {
+  const document = await prisma.document.findFirst({
+    where: {
+      id: documentId,
+      userId
+    }
+  });
+
+  if (!document) {
+    return null;
+  }
+
+  return sanitizeDocument(document);
+}
+
+async function getUserDocumentFile(userId, documentId) {
+  const document = await prisma.document.findFirst({
+    where: {
+      id: documentId,
+      userId
+    }
+  });
+
+  if (!document) {
+    return null;
+  }
+
+  return document;
+}
+
+async function createUserDocument(userId, documentData, file) {
+  const document = await prisma.document.create({
+    data: {
+      userId,
+      type: documentData.type,
+      originalName: file.originalname,
+      storedName: file.filename,
+      mimeType: file.mimetype,
+      size: file.size,
+      path: file.path
+    }
+  });
+
+  return sanitizeDocument(document);
+}
+
+async function updateUserDocument(userId, documentId, documentData) {
+  const existingDocument = await prisma.document.findFirst({
+    where: {
+      id: documentId,
+      userId
+    }
+  });
+
+  if (!existingDocument) {
+    return null;
+  }
+
+  const document = await prisma.document.update({
+    where: {
+      id: documentId
+    },
+    data: {
+      type: documentData.type
+    }
+  });
+
+  return sanitizeDocument(document);
+}
+
+async function deleteUserDocument(userId, documentId) {
+  const existingDocument = await prisma.document.findFirst({
+    where: {
+      id: documentId,
+      userId
+    }
+  });
+
+  if (!existingDocument) {
+    return null;
+  }
+
+  const document = await prisma.document.delete({
+    where: {
+      id: documentId
+    }
+  });
+
+  await removeStoredFile(document.path);
+
+  return sanitizeDocument(document);
+}
+
+export {
+  createUserDocument,
+  deleteUserDocument,
+  getUserDocumentById,
+  getUserDocumentFile,
+  getUserDocuments,
+  updateUserDocument
+};
