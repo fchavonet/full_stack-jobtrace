@@ -9,6 +9,7 @@ import profileRoutes from "./routes/profile.routes.js";
 import contactRoutes from "./routes/contact.routes.js";
 import applicationRoutes from "./routes/application.routes.js";
 import tagRoutes from "./routes/tag.routes.js";
+import documentRoutes from "./routes/document.routes.js";
 
 const app = express();
 
@@ -21,6 +22,7 @@ app.use("/api/profile", profileRoutes);
 app.use("/api/contacts", contactRoutes);
 app.use("/api/applications", applicationRoutes);
 app.use("/api/tags", tagRoutes);
+app.use("/api/documents", documentRoutes);
 
 app.use(notFoundMiddleware);
 app.use(errorMiddleware);
