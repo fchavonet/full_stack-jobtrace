@@ -1,0 +1,132 @@
+import {
+  createUserApplication,
+  deleteUserApplication,
+  getUserApplicationById,
+  getUserApplications,
+  updateUserApplication
+} from "../services/application.service.js";
+
+async function getApplications(request, response, next) {
+  try {
+    const applications = await getUserApplications(request.user.id);
+
+    response.status(200).json({
+      success: true,
+      message: "Applications retrieved successfully.",
+      data: {
+        applications
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+async function getApplication(request, response, next) {
+  try {
+    const application = await getUserApplicationById(
+      request.user.id,
+      request.params.id
+    );
+
+    if (!application) {
+      return response.status(404).json({
+        success: false,
+        message: "Application not found.",
+        errors: []
+      });
+    }
+
+    response.status(200).json({
+      success: true,
+      message: "Application retrieved successfully.",
+      data: {
+        application
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+async function createApplication(request, response, next) {
+  try {
+    const application = await createUserApplication(
+      request.user.id,
+      request.body.applicationData
+    );
+
+    response.status(201).json({
+      success: true,
+      message: "Application created successfully.",
+      data: {
+        application
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+async function updateApplication(request, response, next) {
+  try {
+    const application = await updateUserApplication(
+      request.user.id,
+      request.params.id,
+      request.body.applicationData
+    );
+
+    if (!application) {
+      return response.status(404).json({
+        success: false,
+        message: "Application not found.",
+        errors: []
+      });
+    }
+
+    response.status(200).json({
+      success: true,
+      message: "Application updated successfully.",
+      data: {
+        application
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+async function deleteApplication(request, response, next) {
+  try {
+    const application = await deleteUserApplication(
+      request.user.id,
+      request.params.id
+    );
+
+    if (!application) {
+      return response.status(404).json({
+        success: false,
+        message: "Application not found.",
+        errors: []
+      });
+    }
+
+    response.status(200).json({
+      success: true,
+      message: "Application deleted successfully.",
+      data: {
+        application
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+export {
+  createApplication,
+  deleteApplication,
+  getApplication,
+  getApplications,
+  updateApplication
+};
