@@ -1,6 +1,6 @@
-# JobTrace - Backend: manual validation
+# JobTrace Back-end: manual validation
 
-This document tracks the manual validation of the JobTrace back-end API.
+This document tracks the manual validation of the JobTrace backend API.
 <br>
 The goal is to verify the main user flows before considering the backend stable.
 
@@ -8,10 +8,11 @@ The goal is to verify the main user flows before considering the backend stable.
 
 - Backend: `Node.js` / `Express`.
 - Database: `PostgreSQL`.
-- ORM: `Prisma`.
+- ORM: `Prisma 6`.
 - Authentication: `JWT`.
-- API documentation: `Swagger` / `OpenAPI`.
-- Upload system: `Multer` with local storage.
+- Password hashing: `bcrypt`.
+- Email sending: `SMTP` with `Nodemailer`.
+- Local orchestration: `Docker Compose`.
 
 To display the JSON response from a `curl` command in a readable format, it is recommended to use `jq`.
 
@@ -21,20 +22,75 @@ Install `jq` if it is not already available:
 apt install jq -y
 ```
 
-Then add ` | jq` at the end of any `curl` command that returns JSON.
-<br>
+Then add `| jq` at the end of any `curl` command that returns JSON:
+
+```bash
+curl -s http://localhost:4000/api/health | jq
+```
+
 This will format the JSON response and make it easier to read in the terminal.
+
+## Test user
+
+Main test account:
+
+* Email: `jobtrace.app@gmail.com`.
+* Password: set locally with `JOBTRACE_PASSWORD`.
+
+> The test password must be set locally before running the validation commands.
+> It must not be confused with the Gmail account password or the Gmail application password.
+> It must not be committed in the repository.
 
 ## Test variables
 
 During validation, the following shell variables may be used:
 
-- `EMAIL`: email of the main test account (must be a real email).
-- `PASSWORD`: current password of the main test account.
-- `NEW_PASSWORD`: temporary password used during password update validation.
-- `TOKEN`: JWT of the authenticated test user.
-- `EMAIL_VERIFICATION_TOKEN`: token received in the email verification link.
-- `PASSWORD_RESET_TOKEN`: token received in the password reset link.
+* `JOBTRACE_EMAIL`: email of the main test account.
+* `JOBTRACE_PASSWORD`: current password of the main test account.
+* `JOBTRACE_NEW_PASSWORD`: temporary password used during password update validation.
+* `TOKEN`: JWT of the authenticated test user.
+* `EMAIL_VERIFICATION_TOKEN`: token received in the email verification link.
+* `PASSWORD_RESET_TOKEN`: token received in the password reset link.
+* `DELETE_ACCOUNT_EMAIL`: email of the temporary account used for deletion validation.
+* `DELETE_ACCOUNT_PASSWORD`: password of the temporary account used for deletion validation.
+* `DELETE_ACCOUNT_TOKEN`: JWT of the temporary account used for deletion validation.
+
+Example:
+
+```bash
+JOBTRACE_EMAIL="jobtrace.app@gmail.com"
+JOBTRACE_PASSWORD="PASTE_A_LOCAL_TEST_PASSWORD_HERE"
+JOBTRACE_NEW_PASSWORD="PASTE_A_SECOND_LOCAL_TEST_PASSWORD_HERE"
+TOKEN="PASTE_THE_TOKEN_HERE"
+
+EMAIL_VERIFICATION_TOKEN="PASTE_THE_EMAIL_VERIFICATION_TOKEN_HERE"
+PASSWORD_RESET_TOKEN="PASTE_THE_PASSWORD_RESET_TOKEN_HERE"
+
+DELETE_ACCOUNT_EMAIL="jobtrace.app+delete@gmail.com"
+DELETE_ACCOUNT_PASSWORD="PASTE_A_TEMPORARY_TEST_PASSWORD_HERE"
+DELETE_ACCOUNT_TOKEN="PASTE_THE_DELETE_ACCOUNT_TOKEN_HERE"
+```
+
+## Prerequisites
+
+From the project root, PostgreSQL must be running.
+
+If Docker is managed from the host machine:
+
+```bash
+docker compose up -d database
+```
+
+From the backend directory, the API can be started with:
+
+```bash
+npm run dev
+```
+
+The API should start on port `4000`.
+
+The local `.env` file must contain a valid SMTP configuration. <br>
+The `.env` file must not be committed.
 
 ## 1. Health checks
 
@@ -62,7 +118,7 @@ curl -s http://localhost:4000/api/health | jq
 }
 ```
 
-Status:
+Status: ✅
 
 ### GET `/api/health/db`
 
@@ -88,7 +144,7 @@ curl -s http://localhost:4000/api/health/db | jq
 }
 ```
 
-Status:
+Status: ✅
 
 ## 2. Error handling
 
@@ -114,7 +170,7 @@ curl -s http://localhost:4000/api/unknown | jq
 }
 ```
 
-Status:
+Status: ✅
 
 ## 3. Prisma checks
 
@@ -142,7 +198,7 @@ Example:
 Database schema is up to date!
 ```
 
-Status:
+Status: ✅
 
 ### Prisma Client generation
 
@@ -161,10 +217,10 @@ npm run prisma:generate
 #### Expected result
 
 ```text
-Generated Prisma Client (v*.*.*)
+Generated Prisma Client
 ```
 
-Status:
+Status: ✅
 
 ## 4. Authentication
 
@@ -180,8 +236,8 @@ Verify that a new user can register and receive a real email verification link.
 curl -s -X POST http://localhost:4000/api/auth/register \
   -H "Content-Type: application/json" \
   -d "{
-    \"email\": \"$EMAIL\",
-    \"password\": \"$PASSWORD\"
+    \"email\": \"$JOBTRACE_EMAIL\",
+    \"password\": \"$JOBTRACE_PASSWORD\"
   }" | jq
 ```
 
@@ -193,23 +249,22 @@ curl -s -X POST http://localhost:4000/api/auth/register \
   "message": "User registered successfully. Please check your email to verify your account.",
   "data": {
     "user": {
-      "id": "*",
       "email": "jobtrace.app@gmail.com",
-      "firstName": null,
-      "lastName": null,
-      "avatarUrl": null,
-      "emailVerified": false,
-      "theme": "light",
-      "dailyGoal": 5,
-      "followUpDelayDays": 15,
-      "createdAt": "*",
-      "updatedAt": "*"
+      "emailVerified": false
     }
   }
 }
 ```
 
-Status:
+#### Manual checks
+
+* The response does not expose `passwordHash`.
+* The response does not expose `verificationToken`.
+* A real verification email is received.
+* The email contains a link based on `FRONTEND_URL`.
+* The email link contains a `token` query parameter.
+
+Status: ✅
 
 ### POST `/api/auth/login` before email verification
 
@@ -223,8 +278,8 @@ Verify that an unverified user cannot log in.
 curl -s -X POST http://localhost:4000/api/auth/login \
   -H "Content-Type: application/json" \
   -d "{
-    \"email\": \"$EMAIL\",
-    \"password\": \"$PASSWORD\"
+    \"email\": \"$JOBTRACE_EMAIL\",
+    \"password\": \"$JOBTRACE_PASSWORD\"
   }" | jq
 ```
 
@@ -238,7 +293,7 @@ curl -s -X POST http://localhost:4000/api/auth/login \
 }
 ```
 
-Status:
+Status: ✅
 
 ### GET `/api/auth/verify-email`
 
@@ -253,7 +308,7 @@ Copy the token from the email verification link.
 Example frontend link:
 
 ```text
-http://localhost:3000/verify-email?token=COPY_THE_EMAIL_VERIFICATION_TOKEN_HERE
+http://localhost:3000/verify-email?token=PASTE_THE_EMAIL_VERIFICATION_TOKEN_HERE
 ```
 
 Save the token:
@@ -276,23 +331,14 @@ curl -s "http://localhost:4000/api/auth/verify-email?token=$EMAIL_VERIFICATION_T
   "message": "Email verified successfully.",
   "data": {
     "user": {
-      "id": "*",
       "email": "jobtrace.app@gmail.com",
-      "firstName": null,
-      "lastName": null,
-      "avatarUrl": null,
-      "emailVerified": true,
-      "theme": "light",
-      "dailyGoal": 5,
-      "followUpDelayDays": 15,
-      "createdAt": "*",
-      "updatedAt": "*"
+      "emailVerified": true
     }
   }
 }
 ```
 
-Status:
+Status: ✅
 
 ### GET `/api/auth/verify-email` with invalid token
 
@@ -316,7 +362,7 @@ curl -s "http://localhost:4000/api/auth/verify-email?token=invalid-token" | jq
 }
 ```
 
-Status:
+Status: ✅
 
 ### POST `/api/auth/login`
 
@@ -330,35 +376,19 @@ Verify that a verified user can log in.
 curl -s -X POST http://localhost:4000/api/auth/login \
   -H "Content-Type: application/json" \
   -d "{
-    \"email\": \"$EMAIL\",
-    \"password\": \"$PASSWORD\"
+    \"email\": \"$JOBTRACE_EMAIL\",
+    \"password\": \"$JOBTRACE_PASSWORD\"
   }" | jq
 ```
 
 #### Expected result
 
-```json
-{
-  "success": true,
-  "message": "User logged in successfully.",
-  "data": {
-    "user": {
-      "id": "*",
-      "email": "jobtrace.app@gmail.com",
-      "firstName": null,
-      "lastName": null,
-      "avatarUrl": null,
-      "emailVerified": true,
-      "theme": "light",
-      "dailyGoal": 5,
-      "followUpDelayDays": 15,
-      "createdAt": "*",
-      "updatedAt": "*"
-    },
-    "token": "*"
-  }
-}
-```
+* `success` is `true`.
+* A JWT token is returned.
+* The user object is returned.
+* `passwordHash` is not exposed.
+* `emailVerifyToken` is not exposed.
+* `resetToken` is not exposed.
 
 #### Variable to save
 
@@ -366,7 +396,7 @@ curl -s -X POST http://localhost:4000/api/auth/login \
 TOKEN="PASTE_THE_TOKEN_HERE"
 ```
 
-Status:
+Status: ✅
 
 ### POST `/api/auth/login` with invalid credentials
 
@@ -380,7 +410,7 @@ Verify that invalid credentials are rejected with a neutral error message.
 curl -s -X POST http://localhost:4000/api/auth/login \
   -H "Content-Type: application/json" \
   -d "{
-    \"email\": \"$EMAIL\",
+    \"email\": \"$JOBTRACE_EMAIL\",
     \"password\": \"WrongPassword1\"
   }" | jq
 ```
@@ -395,7 +425,7 @@ curl -s -X POST http://localhost:4000/api/auth/login \
 }
 ```
 
-Status:
+Status: ✅
 
 ### GET `/api/auth/me`
 
@@ -422,27 +452,12 @@ curl -s http://localhost:4000/api/auth/me | jq
 
 Valid request:
 
-```json
-{
-  "success": true,
-  "message": "Current user retrieved successfully.",
-  "data": {
-    "user": {
-      "id": "*",
-      "email": "jobtrace.app@gmail.com",
-      "firstName": null,
-      "lastName": null,
-      "avatarUrl": null,
-      "emailVerified": true,
-      "theme": "light",
-      "dailyGoal": 5,
-      "followUpDelayDays": 15,
-      "createdAt": "*",
-      "updatedAt": "*"
-    }
-  }
-}
-```
+* `success` is `true`.
+* The authenticated user is returned.
+* The returned email is `jobtrace.app@gmail.com`.
+* `passwordHash` is not exposed.
+* `emailVerifyToken` is not exposed.
+* `resetToken` is not exposed.
 
 Invalid request:
 
@@ -454,7 +469,7 @@ Invalid request:
 }
 ```
 
-Status:
+Status: ✅
 
 ## 5. Profile
 
@@ -479,23 +494,13 @@ curl -s http://localhost:4000/api/profile \
   "message": "Profile retrieved successfully.",
   "data": {
     "profile": {
-      "id": "*",
-      "email": "jobtrace.app@gmail.com",
-      "firstName": null,
-      "lastName": null,
-      "avatarUrl": null,
-      "emailVerified": true,
-      "theme": "light",
-      "dailyGoal": 5,
-      "followUpDelayDays": 15,
-      "createdAt": "*",
-      "updatedAt": "*"
+      "email": "jobtrace.app@gmail.com"
     }
   }
 }
 ```
 
-Status:
+Status: ✅
 
 ### PATCH `/api/profile`
 
@@ -510,8 +515,8 @@ curl -s -X PATCH http://localhost:4000/api/profile \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $TOKEN" \
   -d '{
-    "firstName": "Fabien",
-    "lastName": "Chavonet",
+    "firstName": "JobTrace",
+    "lastName": "App",
     "avatarUrl": null
   }' | jq
 ```
@@ -524,23 +529,14 @@ curl -s -X PATCH http://localhost:4000/api/profile \
   "message": "Profile updated successfully.",
   "data": {
     "profile": {
-      "id": "*",
-      "email": "jobtrace.app@gmail.com",
-      "firstName": "Fabien",
-      "lastName": "Chavonet",
-      "avatarUrl": null,
-      "emailVerified": true,
-      "theme": "light",
-      "dailyGoal": 5,
-      "followUpDelayDays": 15,
-      "createdAt": "*",
-      "updatedAt": "*"
+      "firstName": "JobTrace",
+      "lastName": "App"
     }
   }
 }
 ```
 
-Status:
+Status: ✅
 
 ### PATCH `/api/profile` with invalid name
 
@@ -555,8 +551,8 @@ curl -s -X PATCH http://localhost:4000/api/profile \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $TOKEN" \
   -d '{
-    "firstName": "Fabien_du_29",
-    "lastName": "12345"
+    "firstName": "JobTrace123",
+    "lastName": "App"
   }' | jq
 ```
 
@@ -570,7 +566,7 @@ curl -s -X PATCH http://localhost:4000/api/profile \
 }
 ```
 
-Status:
+Status: ✅
 
 ## 6. User settings
 
@@ -601,23 +597,15 @@ curl -s -X PATCH http://localhost:4000/api/profile/settings \
   "message": "Settings updated successfully.",
   "data": {
     "profile": {
-      "id": "*",
-      "email": "jobtrace.app@gmail.com",
-      "firstName": "Fabien",
-      "lastName": "Chavonet",
-      "avatarUrl": null,
-      "emailVerified": true,
       "theme": "dark",
       "dailyGoal": 8,
-      "followUpDelayDays": 20,
-      "createdAt": "*",
-      "updatedAt": "*"
+      "followUpDelayDays": 20
     }
   }
 }
 ```
 
-Status:
+Status: ✅
 
 ### PATCH `/api/profile/settings` with invalid theme
 
@@ -646,7 +634,7 @@ curl -s -X PATCH http://localhost:4000/api/profile/settings \
 }
 ```
 
-Status:
+Status: ✅
 
 ## 7. Password update
 
@@ -663,8 +651,8 @@ curl -s -X PATCH http://localhost:4000/api/profile/password \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $TOKEN" \
   -d "{
-    \"currentPassword\": \"$PASSWORD\",
-    \"newPassword\": \"$NEW_PASSWORD\"
+    \"currentPassword\": \"$JOBTRACE_PASSWORD\",
+    \"newPassword\": \"$JOBTRACE_NEW_PASSWORD\"
   }" | jq
 ```
 
@@ -678,7 +666,7 @@ curl -s -X PATCH http://localhost:4000/api/profile/password \
 }
 ```
 
-Status:
+Status: ✅
 
 ### POST `/api/auth/login` with updated password
 
@@ -692,35 +680,15 @@ Verify that the updated password can be used to log in.
 curl -s -X POST http://localhost:4000/api/auth/login \
   -H "Content-Type: application/json" \
   -d "{
-    \"email\": \"$EMAIL\",
-    \"password\": \"$NEW_PASSWORD\"
+    \"email\": \"$JOBTRACE_EMAIL\",
+    \"password\": \"$JOBTRACE_NEW_PASSWORD\"
   }" | jq
 ```
 
 #### Expected result
 
-```json
-{
-  "success": true,
-  "message": "User logged in successfully.",
-  "data": {
-    "user": {
-      "id": "*",
-      "email": "jobtrace.app@gmail.com",
-      "firstName": "Fabien",
-      "lastName": "Chavonet",
-      "avatarUrl": null,
-      "emailVerified": true,
-      "theme": "dark",
-      "dailyGoal": 8,
-      "followUpDelayDays": 20,
-      "createdAt": "*",
-      "updatedAt": "*"
-    },
-    "token": "*"
-  }
-}
-```
+* `success` is `true`.
+* A new JWT token is returned.
 
 #### Variable to update
 
@@ -728,7 +696,7 @@ curl -s -X POST http://localhost:4000/api/auth/login \
 TOKEN="PASTE_THE_NEW_TOKEN_HERE"
 ```
 
-Status:
+Status: ✅
 
 ### PATCH `/api/profile/password` with invalid current password
 
@@ -744,7 +712,7 @@ curl -s -X PATCH http://localhost:4000/api/profile/password \
   -H "Authorization: Bearer $TOKEN" \
   -d '{
     "currentPassword": "WrongPassword1",
-    "newPassword": "AnotherWrongPassword1"
+    "newPassword": "AnotherPassword1"
   }' | jq
 ```
 
@@ -758,7 +726,7 @@ curl -s -X PATCH http://localhost:4000/api/profile/password \
 }
 ```
 
-Status:
+Status: ✅
 
 ## 8. Password reset
 
@@ -774,7 +742,7 @@ Verify that a password reset email can be requested.
 curl -s -X POST http://localhost:4000/api/auth/forgot-password \
   -H "Content-Type: application/json" \
   -d "{
-    \"email\": \"$EMAIL\"
+    \"email\": \"$JOBTRACE_EMAIL\"
   }" | jq
 ```
 
@@ -788,7 +756,14 @@ curl -s -X POST http://localhost:4000/api/auth/forgot-password \
 }
 ```
 
-Status:
+#### Manual checks
+
+* The response does not expose `resetToken`.
+* A real password reset email is received.
+* The email contains a link based on `FRONTEND_URL`.
+* The email link contains a `token` query parameter.
+
+Status: ✅
 
 ### POST `/api/auth/forgot-password` with unknown email
 
@@ -816,7 +791,7 @@ curl -s -X POST http://localhost:4000/api/auth/forgot-password \
 }
 ```
 
-Status:
+Status: ✅
 
 ### POST `/api/auth/reset-password`
 
@@ -831,7 +806,7 @@ Copy the token from the password reset email link.
 Example frontend link:
 
 ```text
-http://localhost:3000/reset-password?token=COPY_THE_PASSWORD_RESET_TOKEN_HERE
+http://localhost:3000/reset-password?token=PASTE_THE_PASSWORD_RESET_TOKEN_HERE
 ```
 
 Save the token:
@@ -840,12 +815,14 @@ Save the token:
 PASSWORD_RESET_TOKEN="PASTE_THE_PASSWORD_RESET_TOKEN_HERE"
 ```
 
+Then reset the password back to the main test password:
+
 ```bash
 curl -s -X POST http://localhost:4000/api/auth/reset-password \
   -H "Content-Type: application/json" \
   -d "{
     \"token\": \"$PASSWORD_RESET_TOKEN\",
-    \"password\": \"$PASSWORD\"
+    \"password\": \"$JOBTRACE_PASSWORD\"
   }" | jq
 ```
 
@@ -859,7 +836,7 @@ curl -s -X POST http://localhost:4000/api/auth/reset-password \
 }
 ```
 
-Status:
+Status: ✅
 
 ### POST `/api/auth/login` after password reset
 
@@ -873,35 +850,15 @@ Verify that the reset password works.
 curl -s -X POST http://localhost:4000/api/auth/login \
   -H "Content-Type: application/json" \
   -d "{
-    \"email\": \"$EMAIL\",
-    \"password\": \"$PASSWORD\"
+    \"email\": \"$JOBTRACE_EMAIL\",
+    \"password\": \"$JOBTRACE_PASSWORD\"
   }" | jq
 ```
 
 #### Expected result
 
-```json
-{
-  "success": true,
-  "message": "User logged in successfully.",
-  "data": {
-    "user": {
-      "id": "*",
-      "email": "jobtrace.app@gmail.com",
-      "firstName": "Fabien",
-      "lastName": "Chavonet",
-      "avatarUrl": null,
-      "emailVerified": true,
-      "theme": "dark",
-      "dailyGoal": 8,
-      "followUpDelayDays": 20,
-      "createdAt": "*",
-      "updatedAt": "*"
-    },
-    "token": "*"
-  }
-}
-```
+* `success` is `true`.
+* A new JWT token is returned.
 
 #### Variable to update
 
@@ -909,7 +866,7 @@ curl -s -X POST http://localhost:4000/api/auth/login \
 TOKEN="PASTE_THE_NEW_TOKEN_HERE"
 ```
 
-Status:
+Status: ✅
 
 ### POST `/api/auth/reset-password` with invalid token
 
@@ -938,7 +895,7 @@ curl -s -X POST http://localhost:4000/api/auth/reset-password \
 }
 ```
 
-Status:
+Status: ✅
 
 ## 9. User data export
 
@@ -957,34 +914,14 @@ curl -s http://localhost:4000/api/auth/export \
 
 #### Expected result
 
-```json
-{
-  "success": true,
-  "message": "User data exported successfully.",
-  "data": {
-    "exportedAt": "*",
-    "user": {
-      "id": "*",
-      "email": "jobtrace.app@gmail.com",
-      "firstName": "Fabien",
-      "lastName": "Chavonet",
-      "avatarUrl": null,
-      "emailVerified": true,
-      "theme": "dark",
-      "dailyGoal": 8,
-      "followUpDelayDays": 20,
-      "createdAt": "*",
-      "updatedAt": "*"
-    },
-    "applications": [],
-    "contacts": [],
-    "documents": [],
-    "tags": []
-  }
-}
-```
+* `success` is `true`.
+* The export contains the user profile.
+* The export contains empty arrays for features that are not implemented yet.
+* `passwordHash` is not exposed.
+* `emailVerifyToken` is not exposed.
+* `resetToken` is not exposed.
 
-Status:
+Status: ✅
 
 ## 10. Account deletion
 
@@ -994,30 +931,60 @@ Status:
 
 Verify that an authenticated user can delete their account.
 
+> Use a dedicated temporary account for this validation.
+
+#### Temporary account variables
+
+```bash
+DELETE_ACCOUNT_EMAIL="jobtrace.app+delete@gmail.com"
+DELETE_ACCOUNT_PASSWORD="PASTE_A_TEMPORARY_TEST_PASSWORD_HERE"
+```
+
 #### Command to run
 
-Log in:
+Register a temporary account:
+
+```bash
+curl -s -X POST http://localhost:4000/api/auth/register \
+  -H "Content-Type: application/json" \
+  -d "{
+    \"email\": \"$DELETE_ACCOUNT_EMAIL\",
+    \"password\": \"$DELETE_ACCOUNT_PASSWORD\"
+  }" | jq
+```
+
+Verify the temporary account with the token received by email:
+
+```bash
+EMAIL_VERIFICATION_TOKEN="PASTE_THE_DELETE_ACCOUNT_EMAIL_VERIFICATION_TOKEN_HERE"
+```
+
+```bash
+curl -s "http://localhost:4000/api/auth/verify-email?token=$EMAIL_VERIFICATION_TOKEN" | jq
+```
+
+Log in as the temporary account:
 
 ```bash
 curl -s -X POST http://localhost:4000/api/auth/login \
   -H "Content-Type: application/json" \
   -d "{
-    \"email\": \"$EMAIL\",
-    \"password\": \"$PASSWORD\"
+    \"email\": \"$DELETE_ACCOUNT_EMAIL\",
+    \"password\": \"$DELETE_ACCOUNT_PASSWORD\"
   }" | jq
 ```
 
-Save the token:
+Save the temporary token:
 
 ```bash
-TOKEN="PASTE_THE_TOKEN_HERE"
+DELETE_ACCOUNT_TOKEN="PASTE_THE_DELETE_ACCOUNT_TOKEN_HERE"
 ```
 
-Delete the account:
+Delete the temporary account:
 
 ```bash
 curl -s -X DELETE http://localhost:4000/api/auth/me \
-  -H "Authorization: Bearer $TOKEN" | jq
+  -H "Authorization: Bearer $DELETE_ACCOUNT_TOKEN" | jq
 ```
 
 Try to log in again:
@@ -1026,8 +993,8 @@ Try to log in again:
 curl -s -X POST http://localhost:4000/api/auth/login \
   -H "Content-Type: application/json" \
   -d "{
-    \"email\": \"$EMAIL\",
-    \"password\": \"$PASSWORD\"
+    \"email\": \"$DELETE_ACCOUNT_EMAIL\",
+    \"password\": \"$DELETE_ACCOUNT_PASSWORD\"
   }" | jq
 ```
 
@@ -1051,30 +1018,30 @@ curl -s -X POST http://localhost:4000/api/auth/login \
 }
 ```
 
-Status:
+Status: ✅
 
 ## 11. Current backend validation summary
 
 The following backend features have been manually validated:
 
-- API startup.
-- `GET /api/health`.
-- `GET /api/health/db`.
-- Unknown route handling.
-- PostgreSQL connection.
-- Prisma migration status.
-- Prisma Client generation.
-- User registration.
-- Real email verification.
-- Login blocked before email verification.
-- Login after email verification.
-- JWT authentication.
-- Protected route access.
-- Current user endpoint.
-- Profile retrieval and update.
-- User settings update.
-- Password update.
-- Real password reset email.
-- Password reset.
-- User data export without sensitive fields.
-- Account deletion.
+* API startup.
+* `GET /api/health`.
+* `GET /api/health/db`.
+* Unknown route handling.
+* PostgreSQL connection.
+* Prisma migration status.
+* Prisma Client generation.
+* User registration.
+* Real email verification.
+* Login blocked before email verification.
+* Login after email verification.
+* JWT authentication.
+* Protected route access.
+* Current user endpoint.
+* Profile retrieval and update.
+* User settings update.
+* Password update.
+* Real password reset email.
+* Password reset.
+* User data export without sensitive fields.
+* Account deletion.
