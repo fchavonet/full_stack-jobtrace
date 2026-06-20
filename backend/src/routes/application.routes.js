@@ -9,7 +9,8 @@ import {
   unlinkContactFromApplication,
   updateApplication,
   linkTagToApplication,
-  unlinkTagFromApplication
+  unlinkTagFromApplication,
+  getApplicationHistory
 } from "../controllers/application.controller.js";
 import authMiddleware from "../middlewares/auth.middleware.js";
 import {
@@ -33,5 +34,7 @@ router.delete("/:id/contacts/:contactId", authMiddleware, unlinkContactFromAppli
 
 router.post("/:id/tags", authMiddleware, validateApplicationTagPayload, linkTagToApplication);
 router.delete("/:id/tags/:tagId", authMiddleware, unlinkTagFromApplication);
+
+router.get("/:id/history", authMiddleware, getApplicationHistory);
 
 export default router;

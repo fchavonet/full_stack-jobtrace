@@ -2,6 +2,7 @@ import {
   createUserApplication,
   deleteUserApplication,
   getUserApplicationById,
+  getUserApplicationHistory,
   getUserApplications,
   linkContactToUserApplication,
   linkTagToUserApplication,
@@ -239,14 +240,42 @@ async function unlinkTagFromApplication(request, response, next) {
   }
 }
 
+async function getApplicationHistory(request, response, next) {
+  try {
+    const history = await getUserApplicationHistory(
+      request.user.id,
+      request.params.id
+    );
+
+    if (!history) {
+      return response.status(404).json({
+        success: false,
+        message: "Application not found.",
+        errors: []
+      });
+    }
+
+    response.status(200).json({
+      success: true,
+      message: "Application history retrieved successfully.",
+      data: {
+        history
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
 export {
   createApplication,
   deleteApplication,
   getApplication,
+  getApplicationHistory,
   getApplications,
   linkContactToApplication,
-  unlinkContactFromApplication,
-  updateApplication,
   linkTagToApplication,
-  unlinkTagFromApplication
+  unlinkContactFromApplication,
+  unlinkTagFromApplication,
+  updateApplication
 };
