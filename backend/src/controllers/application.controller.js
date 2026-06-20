@@ -5,8 +5,10 @@ import {
   getUserApplicationHistory,
   getUserApplications,
   linkContactToUserApplication,
+  linkDocumentToUserApplication,
   linkTagToUserApplication,
   unlinkContactFromUserApplication,
+  unlinkDocumentFromUserApplication,
   unlinkTagFromUserApplication,
   updateUserApplication
 } from "../services/application.service.js";
@@ -267,6 +269,62 @@ async function getApplicationHistory(request, response, next) {
   }
 }
 
+async function linkDocumentToApplication(request, response, next) {
+  try {
+    const application = await linkDocumentToUserApplication(
+      request.user.id,
+      request.params.id,
+      request.body.documentData
+    );
+
+    if (!application) {
+      return response.status(404).json({
+        success: false,
+        message: "Application or document not found.",
+        errors: []
+      });
+    }
+
+    response.status(200).json({
+      success: true,
+      message: "Document linked to application successfully.",
+      data: {
+        application
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+async function unlinkDocumentFromApplication(request, response, next) {
+  try {
+    const application = await unlinkDocumentFromUserApplication(
+      request.user.id,
+      request.params.id,
+      request.params.documentId
+    );
+
+    if (!application) {
+      return response.status(404).json({
+        success: false,
+        message: "Application document link not found.",
+        errors: []
+      });
+    }
+
+    response.status(200).json({
+      success: true,
+      message: "Document unlinked from application successfully.",
+      data: {
+        application
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
 export {
   createApplication,
   deleteApplication,
@@ -274,8 +332,10 @@ export {
   getApplicationHistory,
   getApplications,
   linkContactToApplication,
+  linkDocumentToApplication,
   linkTagToApplication,
   unlinkContactFromApplication,
+  unlinkDocumentFromApplication,
   unlinkTagFromApplication,
   updateApplication
 };

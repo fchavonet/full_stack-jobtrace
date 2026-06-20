@@ -10,14 +10,17 @@ import {
   updateApplication,
   linkTagToApplication,
   unlinkTagFromApplication,
-  getApplicationHistory
+  getApplicationHistory,
+  linkDocumentToApplication,
+  unlinkDocumentFromApplication
 } from "../controllers/application.controller.js";
 import authMiddleware from "../middlewares/auth.middleware.js";
 import {
   validateApplicationContactPayload,
   validateApplicationPayload,
   validateApplicationUpdatePayload,
-  validateApplicationTagPayload
+  validateApplicationTagPayload,
+  validateApplicationDocumentPayload
 } from "../validators/application.validator.js";
 
 const router = express.Router();
@@ -34,6 +37,9 @@ router.delete("/:id/contacts/:contactId", authMiddleware, unlinkContactFromAppli
 
 router.post("/:id/tags", authMiddleware, validateApplicationTagPayload, linkTagToApplication);
 router.delete("/:id/tags/:tagId", authMiddleware, unlinkTagFromApplication);
+
+router.post("/:id/documents", authMiddleware, validateApplicationDocumentPayload, linkDocumentToApplication);
+router.delete("/:id/documents/:documentId", authMiddleware, unlinkDocumentFromApplication);
 
 router.get("/:id/history", authMiddleware, getApplicationHistory);
 

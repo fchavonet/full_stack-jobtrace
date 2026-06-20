@@ -24,6 +24,18 @@ function sanitizeApplicationTag(applicationTag) {
   };
 }
 
+function sanitizeApplicationDocument(applicationDocument) {
+  return {
+    id: applicationDocument.document.id,
+    type: applicationDocument.document.type,
+    originalName: applicationDocument.document.originalName,
+    storedName: applicationDocument.document.storedName,
+    mimeType: applicationDocument.document.mimeType,
+    size: applicationDocument.document.size,
+    linkedAt: applicationDocument.createdAt
+  };
+}
+
 function sanitizeApplication(application) {
   const sanitizedApplication = {
     id: application.id,
@@ -48,6 +60,10 @@ function sanitizeApplication(application) {
 
   if (application.tags) {
     sanitizedApplication.tags = application.tags.map(sanitizeApplicationTag);
+  }
+
+  if (application.documents) {
+    sanitizedApplication.documents = application.documents.map(sanitizeApplicationDocument);
   }
 
   return sanitizedApplication;
@@ -85,6 +101,14 @@ function getApplicationInclude() {
     tags: {
       include: {
         tag: true
+      },
+      orderBy: {
+        createdAt: "desc"
+      }
+    },
+    documents: {
+      include: {
+        document: true
       },
       orderBy: {
         createdAt: "desc"
@@ -468,6 +492,119 @@ async function getUserApplicationHistory(userId, applicationId) {
   return history.map(sanitizeApplicationHistory);
 }
 
+async function linkDocumentToUserApplication(userId, applicationId, documentData) {
+  const existingApplication = await prisma.application.findFirst({
+    where: {
+      id: applicationId,
+      userId
+    }
+  });
+
+  if (!existingApplication) {
+    return null;
+  }
+
+  const existingDocument = await prisma.document.findFirst({
+    where: {
+      id: documentData.documentId,
+      userId
+    }
+  });
+
+  if (!existingDocument) {
+    return null;
+  }
+
+  const existingLink = await prisma.applicationDocument.findUnique({
+    where: {
+      applicationId_documentId: {
+        applicationId,
+        documentId: documentData.documentId
+      }
+    }
+  });
+
+  if (!existingLink) {
+    await prisma.applicationDocument.create({
+      data: {
+        applicationId,
+        documentId: documentData.documentId
+      }
+    });
+  }
+
+  await createApplicationHistory(applicationId, "document_linked", {
+    documentId: documentData.documentId
+  });
+
+  const application = await prisma.application.findFirst({
+    where: {
+      id: applicationId,
+      userId
+    },
+    include: getApplicationInclude()
+  });
+
+  return sanitizeApplication(application);
+}
+
+async function unlinkDocumentFromUserApplication(userId, applicationId, documentId) {
+  const existingApplication = await prisma.application.findFirst({
+    where: {
+      id: applicationId,
+      userId
+    }
+  });
+
+  if (!existingApplication) {
+    return null;
+  }
+
+  const existingDocument = await prisma.document.findFirst({
+    where: {
+      id: documentId,
+      userId
+    }
+  });
+
+  if (!existingDocument) {
+    return null;
+  }
+
+  const existingLink = await prisma.applicationDocument.findUnique({
+    where: {
+      applicationId_documentId: {
+        applicationId,
+        documentId
+      }
+    }
+  });
+
+  if (!existingLink) {
+    return null;
+  }
+
+  await prisma.applicationDocument.delete({
+    where: {
+      id: existingLink.id
+    }
+  });
+
+  await createApplicationHistory(applicationId, "document_unlinked", {
+    documentId
+  });
+
+  const application = await prisma.application.findFirst({
+    where: {
+      id: applicationId,
+      userId
+    },
+    include: getApplicationInclude()
+  });
+
+  return sanitizeApplication(application);
+}
+
 export {
   createUserApplication,
   deleteUserApplication,
@@ -475,8 +612,10 @@ export {
   getUserApplicationHistory,
   getUserApplications,
   linkContactToUserApplication,
+  linkDocumentToUserApplication,
   linkTagToUserApplication,
   unlinkContactFromUserApplication,
+  unlinkDocumentFromUserApplication,
   unlinkTagFromUserApplication,
   updateUserApplication
 };
