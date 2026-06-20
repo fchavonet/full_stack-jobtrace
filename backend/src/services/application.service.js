@@ -14,6 +14,16 @@ function sanitizeApplicationContact(applicationContact) {
   };
 }
 
+function sanitizeApplicationTag(applicationTag) {
+  return {
+    id: applicationTag.tag.id,
+    name: applicationTag.tag.name,
+    slug: applicationTag.tag.slug,
+    color: applicationTag.tag.color,
+    linkedAt: applicationTag.createdAt
+  };
+}
+
 function sanitizeApplication(application) {
   const sanitizedApplication = {
     id: application.id,
@@ -36,6 +46,10 @@ function sanitizeApplication(application) {
     sanitizedApplication.contacts = application.contacts.map(sanitizeApplicationContact);
   }
 
+  if (application.tags) {
+    sanitizedApplication.tags = application.tags.map(sanitizeApplicationTag);
+  }
+
   return sanitizedApplication;
 }
 
@@ -44,6 +58,14 @@ function getApplicationInclude() {
     contacts: {
       include: {
         contact: true
+      },
+      orderBy: {
+        createdAt: "desc"
+      }
+    },
+    tags: {
+      include: {
+        tag: true
       },
       orderBy: {
         createdAt: "desc"
@@ -264,6 +286,111 @@ async function unlinkContactFromUserApplication(userId, applicationId, contactId
   return sanitizeApplication(application);
 }
 
+async function linkTagToUserApplication(userId, applicationId, tagData) {
+  const existingApplication = await prisma.application.findFirst({
+    where: {
+      id: applicationId,
+      userId
+    }
+  });
+
+  if (!existingApplication) {
+    return null;
+  }
+
+  const existingTag = await prisma.tag.findFirst({
+    where: {
+      id: tagData.tagId,
+      userId
+    }
+  });
+
+  if (!existingTag) {
+    return null;
+  }
+
+  const existingLink = await prisma.applicationTag.findUnique({
+    where: {
+      applicationId_tagId: {
+        applicationId,
+        tagId: tagData.tagId
+      }
+    }
+  });
+
+  if (!existingLink) {
+    await prisma.applicationTag.create({
+      data: {
+        applicationId,
+        tagId: tagData.tagId
+      }
+    });
+  }
+
+  const application = await prisma.application.findFirst({
+    where: {
+      id: applicationId,
+      userId
+    },
+    include: getApplicationInclude()
+  });
+
+  return sanitizeApplication(application);
+}
+
+async function unlinkTagFromUserApplication(userId, applicationId, tagId) {
+  const existingApplication = await prisma.application.findFirst({
+    where: {
+      id: applicationId,
+      userId
+    }
+  });
+
+  if (!existingApplication) {
+    return null;
+  }
+
+  const existingTag = await prisma.tag.findFirst({
+    where: {
+      id: tagId,
+      userId
+    }
+  });
+
+  if (!existingTag) {
+    return null;
+  }
+
+  const existingLink = await prisma.applicationTag.findUnique({
+    where: {
+      applicationId_tagId: {
+        applicationId,
+        tagId
+      }
+    }
+  });
+
+  if (!existingLink) {
+    return null;
+  }
+
+  await prisma.applicationTag.delete({
+    where: {
+      id: existingLink.id
+    }
+  });
+
+  const application = await prisma.application.findFirst({
+    where: {
+      id: applicationId,
+      userId
+    },
+    include: getApplicationInclude()
+  });
+
+  return sanitizeApplication(application);
+}
+
 export {
   createUserApplication,
   deleteUserApplication,
@@ -271,5 +398,7 @@ export {
   getUserApplications,
   linkContactToUserApplication,
   unlinkContactFromUserApplication,
-  updateUserApplication
+  updateUserApplication,
+  linkTagToUserApplication,
+  unlinkTagFromUserApplication
 };

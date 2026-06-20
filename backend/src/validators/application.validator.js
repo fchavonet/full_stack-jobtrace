@@ -308,8 +308,33 @@ function validateApplicationContactPayload(request, response, next) {
   next();
 }
 
+function validateApplicationTagPayload(request, response, next) {
+  const errors = [];
+
+  const tagId = sanitizeOptionalString(request.body.tagId);
+
+  if (!tagId) {
+    errors.push("Tag id is required.");
+  }
+
+  if (errors.length > 0) {
+    return response.status(400).json({
+      success: false,
+      message: "Invalid application tag data.",
+      errors
+    });
+  }
+
+  request.body.tagData = {
+    tagId
+  };
+
+  next();
+}
+
 export {
   validateApplicationContactPayload,
   validateApplicationPayload,
+  validateApplicationTagPayload,
   validateApplicationUpdatePayload
 };

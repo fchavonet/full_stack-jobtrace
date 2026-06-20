@@ -4,7 +4,9 @@ import {
   getUserApplicationById,
   getUserApplications,
   linkContactToUserApplication,
+  linkTagToUserApplication,
   unlinkContactFromUserApplication,
+  unlinkTagFromUserApplication,
   updateUserApplication
 } from "../services/application.service.js";
 
@@ -181,6 +183,62 @@ async function unlinkContactFromApplication(request, response, next) {
   }
 }
 
+async function linkTagToApplication(request, response, next) {
+  try {
+    const application = await linkTagToUserApplication(
+      request.user.id,
+      request.params.id,
+      request.body.tagData
+    );
+
+    if (!application) {
+      return response.status(404).json({
+        success: false,
+        message: "Application or tag not found.",
+        errors: []
+      });
+    }
+
+    response.status(200).json({
+      success: true,
+      message: "Tag linked to application successfully.",
+      data: {
+        application
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+async function unlinkTagFromApplication(request, response, next) {
+  try {
+    const application = await unlinkTagFromUserApplication(
+      request.user.id,
+      request.params.id,
+      request.params.tagId
+    );
+
+    if (!application) {
+      return response.status(404).json({
+        success: false,
+        message: "Application tag link not found.",
+        errors: []
+      });
+    }
+
+    response.status(200).json({
+      success: true,
+      message: "Tag unlinked from application successfully.",
+      data: {
+        application
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
 export {
   createApplication,
   deleteApplication,
@@ -188,5 +246,7 @@ export {
   getApplications,
   linkContactToApplication,
   unlinkContactFromApplication,
-  updateApplication
+  updateApplication,
+  linkTagToApplication,
+  unlinkTagFromApplication
 };

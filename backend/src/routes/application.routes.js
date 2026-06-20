@@ -7,13 +7,16 @@ import {
   getApplications,
   linkContactToApplication,
   unlinkContactFromApplication,
-  updateApplication
+  updateApplication,
+  linkTagToApplication,
+  unlinkTagFromApplication
 } from "../controllers/application.controller.js";
 import authMiddleware from "../middlewares/auth.middleware.js";
 import {
   validateApplicationContactPayload,
   validateApplicationPayload,
-  validateApplicationUpdatePayload
+  validateApplicationUpdatePayload,
+  validateApplicationTagPayload
 } from "../validators/application.validator.js";
 
 const router = express.Router();
@@ -27,5 +30,8 @@ router.delete("/:id", authMiddleware, deleteApplication);
 
 router.post("/:id/contacts", authMiddleware, validateApplicationContactPayload, linkContactToApplication);
 router.delete("/:id/contacts/:contactId", authMiddleware, unlinkContactFromApplication);
+
+router.post("/:id/tags", authMiddleware, validateApplicationTagPayload, linkTagToApplication);
+router.delete("/:id/tags/:tagId", authMiddleware, unlinkTagFromApplication);
 
 export default router;
