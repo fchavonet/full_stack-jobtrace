@@ -113,7 +113,85 @@ async function getUserAchievements(userId) {
   });
 }
 
+async function unlockAchievement(userId, slug) {
+  await ensureDefaultAchievements();
+
+  const achievement = await prisma.achievement.findUnique({
+    where: {
+      slug
+    }
+  });
+
+  if (!achievement) {
+    return null;
+  }
+
+  const userAchievement = await prisma.userAchievement.upsert({
+    where: {
+      userId_achievementId: {
+        userId,
+        achievementId: achievement.id
+      }
+    },
+    update: {},
+    create: {
+      userId,
+      achievementId: achievement.id
+    },
+    include: {
+      achievement: true
+    }
+  });
+
+  return userAchievement;
+}
+
+async function unlockFirstApplicationAchievement(userId) {
+  return unlockAchievement(userId, "first-application");
+}
+
+async function unlockFirstContactAchievement(userId) {
+  return unlockAchievement(userId, "first-contact");
+}
+
+async function unlockFirstDocumentAchievement(userId) {
+  return unlockAchievement(userId, "first-document");
+}
+
+async function unlockFirstTagAchievement(userId) {
+  return unlockAchievement(userId, "first-tag");
+}
+
+async function unlockApplicationOrganizedAchievement(userId) {
+  return unlockAchievement(userId, "application-organized");
+}
+
+async function unlockFollowUpPlannedAchievement(userId) {
+  return unlockAchievement(userId, "follow-up-planned");
+}
+
+async function unlockFiveApplicationsAchievement(userId) {
+  const applicationCount = await prisma.application.count({
+    where: {
+      userId
+    }
+  });
+
+  if (applicationCount < 5) {
+    return null;
+  }
+
+  return unlockAchievement(userId, "five-applications");
+}
+
 export {
   defaultAchievements,
-  getUserAchievements
+  getUserAchievements,
+  unlockApplicationOrganizedAchievement,
+  unlockFirstApplicationAchievement,
+  unlockFirstContactAchievement,
+  unlockFirstDocumentAchievement,
+  unlockFirstTagAchievement,
+  unlockFiveApplicationsAchievement,
+  unlockFollowUpPlannedAchievement
 };

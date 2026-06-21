@@ -1,5 +1,12 @@
 import prisma from "../config/prisma.js";
 
+import {
+  unlockApplicationOrganizedAchievement,
+  unlockFirstApplicationAchievement,
+  unlockFiveApplicationsAchievement,
+  unlockFollowUpPlannedAchievement
+} from "./achievement.service.js";
+
 function sanitizeApplicationContact(applicationContact) {
   return {
     id: applicationContact.contact.id,
@@ -172,6 +179,13 @@ async function createUserApplication(userId, applicationData) {
     status: application.status
   });
 
+  await unlockFirstApplicationAchievement(userId);
+  await unlockFiveApplicationsAchievement(userId);
+
+  if (applicationData.followUpAt) {
+    await unlockFollowUpPlannedAchievement(userId);
+  }
+
   return sanitizeApplication(application);
 }
 
@@ -287,6 +301,8 @@ async function linkContactToUserApplication(userId, applicationId, contactData) 
     role: contactData.role
   });
 
+  await unlockApplicationOrganizedAchievement(userId);
+
   const application = await prisma.application.findFirst({
     where: {
       id: applicationId,
@@ -399,6 +415,8 @@ async function linkTagToUserApplication(userId, applicationId, tagData) {
   await createApplicationHistory(applicationId, "tag_linked", {
     tagId: tagData.tagId
   });
+
+  await unlockApplicationOrganizedAchievement(userId);
 
   const application = await prisma.application.findFirst({
     where: {
@@ -536,6 +554,8 @@ async function linkDocumentToUserApplication(userId, applicationId, documentData
   await createApplicationHistory(applicationId, "document_linked", {
     documentId: documentData.documentId
   });
+
+  await unlockApplicationOrganizedAchievement(userId);
 
   const application = await prisma.application.findFirst({
     where: {

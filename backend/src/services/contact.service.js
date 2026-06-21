@@ -1,4 +1,5 @@
 import prisma from "../config/prisma.js";
+import { unlockFirstContactAchievement } from "./achievement.service.js";
 
 function sanitizeContact(contact) {
   return {
@@ -54,6 +55,8 @@ async function createUserContact(userId, payload) {
       notes: payload.notes
     }
   });
+
+  await unlockFirstContactAchievement(userId);
 
   return sanitizeContact(contact);
 }

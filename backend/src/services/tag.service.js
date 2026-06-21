@@ -1,5 +1,7 @@
 import prisma from "../config/prisma.js";
 
+import { unlockFirstTagAchievement } from "./achievement.service.js";
+
 function sanitizeTag(tag) {
   return {
     id: tag.id,
@@ -77,6 +79,8 @@ async function createUserTag(userId, tagData) {
       color: tagData.color
     }
   });
+
+  await unlockFirstTagAchievement(userId);
 
   return {
     conflict: false,
