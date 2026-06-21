@@ -6,7 +6,9 @@ import {
   updateProfile,
   updateSettings
 } from "../controllers/profile.controller.js";
+
 import authMiddleware from "../middlewares/auth.middleware.js";
+
 import {
   validatePasswordUpdatePayload,
   validateProfilePayload,

@@ -15,6 +15,8 @@ import {
   updateApplication
 } from "../controllers/application.controller.js";
 
+import authMiddleware from "../middlewares/auth.middleware.js";
+
 import {
   validateApplicationContactPayload,
   validateApplicationDocumentPayload,
@@ -22,8 +24,6 @@ import {
   validateApplicationTagPayload,
   validateApplicationUpdatePayload
 } from "../validators/application.validator.js";
-
-import authMiddleware from "../middlewares/auth.middleware.js";
 
 const router = express.Router();
 
