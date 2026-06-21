@@ -1,19 +1,22 @@
 # JobTrace - Backend: manual validation
 
-This document tracks the manual validation of the JobTrace back-end API.
+This document tracks the manual validation of the JobTrace backend API.
 <br>
 The goal is to verify the main user flows before considering the backend stable.
+
+The validation is designed to be executed from top to bottom on a fresh database.
 
 ## Environment
 
 - Backend: `Node.js` / `Express`.
 - Database: `PostgreSQL`.
 - ORM: `Prisma`.
-- Authentication: `JWT`.
 - API documentation: `Swagger` / `OpenAPI`.
+- Authentication: `JWT`.
+- Email system: `Nodemailer` with `SMTP`.
 - Upload system: `Multer` with local storage.
 
-To display the JSON response from a `curl` command in a readable format, it is recommended to use `jq`.
+To display JSON responses from `curl` commands in a readable format, it is recommended to use `jq`.
 
 Install `jq` if it is not already available:
 
@@ -31,16 +34,154 @@ In expected JSON responses, dynamic values are replaced by `*`.
 
 ## Test variables
 
-During validation, the following shell variables may be used:
+During validation, the following shell variables may be used.
 
-- `EMAIL`: email of the main test account (must be a real email).
+Set them manually before running the tests:
+
+- `EMAIL`: email of the main test account.
 - `PASSWORD`: current password of the main test account.
 - `NEW_PASSWORD`: temporary password used during password update validation.
-- `TOKEN`: JWT of the authenticated test user.
+
+The email address must be real and accessible because email verification and password reset links are sent by email.
+<br>
+Passwords must respect the backend password rules.
+
+The following variables will be filled manually during the validation:
+
 - `EMAIL_VERIFICATION_TOKEN`: token received in the email verification link.
+- `TOKEN`: JWT of the authenticated test user.
 - `PASSWORD_RESET_TOKEN`: token received in the password reset link.
 
-## 1. Health checks
+<br>
+
+- `APPLICATION_ID`: id of the application created during validation.
+- `CONTACT_ID`: id of the contact created during validation.
+- `TAG_ID`: id of the tag created during validation.
+- `DOCUMENT_ID`: id of the document uploaded during validation.
+
+IDs and tokens must be copied manually from the real API responses.
+
+## 1. Project startup
+
+### Install backend dependencies
+
+#### Goal
+
+Install backend dependencies before running local backend and Prisma commands.
+
+#### Command to run
+
+From the backend directory:
+
+```bash
+npm install
+```
+
+#### Expected result
+
+The backend dependencies should be installed successfully.
+
+Status:
+
+### Start the Docker services
+
+#### Goal
+
+Build and start the backend and database services.
+
+#### Command to run
+
+From the project root:
+
+```bash
+docker compose up --build
+```
+
+#### Expected result
+
+The backend and database services should build and start successfully.
+
+Status:
+
+### Generate Prisma Client
+
+#### Goal
+
+Generate Prisma Client from the current Prisma schema.
+
+#### Command to run
+
+From the backend directory:
+
+```bash
+npm run prisma:generate
+```
+
+#### Expected result
+
+Prisma Client should be generated successfully.
+
+Example:
+
+```text
+Generated Prisma Client (v*.*.*)
+```
+
+Status:
+
+### Apply Prisma migrations
+
+#### Goal
+
+Apply the existing Prisma migrations on the PostgreSQL database.
+
+#### Command to run
+
+From the backend directory, in the Ubuntu / VS Code terminal:
+
+```bash
+npm run prisma:migrate
+```
+
+#### Expected result
+
+The database should be synchronized with the Prisma schema.
+
+Example:
+
+```text
+Your database is now in sync with your schema.
+```
+
+Status:
+
+### Check Prisma migration status
+
+#### Goal
+
+Verify that the database schema is synchronized with the Prisma migration history.
+
+#### Command to run
+
+From the backend directory, in the Ubuntu / VS Code terminal:
+
+```bash
+npm run prisma:status
+```
+
+#### Expected result
+
+The database schema should be up to date with the local migrations.
+
+Example:
+
+```text
+Database schema is up to date!
+```
+
+Status:
+
+## 2. Health checks
 
 ### GET `/api/health`
 
@@ -94,7 +235,7 @@ curl -s http://localhost:4000/api/health/db | jq
 
 Status:
 
-## 2. Error handling
+## 3. Error handling
 
 ### Unknown route
 
@@ -116,82 +257,6 @@ curl -s http://localhost:4000/api/unknown | jq
   "message": "Route not found.",
   "errors": []
 }
-```
-
-Status:
-
-## 3. Prisma checks
-
-### Apply migrations if the database is new
-
-#### Goal
-
-Apply the existing Prisma migrations when the PostgreSQL database is new, empty, or has just been reset.
-
-#### Command to run
-
-From the backend directory:
-
-```bash
-npm run prisma:migrate
-```
-
-#### Expected result
-
-The existing migrations should be applied successfully.
-
-Example:
-
-```text
-Your database is now in sync with your schema.
-```
-
-Status:
-
-### Prisma Client generation
-
-#### Goal
-
-Verify that Prisma Client can be generated successfully from the current schema.
-
-#### Command to run
-
-From the backend directory:
-
-```bash
-npm run prisma:generate
-```
-
-#### Expected result
-
-```text
-Generated Prisma Client (v*.*.*)
-```
-
-Status:
-
-### Migration status
-
-#### Goal
-
-Verify that the database schema is synchronized with the Prisma migration history.
-
-#### Command to run
-
-From the backend directory:
-
-```bash
-npm run prisma:status
-```
-
-#### Expected result
-
-The database schema should be up to date with the local migrations.
-
-Example:
-
-```text
-Database schema is up to date!
 ```
 
 Status:
@@ -224,7 +289,7 @@ curl -s -X POST http://localhost:4000/api/auth/register \
   "data": {
     "user": {
       "id": "*",
-      "email": "jobtrace.app@gmail.com",
+      "email": "*",
       "firstName": null,
       "lastName": null,
       "avatarUrl": null,
@@ -286,7 +351,7 @@ Example frontend link:
 http://localhost:3000/verify-email?token=COPY_THE_EMAIL_VERIFICATION_TOKEN_HERE
 ```
 
-Save the token:
+Save the token manually:
 
 ```bash
 EMAIL_VERIFICATION_TOKEN="PASTE_THE_EMAIL_VERIFICATION_TOKEN_HERE"
@@ -307,7 +372,7 @@ curl -s "http://localhost:4000/api/auth/verify-email?token=$EMAIL_VERIFICATION_T
   "data": {
     "user": {
       "id": "*",
-      "email": "jobtrace.app@gmail.com",
+      "email": "*",
       "firstName": null,
       "lastName": null,
       "avatarUrl": null,
@@ -374,7 +439,7 @@ curl -s -X POST http://localhost:4000/api/auth/login \
   "data": {
     "user": {
       "id": "*",
-      "email": "jobtrace.app@gmail.com",
+      "email": "*",
       "firstName": null,
       "lastName": null,
       "avatarUrl": null,
@@ -391,6 +456,8 @@ curl -s -X POST http://localhost:4000/api/auth/login \
 ```
 
 #### Variable to save
+
+Copy the token manually from the response:
 
 ```bash
 TOKEN="PASTE_THE_TOKEN_HERE"
@@ -435,17 +502,9 @@ Verify that the authenticated user can retrieve their account data.
 
 #### Command to run
 
-Valid request:
-
 ```bash
 curl -s http://localhost:4000/api/auth/me \
   -H "Authorization: Bearer $TOKEN" | jq
-```
-
-Invalid request:
-
-```bash
-curl -s http://localhost:4000/api/auth/me | jq
 ```
 
 #### Expected result
@@ -459,7 +518,7 @@ Valid request:
   "data": {
     "user": {
       "id": "*",
-      "email": "jobtrace.app@gmail.com",
+      "email": "*",
       "firstName": null,
       "lastName": null,
       "avatarUrl": null,
@@ -471,16 +530,6 @@ Valid request:
       "updatedAt": "*"
     }
   }
-}
-```
-
-Invalid request:
-
-```json
-{
-  "success": false,
-  "message": "Authentication token is required.",
-  "errors": []
 }
 ```
 
@@ -510,7 +559,7 @@ curl -s http://localhost:4000/api/profile \
   "data": {
     "profile": {
       "id": "*",
-      "email": "jobtrace.app@gmail.com",
+      "email": "*",
       "firstName": null,
       "lastName": null,
       "avatarUrl": null,
@@ -540,9 +589,8 @@ curl -s -X PATCH http://localhost:4000/api/profile \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $TOKEN" \
   -d '{
-    "firstName": "Fabien",
-    "lastName": "Chavonet",
-    "avatarUrl": null
+    "firstName": "Dick",
+    "lastName": "Grayson"
   }' | jq
 ```
 
@@ -555,9 +603,9 @@ curl -s -X PATCH http://localhost:4000/api/profile \
   "data": {
     "profile": {
       "id": "*",
-      "email": "jobtrace.app@gmail.com",
-      "firstName": "Fabien",
-      "lastName": "Chavonet",
+      "email": "*",
+      "firstName": "Dick",
+      "lastName": "Grayson",
       "avatarUrl": null,
       "emailVerified": true,
       "theme": "light",
@@ -585,8 +633,8 @@ curl -s -X PATCH http://localhost:4000/api/profile \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $TOKEN" \
   -d '{
-    "firstName": "Fabien_du_29",
-    "lastName": "12345"
+    "firstName": "J@son",
+    "lastName": "Todd"
   }' | jq
 ```
 
@@ -618,8 +666,8 @@ curl -s -X PATCH http://localhost:4000/api/profile/settings \
   -H "Authorization: Bearer $TOKEN" \
   -d '{
     "theme": "dark",
-    "dailyGoal": 8,
-    "followUpDelayDays": 20
+    "dailyGoal": 10,
+    "followUpDelayDays": 30
   }' | jq
 ```
 
@@ -632,14 +680,14 @@ curl -s -X PATCH http://localhost:4000/api/profile/settings \
   "data": {
     "profile": {
       "id": "*",
-      "email": "jobtrace.app@gmail.com",
-      "firstName": "Fabien",
-      "lastName": "Chavonet",
+      "email": "*",
+      "firstName": "Dick",
+      "lastName": "Grayson",
       "avatarUrl": null,
       "emailVerified": true,
       "theme": "dark",
-      "dailyGoal": 8,
-      "followUpDelayDays": 20,
+      "dailyGoal": 10,
+      "followUpDelayDays": 30,
       "createdAt": "*",
       "updatedAt": "*"
     }
@@ -662,7 +710,7 @@ curl -s -X PATCH http://localhost:4000/api/profile/settings \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $TOKEN" \
   -d '{
-    "theme": "invalid"
+    "theme": "red"
   }' | jq
 ```
 
@@ -736,23 +784,25 @@ curl -s -X POST http://localhost:4000/api/auth/login \
   "data": {
     "user": {
       "id": "*",
-      "email": "jobtrace.app@gmail.com",
-      "firstName": "Fabien",
-      "lastName": "Chavonet",
+      "email": "*",
+      "firstName": "Dick",
+      "lastName": "Grayson",
       "avatarUrl": null,
       "emailVerified": true,
       "theme": "dark",
-      "dailyGoal": 8,
-      "followUpDelayDays": 20,
+      "dailyGoal": 10,
+      "followUpDelayDays": 30,
       "createdAt": "*",
       "updatedAt": "*"
     },
-    "token": "*"
+    "token": ""
   }
 }
 ```
 
 #### Variable to update
+
+Copy the new token manually from the response:
 
 ```bash
 TOKEN="PASTE_THE_NEW_TOKEN_HERE"
@@ -773,8 +823,8 @@ curl -s -X PATCH http://localhost:4000/api/profile/password \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $TOKEN" \
   -d '{
-    "currentPassword": "WrongPassword1",
-    "newPassword": "AnotherWrongPassword1"
+    "currentPassword": "WrongPassword42",
+    "newPassword": "AnotherWrongPassword42"
   }' | jq
 ```
 
@@ -864,11 +914,13 @@ Example frontend link:
 http://localhost:3000/reset-password?token=COPY_THE_PASSWORD_RESET_TOKEN_HERE
 ```
 
-Save the token:
+Save the token manually:
 
 ```bash
 PASSWORD_RESET_TOKEN="PASTE_THE_PASSWORD_RESET_TOKEN_HERE"
 ```
+
+Then reset the password back to the main test password:
 
 ```bash
 curl -s -X POST http://localhost:4000/api/auth/reset-password \
@@ -916,15 +968,15 @@ curl -s -X POST http://localhost:4000/api/auth/login \
   "message": "User logged in successfully.",
   "data": {
     "user": {
-      "id": "*",
-      "email": "jobtrace.app@gmail.com",
-      "firstName": "Fabien",
-      "lastName": "Chavonet",
+      "id": "8*",
+      "email": "*",
+      "firstName": "Dick",
+      "lastName": "Grayson",
       "avatarUrl": null,
       "emailVerified": true,
       "theme": "dark",
-      "dailyGoal": 8,
-      "followUpDelayDays": 20,
+      "dailyGoal": 10,
+      "followUpDelayDays": 30,
       "createdAt": "*",
       "updatedAt": "*"
     },
@@ -934,6 +986,8 @@ curl -s -X POST http://localhost:4000/api/auth/login \
 ```
 
 #### Variable to update
+
+Copy the new token manually from the response:
 
 ```bash
 TOKEN="PASTE_THE_NEW_TOKEN_HERE"
@@ -954,7 +1008,7 @@ curl -s -X POST http://localhost:4000/api/auth/reset-password \
   -H "Content-Type: application/json" \
   -d '{
     "token": "invalid-token",
-    "password": "AnotherPassword1"
+    "password": "AnotherPassword42"
   }' | jq
 ```
 
@@ -981,29 +1035,61 @@ Verify that an authenticated user can create an application.
 #### Command to run
 
 ```bash
-APPLICATION_ID=$(curl -s -X POST http://localhost:4000/api/applications \
+curl -s -X POST http://localhost:4000/api/applications \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $TOKEN" \
   -d '{
     "company": "Wayne Enterprises",
     "position": "Robin",
-    "status": "Envoyée",
-    "contractType": "CDI",
+    "status": "sent",
+    "contractType": "permanent",
     "location": "Gotham City",
     "salary": 50000,
     "link": "https://careers.wayne-enterprises.example/jobs/robin",
     "notes": "Application used for manual validation.",
-    "sentAt": "2026-06-20",
-    "followUpAt": "2026-07-05",
+    "sentAt": "2026-06-21",
+    "followUpAt": "2026-07-06",
     "interviewAt": null
-  }' | jq -r ".data.application.id")
-
-echo "$APPLICATION_ID"
+  }' | jq
 ```
 
 #### Expected result
 
-An application is created and an application id is returned.
+```json
+{
+  "success": true,
+  "message": "Application updated successfully.",
+  "data": {
+    "application": {
+      "id": "*",
+      "company": "Wayne Enterprises",
+      "position": "Robin",
+      "status": "interview",
+      "contractType": "permanent",
+      "location": "Gotham City",
+      "salary": 50000,
+      "link": "https://careers.wayne-enterprises.example/jobs/robin",
+      "notes": "Application used for manual validation.",
+      "sentAt": "2026-06-21T00:00:00.000Z",
+      "followUpAt": "2026-07-06T00:00:00.000Z",
+      "interviewAt": null,
+      "createdAt": "*",
+      "updatedAt": "*",
+      "tags": [],
+      "contacts": [],
+      "documents": []
+    }
+  }
+}
+```
+
+#### Variable to save
+
+Copy the application id manually from the response:
+
+```bash
+APPLICATION_ID="PASTE_THE_APPLICATION_ID_HERE"
+```
 
 Status:
 
@@ -1032,19 +1118,19 @@ curl -s http://localhost:4000/api/applications \
         "id": "*",
         "company": "Wayne Enterprises",
         "position": "Robin",
-        "status": "Envoyée",
-        "contractType": "CDI",
+        "status": "interview",
+        "contractType": "permanent",
         "location": "Gotham City",
         "salary": 50000,
         "link": "https://careers.wayne-enterprises.example/jobs/robin",
         "notes": "Application used for manual validation.",
-        "sentAt": "2026-06-20T00:00:00.000Z",
-        "followUpAt": "2026-07-05T00:00:00.000Z",
-        "interviewAt": null,
+        "sentAt": "2026-06-21T00:00:00.000Z",
+        "followUpAt": "2026-07-06T00:00:00.000Z",
+        "interviewAt": "2026-07-12T00:00:00.000Z",
         "createdAt": "*",
         "updatedAt": "*",
-        "contacts": [],
         "tags": [],
+        "contacts": [],
         "documents": []
       }
     ]
@@ -1078,19 +1164,20 @@ curl -s http://localhost:4000/api/applications/$APPLICATION_ID \
       "id": "*",
       "company": "Wayne Enterprises",
       "position": "Robin",
-      "status": "Envoyée",
-      "contractType": "CDI",
+      "status": "interview",
+      "contractType": "permanent",
       "location": "Gotham City",
       "salary": 50000,
       "link": "https://careers.wayne-enterprises.example/jobs/robin",
       "notes": "Application used for manual validation.",
-      "sentAt": "2026-06-20T00:00:00.000Z",
-      "followUpAt": "2026-07-05T00:00:00.000Z",
-      "interviewAt": null,
+      "sentAt": "2026-06-21T00:00:00.000Z",
+      "followUpAt": "2026-07-06T00:00:00.000Z",
+      "interviewAt": "2026-07-12T00:00:00.000Z",
       "createdAt": "*",
       "updatedAt": "*",
+      "tags": [],
       "contacts": [],
-      "tags": []
+      "documents": []
     }
   }
 }
@@ -1111,7 +1198,7 @@ curl -s -X PATCH http://localhost:4000/api/applications/$APPLICATION_ID \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $TOKEN" \
   -d '{
-    "status": "Entretien",
+    "status": "interview",
     "interviewAt": "2026-07-12"
   }' | jq
 ```
@@ -1127,19 +1214,20 @@ curl -s -X PATCH http://localhost:4000/api/applications/$APPLICATION_ID \
       "id": "*",
       "company": "Wayne Enterprises",
       "position": "Robin",
-      "status": "Entretien",
-      "contractType": "CDI",
+      "status": "interview",
+      "contractType": "permanent",
       "location": "Gotham City",
       "salary": 50000,
       "link": "https://careers.wayne-enterprises.example/jobs/robin",
       "notes": "Application used for manual validation.",
-      "sentAt": "2026-06-20T00:00:00.000Z",
-      "followUpAt": "2026-07-05T00:00:00.000Z",
+      "sentAt": "2026-06-21T00:00:00.000Z",
+      "followUpAt": "2026-07-06T00:00:00.000Z",
       "interviewAt": "2026-07-12T00:00:00.000Z",
       "createdAt": "*",
       "updatedAt": "*",
       "contacts": [],
-      "tags": []
+      "tags": [],
+      "documents": []
     }
   }
 }
@@ -1147,8 +1235,367 @@ curl -s -X PATCH http://localhost:4000/api/applications/$APPLICATION_ID \
 
 Status:
 
+### POST `/api/applications` with invalid status
 
-## 10. Contacts CRUD
+#### Goal
+
+Verify that invalid application status values are rejected.
+
+#### Command to run
+
+```bash
+curl -s -X POST http://localhost:4000/api/applications \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TOKEN" \
+  -d '{
+    "company": "Wayne Enterprises",
+    "position": "Nightwing",
+    "status": "invalid",
+    "contractType": "permanent",
+    "sentAt": "2026-06-21"
+  }' | jq
+```
+
+#### Expected result
+
+```json
+{
+  "success": false,
+  "message": "Invalid application data.",
+  "errors": [
+    "Status is invalid."
+  ]
+}
+```
+
+Status:
+
+### GET `/api/applications` without JWT
+
+#### Goal
+
+Verify that the applications list is protected.
+
+#### Command to run
+
+```bash
+curl -s http://localhost:4000/api/applications | jq
+```
+
+#### Expected result
+
+```json
+{
+  "success": false,
+  "message": "Authentication token is required.",
+  "errors": []
+}
+```
+
+Status:
+
+## 10. Tags CRUD
+
+### POST `/api/tags`
+
+#### Goal
+
+Verify that an authenticated user can create a tag.
+
+#### Command to run
+
+```bash
+curl -s -X POST http://localhost:4000/api/tags \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TOKEN" \
+  -d '{
+    "name": "Bat Signal",
+    "color": "#ffee00"
+  }' | jq
+```
+
+#### Expected result
+
+```json
+{
+  "success": true,
+  "message": "Tag created successfully.",
+  "data": {
+    "tag": {
+      "id": "*",
+      "name": "Bat Signal",
+      "slug": "bat-signal",
+      "color": "#ffee00",
+      "createdAt": "*",
+      "updatedAt": "*"
+    }
+  }
+}
+```
+
+#### Variable to save
+
+Copy the tag id manually from the response:
+
+```bash
+TAG_ID="PASTE_THE_TAG_ID_HERE"
+```
+
+Status:
+
+### GET `/api/tags`
+
+#### Goal
+
+Verify that the authenticated user can list their tags.
+
+#### Command to run
+
+```bash
+curl -s http://localhost:4000/api/tags \
+  -H "Authorization: Bearer $TOKEN" | jq
+```
+
+#### Expected result
+
+```json
+{
+  "success": true,
+  "message": "Tags retrieved successfully.",
+  "data": {
+    "tags": [
+      {
+        "id": "*",
+        "name": "Bat Signal",
+        "slug": "bat-signal",
+        "color": "#ffee00",
+        "createdAt": "*",
+        "updatedAt": "*"
+      }
+    ]
+  }
+}
+```
+
+Status:
+
+### GET `/api/tags/:id`
+
+#### Goal
+
+Verify that the authenticated user can retrieve one of their tags.
+
+#### Command to run
+
+```bash
+curl -s http://localhost:4000/api/tags/$TAG_ID \
+  -H "Authorization: Bearer $TOKEN" | jq
+```
+
+#### Expected result
+
+```json
+{
+  "success": true,
+  "message": "Tag retrieved successfully.",
+  "data": {
+    "tag": {
+      "id": "*",
+      "name": "Bat Signal",
+      "slug": "bat-signal",
+      "color": "#ffee00",
+      "createdAt": "*",
+      "updatedAt": "*"
+    }
+  }
+}
+```
+
+Status:
+
+### PATCH `/api/tags/:id`
+
+#### Goal
+
+Verify that the authenticated user can update one of their tags.
+
+#### Command to run
+
+```bash
+curl -s -X PATCH http://localhost:4000/api/tags/$TAG_ID \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TOKEN" \
+  -d '{
+    "name": "Gotham Priority",
+    "color": "#000000"
+  }' | jq
+```
+
+#### Expected result
+
+```json
+{
+  "success": true,
+  "message": "Tag updated successfully.",
+  "data": {
+    "tag": {
+      "id": "*",
+      "name": "Gotham Priority",
+      "slug": "gotham-priority",
+      "color": "#000000",
+      "createdAt": "*",
+      "updatedAt": "*"
+    }
+  }
+}
+```
+
+Status:
+
+### POST `/api/tags` with duplicate name
+
+#### Goal
+
+Verify that the same user cannot create two tags with the same slug.
+
+#### Command to run
+
+```bash
+curl -s -X POST http://localhost:4000/api/tags \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TOKEN" \
+  -d '{
+    "name": "Gotham Priority",
+    "color": "#000000"
+  }' | jq
+```
+
+#### Expected result
+
+```json
+{
+  "success": false,
+  "message": "Tag already exists.",
+  "errors": []
+}
+```
+
+Status:
+
+### POST `/api/tags` with invalid color
+
+#### Goal
+
+Verify that invalid tag color values are rejected.
+
+#### Command to run
+
+```bash
+curl -s -X POST http://localhost:4000/api/tags \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TOKEN" \
+  -d '{
+    "name": "Invalid Color",
+    "color": "red"
+  }' | jq
+```
+
+#### Expected result
+
+```json
+{
+  "success": false,
+  "message": "Invalid tag data.",
+  "errors": [
+    "Tag color must be a valid hexadecimal color."
+  ]
+}
+```
+
+Status:
+
+### POST `/api/applications/:id/tags`
+
+#### Goal
+
+Verify that an authenticated user can link one of their tags to one of their applications.
+
+#### Command to run
+
+```bash
+curl -s -X POST http://localhost:4000/api/applications/$APPLICATION_ID/tags \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TOKEN" \
+  -d "{
+    \"tagId\": \"$TAG_ID\"
+  }" | jq
+```
+
+#### Expected result
+
+```json
+{
+  "success": true,
+  "message": "Tag linked to application successfully.",
+  "data": {
+    "application": {
+      "id": "*",
+      "company": "Wayne Enterprises",
+      "position": "Robin",
+      "status": "interview",
+      "contractType": "permanent",
+      "location": "Gotham City",
+      "salary": 50000,
+      "link": "https://careers.wayne-enterprises.example/jobs/robin",
+      "notes": "Application used for manual validation.",
+      "sentAt": "2026-06-21T00:00:00.000Z",
+      "followUpAt": "2026-07-06T00:00:00.000Z",
+      "interviewAt": "2026-07-12T00:00:00.000Z",
+      "createdAt": "*",
+      "updatedAt": "*",
+      "tags": [
+        {
+          "id": "*",
+          "name": "Gotham Priority",
+          "slug": "gotham-priority",
+          "color": "#000000",
+          "linkedAt": "*"
+        }
+      ],
+      "contacts": [],
+      "documents": []
+    }
+  }
+}
+```
+
+Status:
+
+### GET `/api/tags` without JWT
+
+#### Goal
+
+Verify that the tags list is protected.
+
+#### Command to run
+
+```bash
+curl -s http://localhost:4000/api/tags | jq
+```
+
+#### Expected result
+
+```json
+{
+  "success": false,
+  "message": "Authentication token is required.",
+  "errors": []
+}
+```
+
+Status:
+
+## 11. Contacts CRUD
 
 ### POST `/api/contacts`
 
@@ -1159,24 +1606,48 @@ Verify that an authenticated user can create a contact.
 #### Command to run
 
 ```bash
-CONTACT_ID=$(curl -s -X POST http://localhost:4000/api/contacts \
+curl -s -X POST http://localhost:4000/api/contacts \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $TOKEN" \
   -d '{
     "firstName": "Bruce",
     "lastName": "Wayne",
-    "email": "bruce.wayne@wayne-enterprises.com",
+    "email": "bruce.wayne@wayne-enterprises.example",
     "phoneNumber": "0600000000",
     "company": "Wayne Enterprises",
     "notes": "Contact used for manual validation."
-  }' | jq -r ".data.contact.id")
-
-echo "$CONTACT_ID"
+  }' | jq
 ```
 
 #### Expected result
 
-A contact is created and a contact id is returned.
+```json
+{
+  "success": true,
+  "message": "Contact created successfully.",
+  "data": {
+    "contact": {
+      "id": "*",
+      "firstName": "Bruce",
+      "lastName": "Wayne",
+      "email": "bruce.wayne@wayne-enterprises.example",
+      "phoneNumber": "0600000000",
+      "company": "Wayne Enterprises",
+      "notes": "Contact used for manual validation.",
+      "createdAt": "*",
+      "updatedAt": "*"
+    }
+  }
+}
+```
+
+#### Variable to save
+
+Copy the contact id manually from the response:
+
+```bash
+CONTACT_ID="PASTE_THE_CONTACT_ID_HERE"
+```
 
 Status:
 
@@ -1205,7 +1676,7 @@ curl -s http://localhost:4000/api/contacts \
         "id": "*",
         "firstName": "Bruce",
         "lastName": "Wayne",
-        "email": "bruce.wayne@wayne-enterprises.com",
+        "email": "bruce.wayne@wayne-enterprises.example",
         "phoneNumber": "0600000000",
         "company": "Wayne Enterprises",
         "notes": "Contact used for manual validation.",
@@ -1243,7 +1714,7 @@ curl -s http://localhost:4000/api/contacts/$CONTACT_ID \
       "id": "*",
       "firstName": "Bruce",
       "lastName": "Wayne",
-      "email": "bruce.wayne@wayne-enterprises.com",
+      "email": "bruce.wayne@wayne-enterprises.example",
       "phoneNumber": "0600000000",
       "company": "Wayne Enterprises",
       "notes": "Contact used for manual validation.",
@@ -1284,7 +1755,7 @@ curl -s -X PATCH http://localhost:4000/api/contacts/$CONTACT_ID \
       "id": "*",
       "firstName": "Bruce",
       "lastName": "Wayne",
-      "email": "bruce.wayne@wayne-enterprises.com",
+      "email": "bruce.wayne@wayne-enterprises.example",
       "phoneNumber": "0600000000",
       "company": "Wayne Industries",
       "notes": "Contact used for manual validation.",
@@ -1292,6 +1763,35 @@ curl -s -X PATCH http://localhost:4000/api/contacts/$CONTACT_ID \
       "updatedAt": "*"
     }
   }
+}
+```
+
+Status:
+
+### PATCH `/api/contacts/:id` with invalid email
+
+#### Goal
+
+Verify that invalid contact email values are rejected.
+
+#### Command to run
+
+```bash
+curl -s -X PATCH http://localhost:4000/api/contacts/$CONTACT_ID \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TOKEN" \
+  -d '{
+    "email": "invalid-email"
+  }' | jq
+```
+
+#### Expected result
+
+```json
+{
+  "success": false,
+  "message": "Email must be valid.",
+  "errors": []
 }
 ```
 
@@ -1311,7 +1811,7 @@ curl -s -X POST http://localhost:4000/api/applications/$APPLICATION_ID/contacts 
   -H "Authorization: Bearer $TOKEN" \
   -d "{
     \"contactId\": \"$CONTACT_ID\",
-    \"role\": \"Batman\"
+    \"role\": \"Mentor\"
   }" | jq
 ```
 
@@ -1326,31 +1826,39 @@ curl -s -X POST http://localhost:4000/api/applications/$APPLICATION_ID/contacts 
       "id": "*",
       "company": "Wayne Enterprises",
       "position": "Robin",
-      "status": "Entretien",
-      "contractType": "CDI",
+      "status": "interview",
+      "contractType": "permanent",
       "location": "Gotham City",
       "salary": 50000,
       "link": "https://careers.wayne-enterprises.example/jobs/robin",
       "notes": "Application used for manual validation.",
-      "sentAt": "2026-06-20T00:00:00.000Z",
-      "followUpAt": "2026-07-05T00:00:00.000Z",
+      "sentAt": "2026-06-21T00:00:00.000Z",
+      "followUpAt": "2026-07-06T00:00:00.000Z",
       "interviewAt": "2026-07-12T00:00:00.000Z",
       "createdAt": "*",
       "updatedAt": "*",
+      "tags": [
+        {
+          "id": "*",
+          "name": "Gotham Priority",
+          "slug": "gotham-priority",
+          "color": "#000000",
+          "linkedAt": "*"
+        }
+      ],
       "contacts": [
         {
           "id": "*",
           "firstName": "Bruce",
           "lastName": "Wayne",
-          "email": "bruce.wayne@wayne-enterprises.com",
+          "email": "bruce.wayne@wayne-enterprises.example",
           "phoneNumber": "0600000000",
           "company": "Wayne Industries",
           "notes": "Contact used for manual validation.",
-          "role": "Batman",
+          "role": "Mentor",
           "linkedAt": "*"
         }
       ],
-      "tags": [],
       "documents": []
     }
   }
@@ -1359,22 +1867,31 @@ curl -s -X POST http://localhost:4000/api/applications/$APPLICATION_ID/contacts 
 
 Status:
 
-
-## 11. Documents CRUD
-
-### Create a local invalid file
+### GET `/api/contacts` without JWT
 
 #### Goal
 
-Create a local file with an unsupported extension in order to validate upload restrictions.
+Verify that the contacts list is protected.
 
 #### Command to run
 
 ```bash
-echo "Wayne Enterprises document validation" > /tmp/wayne-document.txt
+curl -s http://localhost:4000/api/contacts | jq
+```
+
+#### Expected result
+
+```json
+{
+  "success": false,
+  "message": "Authentication token is required.",
+  "errors": []
+}
 ```
 
 Status:
+
+## 12. Documents CRUD
 
 ### POST `/api/documents` with invalid file type
 
@@ -1385,29 +1902,24 @@ Verify that unsupported file types are rejected.
 #### Command to run
 
 ```bash
+echo "Wayne Enterprises document validation" > /tmp/dick-document.txt
+```
+
+```bash
 curl -s -X POST http://localhost:4000/api/documents \
   -H "Authorization: Bearer $TOKEN" \
   -F "type=resume" \
-  -F "document=@/tmp/wayne-document.txt" | jq
+  -F "document=@/tmp/dick-document.txt" | jq
 ```
 
 #### Expected result
 
-The request is rejected because the uploaded file type is not allowed.
-
-Status:
-
-### Create a local PDF file
-
-#### Goal
-
-Create a small local PDF file for upload validation.
-
-#### Command to run
-
-```bash
-printf '%s
-' '%PDF-1.4' '1 0 obj' '<<>>' 'endobj' 'trailer' '<<>>' '%%EOF' > /tmp/wayne-resume.pdf
+```json
+{
+  "success": false,
+  "message": "Only PDF, DOC, DOCX, PNG, JPG and JPEG files are allowed.",
+  "errors": []
+}
 ```
 
 Status:
@@ -1421,17 +1933,44 @@ Verify that an authenticated user can upload a document.
 #### Command to run
 
 ```bash
-DOCUMENT_ID=$(curl -s -X POST http://localhost:4000/api/documents \
+printf '%s\n' '%PDF-1.4' '1 0 obj' '<<>>' 'endobj' 'trailer' '<<>>' '%%EOF' > /tmp/dick-resume.pdf
+```
+
+```bash
+curl -s -X POST http://localhost:4000/api/documents \
   -H "Authorization: Bearer $TOKEN" \
   -F "type=resume" \
-  -F "document=@/tmp/wayne-resume.pdf" | jq -r ".data.document.id")
-
-echo "$DOCUMENT_ID"
+  -F "document=@/tmp/dick-resume.pdf" | jq
 ```
 
 #### Expected result
 
-A document is uploaded and a document id is returned.
+```json
+{
+  "success": true,
+  "message": "Document uploaded successfully.",
+  "data": {
+    "document": {
+      "id": "*",
+      "type": "resume",
+      "originalName": "dick-resume.pdf",
+      "storedName": "*.pdf",
+      "mimeType": "application/pdf",
+      "size": 48,
+      "createdAt": "*",
+      "updatedAt": "*"
+    }
+  }
+}
+```
+
+#### Variable to save
+
+Copy the document id manually from the response:
+
+```bash
+DOCUMENT_ID="PASTE_THE_DOCUMENT_ID_HERE"
+```
 
 Status:
 
@@ -1459,10 +1998,10 @@ curl -s http://localhost:4000/api/documents \
       {
         "id": "*",
         "type": "resume",
-        "originalName": "wayne-resume.pdf",
-        "storedName": "*",
+        "originalName": "dick-resume.pdf",
+        "storedName": "*.pdf",
         "mimeType": "application/pdf",
-        "size": "*",
+        "size": 48,
         "createdAt": "*",
         "updatedAt": "*"
       }
@@ -1496,10 +2035,10 @@ curl -s http://localhost:4000/api/documents/$DOCUMENT_ID \
     "document": {
       "id": "*",
       "type": "resume",
-      "originalName": "wayne-resume.pdf",
-      "storedName": "*",
+      "originalName": "dick-resume.pdf",
+      "storedName": "*.pdf",
       "mimeType": "application/pdf",
-      "size": "*",
+      "size": 48,
       "createdAt": "*",
       "updatedAt": "*"
     }
@@ -1536,14 +2075,45 @@ curl -s -X PATCH http://localhost:4000/api/documents/$DOCUMENT_ID \
     "document": {
       "id": "*",
       "type": "cover_letter",
-      "originalName": "wayne-resume.pdf",
-      "storedName": "*",
+      "originalName": "dick-resume.pdf",
+      "storedName": "*.pdf",
       "mimeType": "application/pdf",
-      "size": "*",
+      "size": 48,
       "createdAt": "*",
       "updatedAt": "*"
     }
   }
+}
+```
+
+Status:
+
+### PATCH `/api/documents/:id` with invalid type
+
+#### Goal
+
+Verify that invalid document type values are rejected.
+
+#### Command to run
+
+```bash
+curl -s -X PATCH http://localhost:4000/api/documents/$DOCUMENT_ID \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TOKEN" \
+  -d '{
+    "type": "invalid"
+  }' | jq
+```
+
+#### Expected result
+
+```json
+{
+  "success": false,
+  "message": "Invalid document data.",
+  "errors": [
+    "Document type is invalid."
+  ]
 }
 ```
 
@@ -1560,14 +2130,14 @@ Verify that the authenticated user can download one of their documents.
 ```bash
 curl -s -L http://localhost:4000/api/documents/$DOCUMENT_ID/download \
   -H "Authorization: Bearer $TOKEN" \
-  -o /tmp/downloaded-wayne-resume.pdf
+  -o /tmp/downloaded-dick-resume.pdf
 
-ls -lh /tmp/downloaded-wayne-resume.pdf
+ls -lh /tmp/downloaded-dick-resume.pdf
 ```
 
 #### Expected result
 
-A file named `/tmp/downloaded-wayne-resume.pdf` is downloaded locally.
+A file named `/tmp/downloaded-dick-resume.pdf` should be downloaded locally.
 
 Status:
 
@@ -1583,7 +2153,9 @@ Verify that an authenticated user can link one of their documents to one of thei
 curl -s -X POST http://localhost:4000/api/applications/$APPLICATION_ID/documents \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $TOKEN" \
-  -d "{\"documentId\":\"$DOCUMENT_ID\"}" | jq
+  -d "{
+    \"documentId\": \"$DOCUMENT_ID\"
+  }" | jq
 ```
 
 #### Expected result
@@ -1597,39 +2169,47 @@ curl -s -X POST http://localhost:4000/api/applications/$APPLICATION_ID/documents
       "id": "*",
       "company": "Wayne Enterprises",
       "position": "Robin",
-      "status": "Entretien",
-      "contractType": "CDI",
+      "status": "interview",
+      "contractType": "permanent",
       "location": "Gotham City",
       "salary": 50000,
       "link": "https://careers.wayne-enterprises.example/jobs/robin",
       "notes": "Application used for manual validation.",
-      "sentAt": "2026-06-20T00:00:00.000Z",
-      "followUpAt": "2026-07-05T00:00:00.000Z",
+      "sentAt": "2026-06-21T00:00:00.000Z",
+      "followUpAt": "2026-07-06T00:00:00.000Z",
       "interviewAt": "2026-07-12T00:00:00.000Z",
       "createdAt": "*",
       "updatedAt": "*",
+      "tags": [
+        {
+          "id": "*",
+          "name": "Gotham Priority",
+          "slug": "gotham-priority",
+          "color": "#000000",
+          "linkedAt": "*"
+        }
+      ],
       "contacts": [
         {
           "id": "*",
           "firstName": "Bruce",
           "lastName": "Wayne",
-          "email": "bruce.wayne@wayne-enterprises.com",
+          "email": "bruce.wayne@wayne-enterprises.example",
           "phoneNumber": "0600000000",
           "company": "Wayne Industries",
           "notes": "Contact used for manual validation.",
-          "role": "Batman",
+          "role": "Mentor",
           "linkedAt": "*"
         }
       ],
-      "tags": [],
       "documents": [
         {
           "id": "*",
           "type": "cover_letter",
-          "originalName": "wayne-resume.pdf",
-          "storedName": "*",
+          "originalName": "dick-resume.pdf",
+          "storedName": "*.pdf",
           "mimeType": "application/pdf",
-          "size": "*",
+          "size": 48,
           "linkedAt": "*"
         }
       ]
@@ -1640,120 +2220,16 @@ curl -s -X POST http://localhost:4000/api/applications/$APPLICATION_ID/documents
 
 Status:
 
-
-## 12. Tags CRUD
-
-### POST `/api/tags`
+### GET `/api/documents` without JWT
 
 #### Goal
 
-Verify that an authenticated user can create a tag.
+Verify that the documents list is protected.
 
 #### Command to run
 
 ```bash
-TAG_ID=$(curl -s -X POST http://localhost:4000/api/tags \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $TOKEN" \
-  -d '{
-    "name": "Priority",
-    "color": "#ff0000"
-  }' | jq -r ".data.tag.id")
-
-echo "$TAG_ID"
-```
-
-### GET `/api/tags`
-
-#### Goal
-
-Verify that the authenticated user can list their tags.
-
-#### Command to run
-
-```bash
-curl -s http://localhost:4000/api/tags \
-  -H "Authorization: Bearer $TOKEN" | jq
-```
-
-#### Expected result
-
-```json
-{
-  "success": true,
-  "message": "Tags retrieved successfully.",
-  "data": {
-    "tags": [
-      {
-        "id": "*",
-        "name": "Priority",
-        "slug": "priority",
-        "color": "#ff0000",
-        "createdAt": "*",
-        "updatedAt": "*"
-      }
-    ]
-  }
-}
-```
-
-Status:
-
-### PATCH `/api/tags/:id`
-
-#### Goal
-
-Verify that the authenticated user can update one of their tags.
-
-#### Command to run
-
-```bash
-curl -s -X PATCH http://localhost:4000/api/tags/$TAG_ID \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $TOKEN" \
-  -d '{
-    "name": "Bat Signal",
-    "color": "#FFAA00"
-  }' | jq
-```
-
-#### Expected result
-
-```json
-{
-  "success": true,
-  "message": "Tag updated successfully.",
-  "data": {
-    "tag": {
-      "id": "*",
-      "name": "Bat Signal",
-      "slug": "bat-signal",
-      "color": "#FFAA00",
-      "createdAt": "*",
-      "updatedAt": "*"
-    }
-  }
-}
-```
-
-Status:
-
-### POST `/api/tags` with duplicate name
-
-#### Goal
-
-Verify that the same user cannot create two tags with the same slug.
-
-#### Command to run
-
-```bash
-curl -s -X POST http://localhost:4000/api/tags \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $TOKEN" \
-  -d '{
-    "name": "Bat Signal",
-    "color": "#FFAA00"
-  }' | jq
+curl -s http://localhost:4000/api/documents | jq
 ```
 
 #### Expected result
@@ -1761,94 +2237,14 @@ curl -s -X POST http://localhost:4000/api/tags \
 ```json
 {
   "success": false,
-  "message": "Tag already exists.",
+  "message": "Authentication token is required.",
   "errors": []
 }
 ```
 
 Status:
 
-### POST `/api/applications/:id/tags`
-
-#### Goal
-
-Verify that an authenticated user can link one of their tags to one of their applications.
-
-#### Command to run
-
-```bash
-curl -s -X POST http://localhost:4000/api/applications/$APPLICATION_ID/tags \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $TOKEN" \
-  -d "{
-    \"tagId\": \"$TAG_ID\"
-  }" | jq
-```
-
-#### Expected result
-
-```json
-{
-  "success": true,
-  "message": "Tag linked to application successfully.",
-  "data": {
-    "application": {
-      "id": "*",
-      "company": "Wayne Enterprises",
-      "position": "Robin",
-      "status": "Entretien",
-      "contractType": "CDI",
-      "location": "Gotham City",
-      "salary": 50000,
-      "link": "https://careers.wayne-enterprises.example/jobs/robin",
-      "notes": "Application used for manual validation.",
-      "sentAt": "2026-06-20T00:00:00.000Z",
-      "followUpAt": "2026-07-05T00:00:00.000Z",
-      "interviewAt": "2026-07-12T00:00:00.000Z",
-      "createdAt": "*",
-      "updatedAt": "*",
-      "contacts": [
-        {
-          "id": "*",
-          "firstName": "Bruce",
-          "lastName": "Wayne",
-          "email": "bruce.wayne@wayne-enterprises.com",
-          "phoneNumber": "0600000000",
-          "company": "Wayne Industries",
-          "notes": "Contact used for manual validation.",
-          "role": "Batman",
-          "linkedAt": "*"
-        }
-      ],
-      "tags": [
-        {
-          "id": "*",
-          "name": "Bat Signal",
-          "slug": "bat-signal",
-          "color": "#FFAA00",
-          "linkedAt": "*"
-        }
-      ],
-      "documents": [
-        {
-          "id": "*",
-          "type": "cover_letter",
-          "originalName": "wayne-resume.pdf",
-          "storedName": "*",
-          "mimeType": "application/pdf",
-          "size": "*",
-          "linkedAt": "*"
-        }
-      ]
-    }
-  }
-}
-```
-
-Status:
-
-
-## 13. Application history
+## 13. Application history and unlink actions
 
 ### GET `/api/applications/:id/history`
 
@@ -1865,20 +2261,16 @@ curl -s http://localhost:4000/api/applications/$APPLICATION_ID/history \
 
 #### Expected result
 
+The response should contain the application history, ordered from the most recent action to the oldest one.
+
+Example:
+
 ```json
 {
   "success": true,
   "message": "Application history retrieved successfully.",
   "data": {
     "history": [
-      {
-        "id": "*",
-        "action": "tag_linked",
-        "metadata": {
-          "tagId": "*"
-        },
-        "createdAt": "*"
-      },
       {
         "id": "*",
         "action": "document_linked",
@@ -1891,8 +2283,16 @@ curl -s http://localhost:4000/api/applications/$APPLICATION_ID/history \
         "id": "*",
         "action": "contact_linked",
         "metadata": {
-          "role": "Batman",
+          "role": "Mentor",
           "contactId": "*"
+        },
+        "createdAt": "*"
+      },
+      {
+        "id": "*",
+        "action": "tag_linked",
+        "metadata": {
+          "tagId": "*"
         },
         "createdAt": "*"
       },
@@ -1900,8 +2300,8 @@ curl -s http://localhost:4000/api/applications/$APPLICATION_ID/history \
         "id": "*",
         "action": "application_status_updated",
         "metadata": {
-          "newStatus": "Entretien",
-          "previousStatus": "Envoyée"
+          "newStatus": "interview",
+          "previousStatus": "sent"
         },
         "createdAt": "*"
       },
@@ -1909,76 +2309,13 @@ curl -s http://localhost:4000/api/applications/$APPLICATION_ID/history \
         "id": "*",
         "action": "application_created",
         "metadata": {
-          "status": "Envoyée",
+          "status": "sent",
           "company": "Wayne Enterprises",
           "position": "Robin"
         },
         "createdAt": "*"
       }
     ]
-  }
-}
-```
-
-Status:
-
-### DELETE `/api/applications/:id/contacts/:contactId`
-
-#### Goal
-
-Verify that an authenticated user can unlink a contact from one of their applications.
-
-#### Command to run
-
-```bash
-curl -s -X DELETE http://localhost:4000/api/applications/$APPLICATION_ID/contacts/$CONTACT_ID \
-  -H "Authorization: Bearer $TOKEN" | jq
-```
-
-#### Expected result
-
-```json
-{
-  "success": true,
-  "message": "Contact unlinked from application successfully.",
-  "data": {
-    "application": {
-      "id": "*",
-      "company": "Wayne Enterprises",
-      "position": "Robin",
-      "status": "Entretien",
-      "contractType": "CDI",
-      "location": "Gotham City",
-      "salary": 50000,
-      "link": "https://careers.wayne-enterprises.example/jobs/robin",
-      "notes": "Application used for manual validation.",
-      "sentAt": "2026-06-20T00:00:00.000Z",
-      "followUpAt": "2026-07-05T00:00:00.000Z",
-      "interviewAt": "2026-07-12T00:00:00.000Z",
-      "createdAt": "*",
-      "updatedAt": "*",
-      "contacts": [],
-      "tags": [
-        {
-          "id": "*",
-          "name": "Bat Signal",
-          "slug": "bat-signal",
-          "color": "#FFAA00",
-          "linkedAt": "*"
-        }
-      ],
-      "documents": [
-        {
-          "id": "*",
-          "type": "cover_letter",
-          "originalName": "wayne-resume.pdf",
-          "storedName": "*",
-          "mimeType": "application/pdf",
-          "size": "*",
-          "linkedAt": "*"
-        }
-      ]
-    }
   }
 }
 ```
@@ -2009,27 +2346,94 @@ curl -s -X DELETE http://localhost:4000/api/applications/$APPLICATION_ID/tags/$T
       "id": "*",
       "company": "Wayne Enterprises",
       "position": "Robin",
-      "status": "Entretien",
-      "contractType": "CDI",
+      "status": "interview",
+      "contractType": "permanent",
       "location": "Gotham City",
       "salary": 50000,
       "link": "https://careers.wayne-enterprises.example/jobs/robin",
       "notes": "Application used for manual validation.",
-      "sentAt": "2026-06-20T00:00:00.000Z",
-      "followUpAt": "2026-07-05T00:00:00.000Z",
+      "sentAt": "2026-06-21T00:00:00.000Z",
+      "followUpAt": "2026-07-06T00:00:00.000Z",
       "interviewAt": "2026-07-12T00:00:00.000Z",
       "createdAt": "*",
       "updatedAt": "*",
-      "contacts": [],
       "tags": [],
+      "contacts": [
+        {
+          "id": "*",
+          "firstName": "Bruce",
+          "lastName": "Wayne",
+          "email": "bruce.wayne@wayne-enterprises.example",
+          "phoneNumber": "0600000000",
+          "company": "Wayne Industries",
+          "notes": "Contact used for manual validation.",
+          "role": "Mentor",
+          "linkedAt": "*"
+        }
+      ],
       "documents": [
         {
           "id": "*",
           "type": "cover_letter",
-          "originalName": "wayne-resume.pdf",
-          "storedName": "*",
+          "originalName": "dick-resume.pdf",
+          "storedName": "*.pdf",
           "mimeType": "application/pdf",
-          "size": "*",
+          "size": 48,
+          "linkedAt": "*"
+        }
+      ]
+    }
+  }
+}
+```
+
+Status:
+
+### DELETE `/api/applications/:id/contacts/:contactId`
+
+#### Goal
+
+Verify that an authenticated user can unlink a contact from one of their applications.
+
+#### Command to run
+
+```bash
+curl -s -X DELETE http://localhost:4000/api/applications/$APPLICATION_ID/contacts/$CONTACT_ID \
+  -H "Authorization: Bearer $TOKEN" | jq
+```
+
+#### Expected result
+
+```json
+{
+  "success": true,
+  "message": "Contact unlinked from application successfully.",
+  "data": {
+    "application": {
+      "id": "*",
+      "company": "Wayne Enterprises",
+      "position": "Robin",
+      "status": "interview",
+      "contractType": "permanent",
+      "location": "Gotham City",
+      "salary": 50000,
+      "link": "https://careers.wayne-enterprises.example/jobs/robin",
+      "notes": "Application used for manual validation.",
+      "sentAt": "2026-06-21T00:00:00.000Z",
+      "followUpAt": "2026-07-06T00:00:00.000Z",
+      "interviewAt": "2026-07-12T00:00:00.000Z",
+      "createdAt": "*",
+      "updatedAt": "*",
+      "tags": [],
+      "contacts": [],
+      "documents": [
+        {
+          "id": "*",
+          "type": "cover_letter",
+          "originalName": "dick-resume.pdf",
+          "storedName": "*.pdf",
+          "mimeType": "application/pdf",
+          "size": 48,
           "linkedAt": "*"
         }
       ]
@@ -2064,19 +2468,19 @@ curl -s -X DELETE http://localhost:4000/api/applications/$APPLICATION_ID/documen
       "id": "*",
       "company": "Wayne Enterprises",
       "position": "Robin",
-      "status": "Entretien",
-      "contractType": "CDI",
+      "status": "interview",
+      "contractType": "permanent",
       "location": "Gotham City",
       "salary": 50000,
       "link": "https://careers.wayne-enterprises.example/jobs/robin",
       "notes": "Application used for manual validation.",
-      "sentAt": "2026-06-20T00:00:00.000Z",
-      "followUpAt": "2026-07-05T00:00:00.000Z",
+      "sentAt": "2026-06-21T00:00:00.000Z",
+      "followUpAt": "2026-07-06T00:00:00.000Z",
       "interviewAt": "2026-07-12T00:00:00.000Z",
       "createdAt": "*",
       "updatedAt": "*",
-      "contacts": [],
       "tags": [],
+      "contacts": [],
       "documents": []
     }
   }
@@ -2085,37 +2489,83 @@ curl -s -X DELETE http://localhost:4000/api/applications/$APPLICATION_ID/documen
 
 Status:
 
-### Protected business routes without JWT
+### GET `/api/applications/:id/history` after unlink actions
 
 #### Goal
 
-Verify that business routes reject unauthenticated requests.
+Verify that unlink actions are also stored in the application history.
 
-#### Commands to run
+#### Command to run
 
 ```bash
-curl -s http://localhost:4000/api/contacts | jq
-curl -s http://localhost:4000/api/applications | jq
-curl -s http://localhost:4000/api/tags | jq
-curl -s http://localhost:4000/api/documents | jq
+curl -s http://localhost:4000/api/applications/$APPLICATION_ID/history \
+  -H "Authorization: Bearer $TOKEN" | jq
+```
+
+#### Expected result
+
+The response should now also contain:
+
+```json
+{
+  "id": "*",
+  "action": "document_unlinked",
+  "metadata": {
+    "documentId": "*"
+  },
+  "createdAt": "*"
+},
+{
+  "id": "*",
+  "action": "contact_unlinked",
+  "metadata": {
+    "contactId": "*"
+  },
+  "createdAt": "*"
+},
+{
+  "id": "*",
+  "action": "tag_unlinked",
+  "metadata": {
+    "tagId": "*"
+  },
+  "createdAt": "*"
+},
+```
+
+Status:
+
+### GET `/api/applications/:id/history` without JWT
+
+#### Goal
+
+Verify that application history routes are protected.
+
+#### Command to run
+
+```bash
 curl -s http://localhost:4000/api/applications/$APPLICATION_ID/history | jq
 ```
 
 #### Expected result
 
-Each request is rejected because no JWT token was provided.
+```json
+{
+  "success": false,
+  "message": "Authentication token is required.",
+  "errors": []
+}
+```
 
 Status:
 
 ## 14. Achievements
 
-### GET `/api/achievements` before user actions
+### GET `/api/achievements`
 
 #### Goal
 
-Verify that an authenticated user can retrieve the achievements catalog.
-
-At this point, achievements should exist but should not be unlocked yet for the current user.
+Verify that an authenticated user can retrieve the achievements catalog with their unlock status.
 
 #### Command to run
 
@@ -2125,10 +2575,6 @@ curl -s http://localhost:4000/api/achievements \
 ```
 
 #### Expected result
-
-The response should confirm that achievements are retrieved successfully.
-
-Example:
 
 ```json
 {
@@ -2142,28 +2588,8 @@ Example:
         "slug": "first-application",
         "description": "Create your first job application.",
         "icon": "briefcase",
-        "unlocked": false,
-        "unlockedAt": null,
-        "createdAt": "*"
-      },
-      {
-        "id": "*",
-        "name": "First contact",
-        "slug": "first-contact",
-        "description": "Create your first professional contact.",
-        "icon": "user",
-        "unlocked": false,
-        "unlockedAt": null,
-        "createdAt": "*"
-      },
-      {
-        "id": "*",
-        "name": "First document",
-        "slug": "first-document",
-        "description": "Upload your first document.",
-        "icon": "file",
-        "unlocked": false,
-        "unlockedAt": null,
+        "unlocked": true,
+        "unlockedAt": "*",
         "createdAt": "*"
       },
       {
@@ -2172,18 +2598,38 @@ Example:
         "slug": "first-tag",
         "description": "Create your first organization tag.",
         "icon": "tag",
-        "unlocked": false,
-        "unlockedAt": null,
+        "unlocked": true,
+        "unlockedAt": "*",
+        "createdAt": "*"
+      },
+      {
+        "id": "*",
+        "name": "First contact",
+        "slug": "first-contact",
+        "description": "Create your first professional contact.",
+        "icon": "user",
+        "unlocked": true,
+        "unlockedAt": "*",
+        "createdAt": "*"
+      },
+      {
+        "id": "*",
+        "name": "First document",
+        "slug": "first-document",
+        "description": "Upload your first document.",
+        "icon": "file",
+        "unlocked": true,
+        "unlockedAt": "*",
         "createdAt": "*"
       },
       {
         "id": "*",
         "name": "Application organized",
         "slug": "application-organized",
-        "description": "Link a contact, a tag or a document to an application.",
+        "description": "Link a tag, a contact or a document to an application.",
         "icon": "link",
-        "unlocked": false,
-        "unlockedAt": null,
+        "unlocked": true,
+        "unlockedAt": "*",
         "createdAt": "*"
       },
       {
@@ -2192,8 +2638,8 @@ Example:
         "slug": "follow-up-planned",
         "description": "Create an application with a follow-up date.",
         "icon": "calendar",
-        "unlocked": false,
-        "unlockedAt": null,
+        "unlocked": true,
+        "unlockedAt": "*",
         "createdAt": "*"
       },
       {
@@ -2213,191 +2659,16 @@ Example:
 
 Status:
 
-### First application and follow-up achievements
+### GET `/api/achievements` after five applications
 
 #### Goal
 
-Verify that creating an application unlocks the first application achievement.
-
-Verify that creating an application with a follow-up date unlocks the follow-up planned achievement.
-
-This validation can reuse the application created during the applications CRUD section.
-
-#### Command to run
-
-```bash
-curl -s http://localhost:4000/api/achievements \
-  -H "Authorization: Bearer $TOKEN" | jq
-```
-
-#### Expected result
-
-The `first-application` achievement should be unlocked.
-
-The `follow-up-planned` achievement should also be unlocked if the created application has a `followUpAt` value.
-
-Example:
-
-```json
-{
-  "name": "First application",
-  "slug": "first-application",
-  "unlocked": true,
-  "unlockedAt": "*"
-}
-```
-
-```json
-{
-  "name": "Follow-up planned",
-  "slug": "follow-up-planned",
-  "unlocked": true,
-  "unlockedAt": "*"
-}
-```
-
-Status:
-
-### First contact achievement
-
-#### Goal
-
-Verify that creating a contact unlocks the first contact achievement.
-
-This validation can reuse the contact created during the contacts CRUD section.
-
-#### Command to run
-
-```bash
-curl -s http://localhost:4000/api/achievements \
-  -H "Authorization: Bearer $TOKEN" | jq
-```
-
-#### Expected result
-
-The `first-contact` achievement should be unlocked.
-
-Example:
-
-```json
-{
-  "name": "First contact",
-  "slug": "first-contact",
-  "unlocked": true,
-  "unlockedAt": "*"
-}
-```
-
-Status:
-
-### First document achievement
-
-#### Goal
-
-Verify that uploading a document unlocks the first document achievement.
-
-This validation can reuse the document uploaded during the documents CRUD section.
-
-#### Command to run
-
-```bash
-curl -s http://localhost:4000/api/achievements \
-  -H "Authorization: Bearer $TOKEN" | jq
-```
-
-#### Expected result
-
-The `first-document` achievement should be unlocked.
-
-Example:
-
-```json
-{
-  "name": "First document",
-  "slug": "first-document",
-  "unlocked": true,
-  "unlockedAt": "*"
-}
-```
-
-Status:
-
-### First tag achievement
-
-#### Goal
-
-Verify that creating a tag unlocks the first tag achievement.
-
-This validation can reuse the tag created during the tags CRUD section.
-
-#### Command to run
-
-```bash
-curl -s http://localhost:4000/api/achievements \
-  -H "Authorization: Bearer $TOKEN" | jq
-```
-
-#### Expected result
-
-The `first-tag` achievement should be unlocked.
-
-Example:
-
-```json
-{
-  "name": "First tag",
-  "slug": "first-tag",
-  "unlocked": true,
-  "unlockedAt": "*"
-}
-```
-
-Status:
-
-### Application organized achievement
-
-#### Goal
-
-Verify that linking a contact, tag or document to an application unlocks the application organized achievement.
-
-This validation can reuse the links created during the business route validation.
-
-#### Command to run
-
-```bash
-curl -s http://localhost:4000/api/achievements \
-  -H "Authorization: Bearer $TOKEN" | jq
-```
-
-#### Expected result
-
-The `application-organized` achievement should be unlocked.
-
-Example:
-
-```json
-{
-  "name": "Application organized",
-  "slug": "application-organized",
-  "unlocked": true,
-  "unlockedAt": "*"
-}
-```
-
-Status:
-
-### Five applications achievement
-
-#### Goal
-
+Create four additional applications manually so that the authenticated user has five applications in total.
+<br>
 Verify that creating five applications unlocks the five applications achievement.
 
 #### Command to run
 
-Create additional applications until the authenticated user has five applications in total.
-
-Then run:
-
 ```bash
 curl -s http://localhost:4000/api/achievements \
   -H "Authorization: Bearer $TOKEN" | jq
@@ -2405,16 +2676,20 @@ curl -s http://localhost:4000/api/achievements \
 
 #### Expected result
 
-The `five-applications` achievement should be unlocked.
+The `five-applications` achievement should now be unlocked.
 
 Example:
 
 ```json
 {
+  "id": "*",
   "name": "Five applications",
   "slug": "five-applications",
+  "description": "Create five job applications.",
+  "icon": "target",
   "unlocked": true,
-  "unlockedAt": "*"
+  "unlockedAt": "*",
+  "createdAt": "*"
 }
 ```
 
@@ -2434,7 +2709,13 @@ curl -s http://localhost:4000/api/achievements | jq
 
 #### Expected result
 
-The request should fail because no JWT was provided.
+```json
+{
+  "success": false,
+  "message": "Authentication token is required.",
+  "errors": []
+}
+```
 
 Status:
 
@@ -2444,7 +2725,11 @@ Status:
 
 #### Goal
 
-Verify that the authenticated user can export their data without exposing sensitive fields.
+Verify that the authenticated user can export their data.
+<br>
+The export should include the user's profile, applications, contacts, tags and documents.
+<br>
+Sensitive fields such as password hashes, email verification tokens and password reset tokens must not be exposed.
 
 #### Command to run
 
@@ -2455,23 +2740,105 @@ curl -s http://localhost:4000/api/auth/export \
 
 #### Expected result
 
-The response contains the authenticated user data, applications, contacts, documents and tags without exposing sensitive fields such as the password hash or tokens.
+The response should return a successful export.
+
+```json
+{
+  "success": true,
+  "message": "User data exported successfully.",
+  "data": {
+    "export": "*"
+  }
+}
+```
+
+The exported data may vary depending on the additional applications created during validation and on user actions performed before this test.
+
+The export should contain:
+
+- The authenticated user profile.
+- The user's applications.
+- The user's tags.
+- The user's contacts.
+- The user's documents.
+
+The exported user profile should contain:
+
+* `id`.
+* `email`.
+* `firstName`.
+* `lastName`.
+* `avatarUrl`.
+* `emailVerified`.
+* `theme`.
+* `dailyGoal`.
+* `followUpDelayDays`.
+* `createdAt`.
+* `updatedAt`.
+
+The export must not expose sensitive fields such as:
+
+- Password hash.
+- Email verification token.
+- Password reset token.
 
 Status:
 
-
-## 16. Cleanup and account deletion
-
-### DELETE `/api/applications/:id`
+### Check exported data for sensitive fields
 
 #### Goal
 
-Verify that an authenticated user can delete one of their applications.
+Verify that the export response does not expose sensitive fields.
 
 #### Command to run
 
 ```bash
-curl -s -X DELETE http://localhost:4000/api/applications/$APPLICATION_ID \
+curl -s http://localhost:4000/api/auth/export \
+  -H "Authorization: Bearer $TOKEN" | grep -Ei "password|hash|token|verification|reset"
+```
+
+#### Expected result
+
+The command should not return any sensitive field.
+
+Status:
+
+### GET `/api/auth/export` without JWT
+
+#### Goal
+
+Verify that the export route is protected.
+
+#### Command to run
+
+```bash
+curl -s http://localhost:4000/api/auth/export | jq
+```
+
+#### Expected result
+
+```json
+{
+  "success": false,
+  "message": "Authentication token is required.",
+  "errors": []
+}
+```
+
+Status:
+
+## 16. Cleanup and account deletion
+
+### DELETE `/api/documents/:id`
+
+#### Goal
+
+Verify that an authenticated user can delete one of their documents.
+
+#### Command to run
+
+```bash
+curl -s -X DELETE http://localhost:4000/api/documents/$DOCUMENT_ID \
   -H "Authorization: Bearer $TOKEN" | jq
 ```
 
@@ -2480,26 +2847,17 @@ curl -s -X DELETE http://localhost:4000/api/applications/$APPLICATION_ID \
 ```json
 {
   "success": true,
-  "message": "Application deleted successfully.",
+  "message": "Document deleted successfully.",
   "data": {
-    "application": {
+    "document": {
       "id": "*",
-      "company": "Wayne Enterprises",
-      "position": "Robin",
-      "status": "Entretien",
-      "contractType": "CDI",
-      "location": "Gotham City",
-      "salary": 50000,
-      "link": "https://careers.wayne-enterprises.example/jobs/robin",
-      "notes": "Application used for manual validation.",
-      "sentAt": "2026-06-20T00:00:00.000Z",
-      "followUpAt": "2026-07-05T00:00:00.000Z",
-      "interviewAt": "2026-07-12T00:00:00.000Z",
+      "type": "cover_letter",
+      "originalName": "dick-resume.pdf",
+      "storedName": "*.pdf",
+      "mimeType": "application/pdf",
+      "size": 48,
       "createdAt": "*",
-      "updatedAt": "*",
-      "contacts": [],
-      "tags": [],
-      "documents": []
+      "updatedAt": "*"
     }
   }
 }
@@ -2531,46 +2889,10 @@ curl -s -X DELETE http://localhost:4000/api/contacts/$CONTACT_ID \
       "id": "*",
       "firstName": "Bruce",
       "lastName": "Wayne",
-      "email": "bruce.wayne@wayne-enterprises.com",
+      "email": "bruce.wayne@wayne-enterprises.example",
       "phoneNumber": "0600000000",
       "company": "Wayne Industries",
       "notes": "Contact used for manual validation.",
-      "createdAt": "*",
-      "updatedAt": "*"
-    }
-  }
-}
-```
-
-Status:
-
-### DELETE `/api/documents/:id`
-
-#### Goal
-
-Verify that an authenticated user can delete one of their documents.
-
-#### Command to run
-
-```bash
-curl -s -X DELETE http://localhost:4000/api/documents/$DOCUMENT_ID \
-  -H "Authorization: Bearer $TOKEN" | jq
-```
-
-#### Expected result
-
-```json
-{
-  "success": true,
-  "message": "Document deleted successfully.",
-  "data": {
-    "document": {
-      "id": "*",
-      "type": "cover_letter",
-      "originalName": "wayne-resume.pdf",
-      "storedName": "*",
-      "mimeType": "application/pdf",
-      "size": "*",
       "createdAt": "*",
       "updatedAt": "*"
     }
@@ -2602,11 +2924,56 @@ curl -s -X DELETE http://localhost:4000/api/tags/$TAG_ID \
   "data": {
     "tag": {
       "id": "*",
-      "name": "Bat Signal",
-      "slug": "bat-signal",
-      "color": "#FFAA00",
+      "name": "Gotham Priority",
+      "slug": "gotham-priority",
+      "color": "#000000",
       "createdAt": "*",
       "updatedAt": "*"
+    }
+  }
+}
+```
+
+Status:
+
+### DELETE `/api/applications/:id`
+
+#### Goal
+
+Verify that an authenticated user can delete one of their applications.
+
+#### Command to run
+
+```bash
+curl -s -X DELETE http://localhost:4000/api/applications/$APPLICATION_ID \
+  -H "Authorization: Bearer $TOKEN" | jq
+```
+
+#### Expected result
+
+```json
+{
+  "success": true,
+  "message": "Application deleted successfully.",
+  "data": {
+    "application": {
+      "id": "*",
+      "company": "Wayne Enterprises",
+      "position": "Robin",
+      "status": "interview",
+      "contractType": "permanent",
+      "location": "Gotham City",
+      "salary": 50000,
+      "link": "https://careers.wayne-enterprises.example/jobs/robin",
+      "notes": "Application used for manual validation.",
+      "sentAt": "2026-06-21T00:00:00.000Z",
+      "followUpAt": "2026-07-06T00:00:00.000Z",
+      "interviewAt": "2026-07-12T00:00:00.000Z",
+      "createdAt": "*",
+      "updatedAt": "*",
+      "tags": [],
+      "contacts": [],
+      "documents": []
     }
   }
 }
@@ -2622,31 +2989,14 @@ Verify that an authenticated user can delete their account.
 
 #### Command to run
 
-Log in:
-
-```bash
-curl -s -X POST http://localhost:4000/api/auth/login \
-  -H "Content-Type: application/json" \
-  -d "{
-    \"email\": \"$EMAIL\",
-    \"password\": \"$PASSWORD\"
-  }" | jq
-```
-
-Save the token:
-
-```bash
-TOKEN="PASTE_THE_TOKEN_HERE"
-```
-
-Delete the account:
+Delete the authenticated account:
 
 ```bash
 curl -s -X DELETE http://localhost:4000/api/auth/me \
   -H "Authorization: Bearer $TOKEN" | jq
 ```
 
-Try to log in again:
+Then try to log in again:
 
 ```bash
 curl -s -X POST http://localhost:4000/api/auth/login \
@@ -2679,19 +3029,22 @@ curl -s -X POST http://localhost:4000/api/auth/login \
 
 Status:
 
-
-## 17. Current backend validation summary
+## 17. Backend validation summary
 
 The following backend features have been manually validated:
 
-- API startup.
+- Project startup.
+- Backend dependency installation.
+- Docker Compose services startup.
+- Prisma Client generation.
+- Prisma migrations.
+- Prisma migration status.
 - `GET /api/health`.
 - `GET /api/health/db`.
 - Unknown route handling.
-- PostgreSQL connection.
-- Prisma migrations.
-- Prisma migration status.
-- Prisma Client generation.
+
+<br>
+
 - User registration.
 - Real email verification.
 - Login blocked before email verification.
@@ -2699,33 +3052,86 @@ The following backend features have been manually validated:
 - JWT authentication.
 - Protected route access.
 - Current user endpoint.
-- Profile retrieval and update.
+
+<br>
+
+- Profile retrieval.
+- Profile update.
+- Profile validation errors.
 - User settings update.
+- User settings validation errors.
 - Password update.
-- Real password reset email.
+- Login with updated password.
+- Invalid current password rejection.
+- Password reset email request.
+- Neutral password reset response for unknown email.
 - Password reset.
+- Login after password reset.
+- Invalid password reset token rejection.
+
+<br>
+
 - Applications CRUD.
-- Contacts CRUD.
-- Documents CRUD.
+- Application validation errors.
+
+<br>
+
 - Tags CRUD.
-- Contact and application linking.
-- Document and application linking.
+- Tag duplicate protection.
+- Tag validation errors.
 - Tag and application linking.
-- Application history.
-- Business routes protected by JWT.
-- User data isolation on business resources.
-- Validation errors on business routes.
-- Duplicate tag protection.
-- Achievements catalog retrieval has been validated.
-- Achievement unlock status per authenticated user has been validated.
-- First application achievement has been validated.
-- First contact achievement has been validated.
-- First document achievement has been validated.
-- First tag achievement has been validated.
-- Application organized achievement has been validated.
-- Follow-up planned achievement has been validated.
-- Five applications achievement has been validated.
-- Achievements routes are protected by JWT.
-- User data export without sensitive fields.
+
+<br>
+
+- Contacts CRUD.
+- Contact validation errors.
+- Contact and application linking.
+
+<br>
+
+- Documents CRUD.
+- Invalid document upload rejection.
+- Document upload.
+- Document download.
+- Document validation errors.
+- Document and application linking.
+
+<br>
+
+- Application history retrieval.
+- Tag unlinking.
+- Contact unlinking.
+- Document unlinking.
+- Application history after unlink actions.
+
+<br>
+
+- Achievements catalog retrieval.
+- Achievement unlock status per authenticated user.
+- First application achievement.
+- First tag achievement.
+- First contact achievement.
+- First document achievement.
+- Application organized achievement.
+- Follow-up planned achievement.
+- Five applications achievement.
+- Achievements route protection.
+
+<br>
+
+- User data export.
+- Sensitive fields exclusion from user data export.
+
+<br>
+
+- Document deletion.
+- Contact deletion.
+- Tag deletion.
+- Application deletion.
 - Account deletion.
-- Coherent API responses.
+- Login rejection after account deletion.
+
+<br>
+
+- Coherent API success responses.
+- Coherent API error responses.
