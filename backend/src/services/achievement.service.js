@@ -8,6 +8,12 @@ const defaultAchievements = [
     icon: "briefcase"
   },
   {
+    name: "First tag",
+    slug: "first-tag",
+    description: "Create your first organization tag.",
+    icon: "tag"
+  },
+  {
     name: "First contact",
     slug: "first-contact",
     description: "Create your first professional contact.",
@@ -20,15 +26,9 @@ const defaultAchievements = [
     icon: "file"
   },
   {
-    name: "First tag",
-    slug: "first-tag",
-    description: "Create your first organization tag.",
-    icon: "tag"
-  },
-  {
     name: "Application organized",
     slug: "application-organized",
-    description: "Link a contact, a tag or a document to an application.",
+    description: "Link a tag, a contact or a document to an application.",
     icon: "link"
   },
   {
@@ -44,6 +44,18 @@ const defaultAchievements = [
     icon: "target"
   }
 ];
+
+function getAchievementOrder(slug) {
+  const achievementIndex = defaultAchievements.findIndex((achievement) => {
+    return achievement.slug === slug;
+  });
+
+  if (achievementIndex === -1) {
+    return defaultAchievements.length;
+  }
+
+  return achievementIndex;
+}
 
 async function ensureDefaultAchievements() {
   for (const achievement of defaultAchievements) {
@@ -90,10 +102,10 @@ function sanitizeAchievement(achievement, unlockedAchievementMap) {
 async function getUserAchievements(userId) {
   await ensureDefaultAchievements();
 
-  const achievements = await prisma.achievement.findMany({
-    orderBy: {
-      createdAt: "asc"
-    }
+  const achievements = await prisma.achievement.findMany();
+
+  achievements.sort((firstAchievement, secondAchievement) => {
+    return getAchievementOrder(firstAchievement.slug) - getAchievementOrder(secondAchievement.slug);
   });
 
   const userAchievements = await prisma.userAchievement.findMany({
@@ -126,7 +138,7 @@ async function unlockAchievement(userId, slug) {
     return null;
   }
 
-  const userAchievement = await prisma.userAchievement.upsert({
+  return prisma.userAchievement.upsert({
     where: {
       userId_achievementId: {
         userId,
@@ -142,12 +154,14 @@ async function unlockAchievement(userId, slug) {
       achievement: true
     }
   });
-
-  return userAchievement;
 }
 
 async function unlockFirstApplicationAchievement(userId) {
   return unlockAchievement(userId, "first-application");
+}
+
+async function unlockFirstTagAchievement(userId) {
+  return unlockAchievement(userId, "first-tag");
 }
 
 async function unlockFirstContactAchievement(userId) {
@@ -156,10 +170,6 @@ async function unlockFirstContactAchievement(userId) {
 
 async function unlockFirstDocumentAchievement(userId) {
   return unlockAchievement(userId, "first-document");
-}
-
-async function unlockFirstTagAchievement(userId) {
-  return unlockAchievement(userId, "first-tag");
 }
 
 async function unlockApplicationOrganizedAchievement(userId) {

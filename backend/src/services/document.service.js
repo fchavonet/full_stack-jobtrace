@@ -27,6 +27,15 @@ async function removeStoredFile(filePath) {
   }
 }
 
+async function findUserDocument(userId, documentId) {
+  return prisma.document.findFirst({
+    where: {
+      id: documentId,
+      userId
+    }
+  });
+}
+
 async function getUserDocuments(userId) {
   const documents = await prisma.document.findMany({
     where: {
@@ -41,12 +50,7 @@ async function getUserDocuments(userId) {
 }
 
 async function getUserDocumentById(userId, documentId) {
-  const document = await prisma.document.findFirst({
-    where: {
-      id: documentId,
-      userId
-    }
-  });
+  const document = await findUserDocument(userId, documentId);
 
   if (!document) {
     return null;
@@ -56,18 +60,7 @@ async function getUserDocumentById(userId, documentId) {
 }
 
 async function getUserDocumentFile(userId, documentId) {
-  const document = await prisma.document.findFirst({
-    where: {
-      id: documentId,
-      userId
-    }
-  });
-
-  if (!document) {
-    return null;
-  }
-
-  return document;
+  return findUserDocument(userId, documentId);
 }
 
 async function createUserDocument(userId, documentData, file) {
@@ -89,12 +82,7 @@ async function createUserDocument(userId, documentData, file) {
 }
 
 async function updateUserDocument(userId, documentId, documentData) {
-  const existingDocument = await prisma.document.findFirst({
-    where: {
-      id: documentId,
-      userId
-    }
-  });
+  const existingDocument = await findUserDocument(userId, documentId);
 
   if (!existingDocument) {
     return null;
@@ -113,12 +101,7 @@ async function updateUserDocument(userId, documentId, documentData) {
 }
 
 async function deleteUserDocument(userId, documentId) {
-  const existingDocument = await prisma.document.findFirst({
-    where: {
-      id: documentId,
-      userId
-    }
-  });
+  const existingDocument = await findUserDocument(userId, documentId);
 
   if (!existingDocument) {
     return null;

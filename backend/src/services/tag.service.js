@@ -13,6 +13,30 @@ function sanitizeTag(tag) {
   };
 }
 
+async function findUserTag(userId, tagId) {
+  return prisma.tag.findFirst({
+    where: {
+      id: tagId,
+      userId
+    }
+  });
+}
+
+async function findUserTagBySlug(userId, slug) {
+  const tag = await prisma.tag.findFirst({
+    where: {
+      userId,
+      slug
+    }
+  });
+
+  if (!tag) {
+    return null;
+  }
+
+  return sanitizeTag(tag);
+}
+
 async function getUserTags(userId) {
   const tags = await prisma.tag.findMany({
     where: {
@@ -27,27 +51,7 @@ async function getUserTags(userId) {
 }
 
 async function getUserTagById(userId, tagId) {
-  const tag = await prisma.tag.findFirst({
-    where: {
-      id: tagId,
-      userId
-    }
-  });
-
-  if (!tag) {
-    return null;
-  }
-
-  return sanitizeTag(tag);
-}
-
-async function findUserTagBySlug(userId, slug) {
-  const tag = await prisma.tag.findFirst({
-    where: {
-      userId,
-      slug
-    }
-  });
+  const tag = await findUserTag(userId, tagId);
 
   if (!tag) {
     return null;
@@ -89,12 +93,7 @@ async function createUserTag(userId, tagData) {
 }
 
 async function updateUserTag(userId, tagId, tagData) {
-  const existingTag = await prisma.tag.findFirst({
-    where: {
-      id: tagId,
-      userId
-    }
-  });
+  const existingTag = await findUserTag(userId, tagId);
 
   if (!existingTag) {
     return null;
@@ -130,12 +129,7 @@ async function updateUserTag(userId, tagId, tagData) {
 }
 
 async function deleteUserTag(userId, tagId) {
-  const existingTag = await prisma.tag.findFirst({
-    where: {
-      id: tagId,
-      userId
-    }
-  });
+  const existingTag = await findUserTag(userId, tagId);
 
   if (!existingTag) {
     return null;
