@@ -1,18 +1,18 @@
 const allowedStatuses = [
-  "Envoyée",
-  "En relance",
-  "Entretien",
-  "Refusée",
-  "Acceptée"
+  "sent",
+  "follow_up",
+  "interview",
+  "rejected",
+  "accepted"
 ];
 
 const allowedContractTypes = [
-  "CDI",
-  "CDD",
-  "Stage",
-  "Alternance",
-  "Freelance",
-  "Autre"
+  "permanent",
+  "fixed_term",
+  "internship",
+  "apprenticeship",
+  "freelance",
+  "other"
 ];
 
 function sanitizeRequiredString(value) {
