@@ -61,7 +61,7 @@ async function createUserContact(userId, payload) {
   return sanitizeContact(contact);
 }
 
-async function updateUserContact(userId, contactId, payload) {
+async function updateUserContact(userId, contactId, contactData) {
   const existingContact = await prisma.contact.findFirst({
     where: {
       id: contactId,
@@ -77,7 +77,7 @@ async function updateUserContact(userId, contactId, payload) {
     where: {
       id: contactId
     },
-    data: payload.contactData
+    data: contactData
   });
 
   return sanitizeContact(contact);

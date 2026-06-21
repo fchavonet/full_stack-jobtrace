@@ -48,7 +48,10 @@ async function getContact(request, response, next) {
 
 async function createContact(request, response, next) {
   try {
-    const contact = await createUserContact(request.user.id, request.body);
+    const contact = await createUserContact(
+      request.user.id,
+      request.body.contactData
+    );
 
     response.status(201).json({
       success: true,
@@ -67,7 +70,7 @@ async function updateContact(request, response, next) {
     const contact = await updateUserContact(
       request.user.id,
       request.params.id,
-      request.body
+      request.body.contactData
     );
 
     if (!contact) {
