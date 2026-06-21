@@ -130,62 +130,6 @@ async function deleteApplication(request, response, next) {
   }
 }
 
-async function linkContactToApplication(request, response, next) {
-  try {
-    const application = await linkContactToUserApplication(
-      request.user.id,
-      request.params.id,
-      request.body.contactData
-    );
-
-    if (!application) {
-      return response.status(404).json({
-        success: false,
-        message: "Application or contact not found.",
-        errors: []
-      });
-    }
-
-    response.status(200).json({
-      success: true,
-      message: "Contact linked to application successfully.",
-      data: {
-        application
-      }
-    });
-  } catch (error) {
-    next(error);
-  }
-}
-
-async function unlinkContactFromApplication(request, response, next) {
-  try {
-    const application = await unlinkContactFromUserApplication(
-      request.user.id,
-      request.params.id,
-      request.params.contactId
-    );
-
-    if (!application) {
-      return response.status(404).json({
-        success: false,
-        message: "Application contact link not found.",
-        errors: []
-      });
-    }
-
-    response.status(200).json({
-      success: true,
-      message: "Contact unlinked from application successfully.",
-      data: {
-        application
-      }
-    });
-  } catch (error) {
-    next(error);
-  }
-}
-
 async function linkTagToApplication(request, response, next) {
   try {
     const application = await linkTagToUserApplication(
@@ -242,26 +186,55 @@ async function unlinkTagFromApplication(request, response, next) {
   }
 }
 
-async function getApplicationHistory(request, response, next) {
+async function linkContactToApplication(request, response, next) {
   try {
-    const history = await getUserApplicationHistory(
+    const application = await linkContactToUserApplication(
       request.user.id,
-      request.params.id
+      request.params.id,
+      request.body.contactData
     );
 
-    if (!history) {
+    if (!application) {
       return response.status(404).json({
         success: false,
-        message: "Application not found.",
+        message: "Application or contact not found.",
         errors: []
       });
     }
 
     response.status(200).json({
       success: true,
-      message: "Application history retrieved successfully.",
+      message: "Contact linked to application successfully.",
       data: {
-        history
+        application
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+async function unlinkContactFromApplication(request, response, next) {
+  try {
+    const application = await unlinkContactFromUserApplication(
+      request.user.id,
+      request.params.id,
+      request.params.contactId
+    );
+
+    if (!application) {
+      return response.status(404).json({
+        success: false,
+        message: "Application contact link not found.",
+        errors: []
+      });
+    }
+
+    response.status(200).json({
+      success: true,
+      message: "Contact unlinked from application successfully.",
+      data: {
+        application
       }
     });
   } catch (error) {
@@ -318,6 +291,33 @@ async function unlinkDocumentFromApplication(request, response, next) {
       message: "Document unlinked from application successfully.",
       data: {
         application
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+async function getApplicationHistory(request, response, next) {
+  try {
+    const history = await getUserApplicationHistory(
+      request.user.id,
+      request.params.id
+    );
+
+    if (!history) {
+      return response.status(404).json({
+        success: false,
+        message: "Application not found.",
+        errors: []
+      });
+    }
+
+    response.status(200).json({
+      success: true,
+      message: "Application history retrieved successfully.",
+      data: {
+        history
       }
     });
   } catch (error) {
