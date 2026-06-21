@@ -10,6 +10,7 @@ import contactRoutes from "./routes/contact.routes.js";
 import applicationRoutes from "./routes/application.routes.js";
 import tagRoutes from "./routes/tag.routes.js";
 import documentRoutes from "./routes/document.routes.js";
+import achievementRoutes from "./routes/achievement.routes.js";
 
 const app = express();
 
@@ -23,6 +24,7 @@ app.use("/api/contacts", contactRoutes);
 app.use("/api/applications", applicationRoutes);
 app.use("/api/tags", tagRoutes);
 app.use("/api/documents", documentRoutes);
+app.use("/api/achievements", achievementRoutes);
 
 app.use(notFoundMiddleware);
 app.use(errorMiddleware);

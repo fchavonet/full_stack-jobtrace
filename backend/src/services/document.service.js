@@ -2,6 +2,8 @@ import fs from "fs/promises";
 
 import prisma from "../config/prisma.js";
 
+import { unlockFirstDocumentAchievement } from "./achievement.service.js";
+
 function sanitizeDocument(document) {
   return {
     id: document.id,
@@ -80,6 +82,8 @@ async function createUserDocument(userId, documentData, file) {
       path: file.path
     }
   });
+
+  await unlockFirstDocumentAchievement(userId);
 
   return sanitizeDocument(document);
 }

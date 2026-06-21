@@ -128,6 +128,28 @@ CREATE TABLE "application_history" (
     CONSTRAINT "application_history_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
+CREATE TABLE "achievements" (
+    "id" UUID NOT NULL,
+    "name" TEXT NOT NULL,
+    "slug" TEXT NOT NULL,
+    "description" TEXT NOT NULL,
+    "icon" TEXT,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "achievements_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "user_achievements" (
+    "id" UUID NOT NULL,
+    "user_id" UUID NOT NULL,
+    "achievement_id" UUID NOT NULL,
+    "unlocked_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "user_achievements_pkey" PRIMARY KEY ("id")
+);
+
 -- CreateIndex
 CREATE UNIQUE INDEX "users_email_key" ON "users"("email");
 
@@ -179,6 +201,18 @@ CREATE UNIQUE INDEX "application_documents_application_id_document_id_key" ON "a
 -- CreateIndex
 CREATE INDEX "application_history_application_id_idx" ON "application_history"("application_id");
 
+-- CreateIndex
+CREATE UNIQUE INDEX "achievements_slug_key" ON "achievements"("slug");
+
+-- CreateIndex
+CREATE INDEX "user_achievements_user_id_idx" ON "user_achievements"("user_id");
+
+-- CreateIndex
+CREATE INDEX "user_achievements_achievement_id_idx" ON "user_achievements"("achievement_id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "user_achievements_user_id_achievement_id_key" ON "user_achievements"("user_id", "achievement_id");
+
 -- AddForeignKey
 ALTER TABLE "applications" ADD CONSTRAINT "applications_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
@@ -211,3 +245,9 @@ ALTER TABLE "application_documents" ADD CONSTRAINT "application_documents_docume
 
 -- AddForeignKey
 ALTER TABLE "application_history" ADD CONSTRAINT "application_history_application_id_fkey" FOREIGN KEY ("application_id") REFERENCES "applications"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "user_achievements" ADD CONSTRAINT "user_achievements_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "user_achievements" ADD CONSTRAINT "user_achievements_achievement_id_fkey" FOREIGN KEY ("achievement_id") REFERENCES "achievements"("id") ON DELETE CASCADE ON UPDATE CASCADE;
