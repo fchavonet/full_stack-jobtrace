@@ -1,4 +1,5 @@
 import prisma from "../config/prisma.js";
+
 import { unlockFirstContactAchievement } from "./achievement.service.js";
 
 function sanitizeContact(contact) {
@@ -15,6 +16,15 @@ function sanitizeContact(contact) {
   };
 }
 
+async function findUserContact(userId, contactId) {
+  return prisma.contact.findFirst({
+    where: {
+      id: contactId,
+      userId
+    }
+  });
+}
+
 async function getUserContacts(userId) {
   const contacts = await prisma.contact.findMany({
     where: {
@@ -29,12 +39,7 @@ async function getUserContacts(userId) {
 }
 
 async function getUserContactById(userId, contactId) {
-  const contact = await prisma.contact.findFirst({
-    where: {
-      id: contactId,
-      userId
-    }
-  });
+  const contact = await findUserContact(userId, contactId);
 
   if (!contact) {
     return null;
@@ -43,16 +48,16 @@ async function getUserContactById(userId, contactId) {
   return sanitizeContact(contact);
 }
 
-async function createUserContact(userId, payload) {
+async function createUserContact(userId, contactData) {
   const contact = await prisma.contact.create({
     data: {
       userId,
-      firstName: payload.firstName,
-      lastName: payload.lastName,
-      email: payload.email,
-      phoneNumber: payload.phoneNumber,
-      company: payload.company,
-      notes: payload.notes
+      firstName: contactData.firstName,
+      lastName: contactData.lastName,
+      email: contactData.email,
+      phoneNumber: contactData.phoneNumber,
+      company: contactData.company,
+      notes: contactData.notes
     }
   });
 
@@ -61,13 +66,8 @@ async function createUserContact(userId, payload) {
   return sanitizeContact(contact);
 }
 
-async function updateUserContact(userId, contactId, payload) {
-  const existingContact = await prisma.contact.findFirst({
-    where: {
-      id: contactId,
-      userId
-    }
-  });
+async function updateUserContact(userId, contactId, contactData) {
+  const existingContact = await findUserContact(userId, contactId);
 
   if (!existingContact) {
     return null;
@@ -77,19 +77,14 @@ async function updateUserContact(userId, contactId, payload) {
     where: {
       id: contactId
     },
-    data: payload.contactData
+    data: contactData
   });
 
   return sanitizeContact(contact);
 }
 
 async function deleteUserContact(userId, contactId) {
-  const existingContact = await prisma.contact.findFirst({
-    where: {
-      id: contactId,
-      userId
-    }
-  });
+  const existingContact = await findUserContact(userId, contactId);
 
   if (!existingContact) {
     return null;

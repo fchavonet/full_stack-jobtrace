@@ -29,28 +29,28 @@ function buildContactData(request) {
   };
 }
 
-function hasAtLeastOneContactField(data) {
-  if (data.firstName) {
+function hasAtLeastOneContactField(contactData) {
+  if (contactData.firstName) {
     return true;
   }
 
-  if (data.lastName) {
+  if (contactData.lastName) {
     return true;
   }
 
-  if (data.email) {
+  if (contactData.email) {
     return true;
   }
 
-  if (data.phoneNumber) {
+  if (contactData.phoneNumber) {
     return true;
   }
 
-  if (data.company) {
+  if (contactData.company) {
     return true;
   }
 
-  if (data.notes) {
+  if (contactData.notes) {
     return true;
   }
 
@@ -76,7 +76,7 @@ function validateContactPayload(request, response, next) {
     });
   }
 
-  request.body = contactData;
+  request.body.contactData = contactData;
 
   next();
 }

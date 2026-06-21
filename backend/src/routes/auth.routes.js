@@ -1,7 +1,5 @@
 import express from "express";
 
-import authMiddleware from "../middlewares/auth.middleware.js";
-
 import {
   deleteAccount,
   exportAccount,
@@ -13,6 +11,8 @@ import {
   resetPassword,
   verifyEmail
 } from "../controllers/auth.controller.js";
+
+import authMiddleware from "../middlewares/auth.middleware.js";
 
 import {
   validateEmailVerificationPayload,

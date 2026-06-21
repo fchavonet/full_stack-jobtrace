@@ -4,23 +4,25 @@ import {
   createApplication,
   deleteApplication,
   getApplication,
+  getApplicationHistory,
   getApplications,
   linkContactToApplication,
-  unlinkContactFromApplication,
-  updateApplication,
-  linkTagToApplication,
-  unlinkTagFromApplication,
-  getApplicationHistory,
   linkDocumentToApplication,
-  unlinkDocumentFromApplication
+  linkTagToApplication,
+  unlinkContactFromApplication,
+  unlinkDocumentFromApplication,
+  unlinkTagFromApplication,
+  updateApplication
 } from "../controllers/application.controller.js";
+
 import authMiddleware from "../middlewares/auth.middleware.js";
+
 import {
   validateApplicationContactPayload,
+  validateApplicationDocumentPayload,
   validateApplicationPayload,
-  validateApplicationUpdatePayload,
   validateApplicationTagPayload,
-  validateApplicationDocumentPayload
+  validateApplicationUpdatePayload
 } from "../validators/application.validator.js";
 
 const router = express.Router();
@@ -32,11 +34,11 @@ router.get("/:id", authMiddleware, getApplication);
 router.patch("/:id", authMiddleware, validateApplicationUpdatePayload, updateApplication);
 router.delete("/:id", authMiddleware, deleteApplication);
 
-router.post("/:id/contacts", authMiddleware, validateApplicationContactPayload, linkContactToApplication);
-router.delete("/:id/contacts/:contactId", authMiddleware, unlinkContactFromApplication);
-
 router.post("/:id/tags", authMiddleware, validateApplicationTagPayload, linkTagToApplication);
 router.delete("/:id/tags/:tagId", authMiddleware, unlinkTagFromApplication);
+
+router.post("/:id/contacts", authMiddleware, validateApplicationContactPayload, linkContactToApplication);
+router.delete("/:id/contacts/:contactId", authMiddleware, unlinkContactFromApplication);
 
 router.post("/:id/documents", authMiddleware, validateApplicationDocumentPayload, linkDocumentToApplication);
 router.delete("/:id/documents/:documentId", authMiddleware, unlinkDocumentFromApplication);

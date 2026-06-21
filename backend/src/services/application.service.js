@@ -7,6 +7,16 @@ import {
   unlockFollowUpPlannedAchievement
 } from "./achievement.service.js";
 
+function sanitizeApplicationTag(applicationTag) {
+  return {
+    id: applicationTag.tag.id,
+    name: applicationTag.tag.name,
+    slug: applicationTag.tag.slug,
+    color: applicationTag.tag.color,
+    linkedAt: applicationTag.createdAt
+  };
+}
+
 function sanitizeApplicationContact(applicationContact) {
   return {
     id: applicationContact.contact.id,
@@ -18,16 +28,6 @@ function sanitizeApplicationContact(applicationContact) {
     notes: applicationContact.contact.notes,
     role: applicationContact.role,
     linkedAt: applicationContact.createdAt
-  };
-}
-
-function sanitizeApplicationTag(applicationTag) {
-  return {
-    id: applicationTag.tag.id,
-    name: applicationTag.tag.name,
-    slug: applicationTag.tag.slug,
-    color: applicationTag.tag.color,
-    linkedAt: applicationTag.createdAt
   };
 }
 
@@ -61,16 +61,20 @@ function sanitizeApplication(application) {
     updatedAt: application.updatedAt
   };
 
-  if (application.contacts) {
-    sanitizedApplication.contacts = application.contacts.map(sanitizeApplicationContact);
-  }
-
   if (application.tags) {
     sanitizedApplication.tags = application.tags.map(sanitizeApplicationTag);
   }
 
+  if (application.contacts) {
+    sanitizedApplication.contacts = application.contacts.map(
+      sanitizeApplicationContact
+    );
+  }
+
   if (application.documents) {
-    sanitizedApplication.documents = application.documents.map(sanitizeApplicationDocument);
+    sanitizedApplication.documents = application.documents.map(
+      sanitizeApplicationDocument
+    );
   }
 
   return sanitizedApplication;
@@ -85,29 +89,19 @@ function sanitizeApplicationHistory(history) {
   };
 }
 
-async function createApplicationHistory(applicationId, action, metadata = null) {
-  await prisma.applicationHistory.create({
-    data: {
-      applicationId,
-      action,
-      metadata
-    }
-  });
-}
-
 function getApplicationInclude() {
   return {
-    contacts: {
+    tags: {
       include: {
-        contact: true
+        tag: true
       },
       orderBy: {
         createdAt: "desc"
       }
     },
-    tags: {
+    contacts: {
       include: {
-        tag: true
+        contact: true
       },
       orderBy: {
         createdAt: "desc"
@@ -122,6 +116,62 @@ function getApplicationInclude() {
       }
     }
   };
+}
+
+async function createApplicationHistory(applicationId, action, metadata = null) {
+  await prisma.applicationHistory.create({
+    data: {
+      applicationId,
+      action,
+      metadata
+    }
+  });
+}
+
+async function findUserApplication(userId, applicationId) {
+  return prisma.application.findFirst({
+    where: {
+      id: applicationId,
+      userId
+    }
+  });
+}
+
+async function findUserApplicationWithRelations(userId, applicationId) {
+  return prisma.application.findFirst({
+    where: {
+      id: applicationId,
+      userId
+    },
+    include: getApplicationInclude()
+  });
+}
+
+async function findUserTag(userId, tagId) {
+  return prisma.tag.findFirst({
+    where: {
+      id: tagId,
+      userId
+    }
+  });
+}
+
+async function findUserContact(userId, contactId) {
+  return prisma.contact.findFirst({
+    where: {
+      id: contactId,
+      userId
+    }
+  });
+}
+
+async function findUserDocument(userId, documentId) {
+  return prisma.document.findFirst({
+    where: {
+      id: documentId,
+      userId
+    }
+  });
 }
 
 async function getUserApplications(userId) {
@@ -139,13 +189,10 @@ async function getUserApplications(userId) {
 }
 
 async function getUserApplicationById(userId, applicationId) {
-  const application = await prisma.application.findFirst({
-    where: {
-      id: applicationId,
-      userId
-    },
-    include: getApplicationInclude()
-  });
+  const application = await findUserApplicationWithRelations(
+    userId,
+    applicationId
+  );
 
   if (!application) {
     return null;
@@ -190,12 +237,7 @@ async function createUserApplication(userId, applicationData) {
 }
 
 async function updateUserApplication(userId, applicationId, applicationData) {
-  const existingApplication = await prisma.application.findFirst({
-    where: {
-      id: applicationId,
-      userId
-    }
-  });
+  const existingApplication = await findUserApplication(userId, applicationId);
 
   if (!existingApplication) {
     return null;
@@ -209,7 +251,10 @@ async function updateUserApplication(userId, applicationId, applicationData) {
     include: getApplicationInclude()
   });
 
-  if (applicationData.status && applicationData.status !== existingApplication.status) {
+  if (
+    applicationData.status
+    && applicationData.status !== existingApplication.status
+  ) {
     await createApplicationHistory(application.id, "application_status_updated", {
       previousStatus: existingApplication.status,
       newStatus: application.status
@@ -224,12 +269,7 @@ async function updateUserApplication(userId, applicationId, applicationData) {
 }
 
 async function deleteUserApplication(userId, applicationId) {
-  const existingApplication = await prisma.application.findFirst({
-    where: {
-      id: applicationId,
-      userId
-    }
-  });
+  const existingApplication = await findUserApplication(userId, applicationId);
 
   if (!existingApplication) {
     return null;
@@ -245,24 +285,103 @@ async function deleteUserApplication(userId, applicationId) {
   return sanitizeApplication(application);
 }
 
-async function linkContactToUserApplication(userId, applicationId, contactData) {
-  const existingApplication = await prisma.application.findFirst({
-    where: {
-      id: applicationId,
-      userId
-    }
-  });
+async function linkTagToUserApplication(userId, applicationId, tagData) {
+  const existingApplication = await findUserApplication(userId, applicationId);
 
   if (!existingApplication) {
     return null;
   }
 
-  const existingContact = await prisma.contact.findFirst({
+  const existingTag = await findUserTag(userId, tagData.tagId);
+
+  if (!existingTag) {
+    return null;
+  }
+
+  const existingLink = await prisma.applicationTag.findUnique({
     where: {
-      id: contactData.contactId,
-      userId
+      applicationId_tagId: {
+        applicationId,
+        tagId: tagData.tagId
+      }
     }
   });
+
+  if (!existingLink) {
+    await prisma.applicationTag.create({
+      data: {
+        applicationId,
+        tagId: tagData.tagId
+      }
+    });
+  }
+
+  await createApplicationHistory(applicationId, "tag_linked", {
+    tagId: tagData.tagId
+  });
+
+  await unlockApplicationOrganizedAchievement(userId);
+
+  const application = await findUserApplicationWithRelations(
+    userId,
+    applicationId
+  );
+
+  return sanitizeApplication(application);
+}
+
+async function unlinkTagFromUserApplication(userId, applicationId, tagId) {
+  const existingApplication = await findUserApplication(userId, applicationId);
+
+  if (!existingApplication) {
+    return null;
+  }
+
+  const existingTag = await findUserTag(userId, tagId);
+
+  if (!existingTag) {
+    return null;
+  }
+
+  const existingLink = await prisma.applicationTag.findUnique({
+    where: {
+      applicationId_tagId: {
+        applicationId,
+        tagId
+      }
+    }
+  });
+
+  if (!existingLink) {
+    return null;
+  }
+
+  await prisma.applicationTag.delete({
+    where: {
+      id: existingLink.id
+    }
+  });
+
+  await createApplicationHistory(applicationId, "tag_unlinked", {
+    tagId
+  });
+
+  const application = await findUserApplicationWithRelations(
+    userId,
+    applicationId
+  );
+
+  return sanitizeApplication(application);
+}
+
+async function linkContactToUserApplication(userId, applicationId, contactData) {
+  const existingApplication = await findUserApplication(userId, applicationId);
+
+  if (!existingApplication) {
+    return null;
+  }
+
+  const existingContact = await findUserContact(userId, contactData.contactId);
 
   if (!existingContact) {
     return null;
@@ -303,35 +422,22 @@ async function linkContactToUserApplication(userId, applicationId, contactData) 
 
   await unlockApplicationOrganizedAchievement(userId);
 
-  const application = await prisma.application.findFirst({
-    where: {
-      id: applicationId,
-      userId
-    },
-    include: getApplicationInclude()
-  });
+  const application = await findUserApplicationWithRelations(
+    userId,
+    applicationId
+  );
 
   return sanitizeApplication(application);
 }
 
 async function unlinkContactFromUserApplication(userId, applicationId, contactId) {
-  const existingApplication = await prisma.application.findFirst({
-    where: {
-      id: applicationId,
-      userId
-    }
-  });
+  const existingApplication = await findUserApplication(userId, applicationId);
 
   if (!existingApplication) {
     return null;
   }
 
-  const existingContact = await prisma.contact.findFirst({
-    where: {
-      id: contactId,
-      userId
-    }
-  });
+  const existingContact = await findUserContact(userId, contactId);
 
   if (!existingContact) {
     return null;
@@ -360,174 +466,25 @@ async function unlinkContactFromUserApplication(userId, applicationId, contactId
     contactId
   });
 
-  const application = await prisma.application.findFirst({
-    where: {
-      id: applicationId,
-      userId
-    },
-    include: getApplicationInclude()
-  });
+  const application = await findUserApplicationWithRelations(
+    userId,
+    applicationId
+  );
 
   return sanitizeApplication(application);
-}
-
-async function linkTagToUserApplication(userId, applicationId, tagData) {
-  const existingApplication = await prisma.application.findFirst({
-    where: {
-      id: applicationId,
-      userId
-    }
-  });
-
-  if (!existingApplication) {
-    return null;
-  }
-
-  const existingTag = await prisma.tag.findFirst({
-    where: {
-      id: tagData.tagId,
-      userId
-    }
-  });
-
-  if (!existingTag) {
-    return null;
-  }
-
-  const existingLink = await prisma.applicationTag.findUnique({
-    where: {
-      applicationId_tagId: {
-        applicationId,
-        tagId: tagData.tagId
-      }
-    }
-  });
-
-  if (!existingLink) {
-    await prisma.applicationTag.create({
-      data: {
-        applicationId,
-        tagId: tagData.tagId
-      }
-    });
-  }
-
-  await createApplicationHistory(applicationId, "tag_linked", {
-    tagId: tagData.tagId
-  });
-
-  await unlockApplicationOrganizedAchievement(userId);
-
-  const application = await prisma.application.findFirst({
-    where: {
-      id: applicationId,
-      userId
-    },
-    include: getApplicationInclude()
-  });
-
-  return sanitizeApplication(application);
-}
-
-async function unlinkTagFromUserApplication(userId, applicationId, tagId) {
-  const existingApplication = await prisma.application.findFirst({
-    where: {
-      id: applicationId,
-      userId
-    }
-  });
-
-  if (!existingApplication) {
-    return null;
-  }
-
-  const existingTag = await prisma.tag.findFirst({
-    where: {
-      id: tagId,
-      userId
-    }
-  });
-
-  if (!existingTag) {
-    return null;
-  }
-
-  const existingLink = await prisma.applicationTag.findUnique({
-    where: {
-      applicationId_tagId: {
-        applicationId,
-        tagId
-      }
-    }
-  });
-
-  if (!existingLink) {
-    return null;
-  }
-
-  await prisma.applicationTag.delete({
-    where: {
-      id: existingLink.id
-    }
-  });
-
-  await createApplicationHistory(applicationId, "tag_unlinked", {
-    tagId
-  });
-
-  const application = await prisma.application.findFirst({
-    where: {
-      id: applicationId,
-      userId
-    },
-    include: getApplicationInclude()
-  });
-
-  return sanitizeApplication(application);
-}
-
-async function getUserApplicationHistory(userId, applicationId) {
-  const existingApplication = await prisma.application.findFirst({
-    where: {
-      id: applicationId,
-      userId
-    }
-  });
-
-  if (!existingApplication) {
-    return null;
-  }
-
-  const history = await prisma.applicationHistory.findMany({
-    where: {
-      applicationId
-    },
-    orderBy: {
-      createdAt: "desc"
-    }
-  });
-
-  return history.map(sanitizeApplicationHistory);
 }
 
 async function linkDocumentToUserApplication(userId, applicationId, documentData) {
-  const existingApplication = await prisma.application.findFirst({
-    where: {
-      id: applicationId,
-      userId
-    }
-  });
+  const existingApplication = await findUserApplication(userId, applicationId);
 
   if (!existingApplication) {
     return null;
   }
 
-  const existingDocument = await prisma.document.findFirst({
-    where: {
-      id: documentData.documentId,
-      userId
-    }
-  });
+  const existingDocument = await findUserDocument(
+    userId,
+    documentData.documentId
+  );
 
   if (!existingDocument) {
     return null;
@@ -557,35 +514,26 @@ async function linkDocumentToUserApplication(userId, applicationId, documentData
 
   await unlockApplicationOrganizedAchievement(userId);
 
-  const application = await prisma.application.findFirst({
-    where: {
-      id: applicationId,
-      userId
-    },
-    include: getApplicationInclude()
-  });
+  const application = await findUserApplicationWithRelations(
+    userId,
+    applicationId
+  );
 
   return sanitizeApplication(application);
 }
 
-async function unlinkDocumentFromUserApplication(userId, applicationId, documentId) {
-  const existingApplication = await prisma.application.findFirst({
-    where: {
-      id: applicationId,
-      userId
-    }
-  });
+async function unlinkDocumentFromUserApplication(
+  userId,
+  applicationId,
+  documentId
+) {
+  const existingApplication = await findUserApplication(userId, applicationId);
 
   if (!existingApplication) {
     return null;
   }
 
-  const existingDocument = await prisma.document.findFirst({
-    where: {
-      id: documentId,
-      userId
-    }
-  });
+  const existingDocument = await findUserDocument(userId, documentId);
 
   if (!existingDocument) {
     return null;
@@ -614,15 +562,31 @@ async function unlinkDocumentFromUserApplication(userId, applicationId, document
     documentId
   });
 
-  const application = await prisma.application.findFirst({
-    where: {
-      id: applicationId,
-      userId
-    },
-    include: getApplicationInclude()
-  });
+  const application = await findUserApplicationWithRelations(
+    userId,
+    applicationId
+  );
 
   return sanitizeApplication(application);
+}
+
+async function getUserApplicationHistory(userId, applicationId) {
+  const existingApplication = await findUserApplication(userId, applicationId);
+
+  if (!existingApplication) {
+    return null;
+  }
+
+  const history = await prisma.applicationHistory.findMany({
+    where: {
+      applicationId
+    },
+    orderBy: {
+      createdAt: "desc"
+    }
+  });
+
+  return history.map(sanitizeApplicationHistory);
 }
 
 export {

@@ -8,8 +8,10 @@ import {
   updateDocument,
   uploadDocument
 } from "../controllers/document.controller.js";
+
 import authMiddleware from "../middlewares/auth.middleware.js";
 import { uploadDocument as uploadDocumentFile } from "../middlewares/documentUpload.middleware.js";
+
 import {
   validateDocumentPayload,
   validateDocumentUpdatePayload
@@ -18,7 +20,6 @@ import {
 const router = express.Router();
 
 router.get("/", authMiddleware, getDocuments);
-
 router.post(
   "/",
   authMiddleware,
