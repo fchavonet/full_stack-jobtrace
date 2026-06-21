@@ -136,7 +136,7 @@ afterAll(async function () {
 });
 
 describe("Authentication routes", function () {
-  test("POST /api/auth/register: should create a new unverified user", async function () {
+  test("POST /api/auth/register - Should create a new unverified user", async function () {
     const response = await registerTestUser();
 
     expect(response.status).toBe(201);
@@ -152,7 +152,7 @@ describe("Authentication routes", function () {
     });
   });
 
-  test("POST /api/auth/register: should reject duplicate email", async function () {
+  test("POST /api/auth/register - Should reject duplicate email", async function () {
     await registerTestUser();
 
     const response = await registerTestUser();
@@ -166,7 +166,7 @@ describe("Authentication routes", function () {
     });
   });
 
-  test("POST /api/auth/login: should reject unverified user", async function () {
+  test("POST /api/auth/login - Should reject unverified user", async function () {
     await registerTestUser();
 
     const response = await loginTestUser();
@@ -180,7 +180,7 @@ describe("Authentication routes", function () {
     });
   });
 
-  test("GET /api/auth/verify-email: should verify user email with valid token", async function () {
+  test("GET /api/auth/verify-email - Should verify user email with valid token", async function () {
     await registerTestUser();
 
     const response = await verifyTestUserEmail();
@@ -192,7 +192,7 @@ describe("Authentication routes", function () {
     expectDefaultUserFields(response.body.data.user, true);
   });
 
-  test("GET /api/auth/verify-email: should reject invalid token", async function () {
+  test("GET /api/auth/verify-email - Should reject invalid token", async function () {
     const response = await request(app)
       .get("/api/auth/verify-email")
       .query({
@@ -208,7 +208,7 @@ describe("Authentication routes", function () {
     });
   });
 
-  test("POST /api/auth/login: should login verified user", async function () {
+  test("POST /api/auth/login - Should login verified user", async function () {
     await registerTestUser();
     await verifyTestUserEmail();
 
@@ -226,7 +226,7 @@ describe("Authentication routes", function () {
     expect(response.body.data.token).toEqual(expect.any(String));
   });
 
-  test("POST /api/auth/login: should reject invalid credentials", async function () {
+  test("POST /api/auth/login - Should reject invalid credentials", async function () {
     await registerTestUser();
 
     const response = await request(app)
@@ -240,7 +240,7 @@ describe("Authentication routes", function () {
     expect(response.body).toEqual(INVALID_CREDENTIALS_RESPONSE);
   });
 
-  test("GET /api/auth/me: should return current authenticated user", async function () {
+  test("GET /api/auth/me - Should return current authenticated user", async function () {
     const token = await getAuthenticatedToken();
 
     const response = await request(app)
@@ -261,13 +261,13 @@ describe("Authentication routes", function () {
     expect(response.body.data.user.updatedAt).toEqual(expect.any(String));
   });
 
-  test("GET /api/auth/me: should reject request without authentication token", async function () {
+  test("GET /api/auth/me - Should reject request without authentication token", async function () {
     const response = await request(app).get("/api/auth/me");
 
     expectAuthenticationRequired(response);
   });
 
-  test("POST /api/auth/forgot-password: should process password reset request", async function () {
+  test("POST /api/auth/forgot-password - Should process password reset request", async function () {
     await registerTestUser();
 
     const response = await request(app)
@@ -291,7 +291,7 @@ describe("Authentication routes", function () {
     });
   });
 
-  test("POST /api/auth/forgot-password: should return neutral response for unknown email", async function () {
+  test("POST /api/auth/forgot-password - Should return neutral response for unknown email", async function () {
     const response = await request(app)
       .post("/api/auth/forgot-password")
       .send({
@@ -309,7 +309,7 @@ describe("Authentication routes", function () {
     expect(sendPasswordResetEmail).not.toHaveBeenCalled();
   });
 
-  test("POST /api/auth/reset-password: should reset forgotten password with valid token", async function () {
+  test("POST /api/auth/reset-password - Should reset forgotten password with valid token", async function () {
     await registerTestUser();
 
     await request(app)
@@ -345,7 +345,7 @@ describe("Authentication routes", function () {
     expect(loginResponse.body.data.token).toEqual(expect.any(String));
   });
 
-  test("POST /api/auth/reset-password: should reject invalid token", async function () {
+  test("POST /api/auth/reset-password - Should reject invalid token", async function () {
     const response = await request(app)
       .post("/api/auth/reset-password")
       .send({
@@ -362,7 +362,7 @@ describe("Authentication routes", function () {
     });
   });
 
-  test("GET /api/auth/export: should export authenticated user data without sensitive fields", async function () {
+  test("GET /api/auth/export - Should export authenticated user data without sensitive fields", async function () {
     const token = await getAuthenticatedToken();
 
     const response = await request(app)
@@ -400,13 +400,13 @@ describe("Authentication routes", function () {
     expect(serializedExport).not.toContain("reset_token_expires");
   });
 
-  test("GET /api/auth/export: should reject request without authentication token", async function () {
+  test("GET /api/auth/export - Should reject request without authentication token", async function () {
     const response = await request(app).get("/api/auth/export");
 
     expectAuthenticationRequired(response);
   });
 
-  test("DELETE /api/auth/me: should delete authenticated user account", async function () {
+  test("DELETE /api/auth/me - Should delete authenticated user account", async function () {
     const token = await getAuthenticatedToken();
 
     const deleteResponse = await request(app)
@@ -427,7 +427,7 @@ describe("Authentication routes", function () {
     expect(loginAfterDeletionResponse.body).toEqual(INVALID_CREDENTIALS_RESPONSE);
   });
 
-  test("DELETE /api/auth/me: should reject request without authentication token", async function () {
+  test("DELETE /api/auth/me - Should reject request without authentication token", async function () {
     const response = await request(app).delete("/api/auth/me");
 
     expectAuthenticationRequired(response);

@@ -81,7 +81,7 @@ afterAll(async function () {
 });
 
 describe("Application routes", function () {
-  test("POST /api/applications: should create authenticated user application", async function () {
+  test("POST /api/applications - Should create authenticated user application", async function () {
     const { token } = await createAuthenticatedTestUser();
 
     const response = await createTestApplication(token);
@@ -93,7 +93,7 @@ describe("Application routes", function () {
     expectApplicationFields(response.body.data.application);
   });
 
-  test("GET /api/applications: should return authenticated user applications", async function () {
+  test("GET /api/applications - Should return authenticated user applications", async function () {
     const { token } = await createAuthenticatedTestUser();
 
     await createTestApplication(token);
@@ -110,7 +110,7 @@ describe("Application routes", function () {
     expectApplicationFields(response.body.data.applications[0]);
   });
 
-  test("GET /api/applications/:id: should return authenticated user application", async function () {
+  test("GET /api/applications/:id - Should return authenticated user application", async function () {
     const { token } = await createAuthenticatedTestUser();
 
     const createResponse = await createTestApplication(token);
@@ -127,7 +127,7 @@ describe("Application routes", function () {
     expectApplicationFields(response.body.data.application);
   });
 
-  test("PATCH /api/applications/:id: should update authenticated user application", async function () {
+  test("PATCH /api/applications/:id - Should update authenticated user application", async function () {
     const { token } = await createAuthenticatedTestUser();
 
     const createResponse = await createTestApplication(token);
@@ -151,7 +151,7 @@ describe("Application routes", function () {
     });
   });
 
-  test("DELETE /api/applications/:id: should delete authenticated user application", async function () {
+  test("DELETE /api/applications/:id - Should delete authenticated user application", async function () {
     const { token } = await createAuthenticatedTestUser();
 
     const createResponse = await createTestApplication(token);
@@ -179,7 +179,7 @@ describe("Application routes", function () {
     });
   });
 
-  test("POST /api/applications: should reject invalid application status", async function () {
+  test("POST /api/applications - Should reject invalid application status", async function () {
     const { token } = await createAuthenticatedTestUser();
 
     const response = await createTestApplication(token, {
@@ -198,7 +198,7 @@ describe("Application routes", function () {
     });
   });
 
-  test("POST /api/applications: should reject invalid application payload", async function () {
+  test("POST /api/applications - Should reject invalid application payload", async function () {
     const { token } = await createAuthenticatedTestUser();
 
     const response = await request(app)
@@ -225,7 +225,7 @@ describe("Application routes", function () {
     });
   });
 
-  test("PATCH /api/applications/:id: should reject empty update payload", async function () {
+  test("PATCH /api/applications/:id - Should reject empty update payload", async function () {
     const { token } = await createAuthenticatedTestUser();
 
     const createResponse = await createTestApplication(token);
@@ -247,7 +247,7 @@ describe("Application routes", function () {
     });
   });
 
-  test("GET /api/applications/:id: should return not found for unknown application", async function () {
+  test("GET /api/applications/:id - Should return not found for unknown application", async function () {
     const { token } = await createAuthenticatedTestUser();
 
     const response = await request(app)
@@ -263,7 +263,7 @@ describe("Application routes", function () {
     });
   });
 
-  test("GET /api/applications/:id/history: should return authenticated user application history", async function () {
+  test("GET /api/applications/:id/history - Should return authenticated user application history", async function () {
     const { token } = await createAuthenticatedTestUser();
 
     const createResponse = await createTestApplication(token);
@@ -307,13 +307,13 @@ describe("Application routes", function () {
     expect(response.body.data.history[0].createdAt).toEqual(expect.any(String));
   });
 
-  test("GET /api/applications: should reject request without authentication token", async function () {
+  test("GET /api/applications - Should reject request without authentication token", async function () {
     const response = await request(app).get("/api/applications");
 
     expectAuthenticationRequired(response);
   });
 
-  test("GET /api/applications/:id/history: should reject request without authentication token", async function () {
+  test("GET /api/applications/:id/history - Should reject request without authentication token", async function () {
     const response = await request(app)
       .get("/api/applications/00000000-0000-0000-0000-000000000000/history");
 
