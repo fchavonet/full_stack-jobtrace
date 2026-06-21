@@ -40,6 +40,7 @@ function isValidColor(value) {
 function validateTagPayload(request, response, next) {
   const name = sanitizeRequiredString(request.body.name);
   const color = sanitizeOptionalString(request.body.color);
+  const slug = createSlug(name);
   const errors = [];
 
   if (name.length === 0) {
@@ -50,14 +51,12 @@ function validateTagPayload(request, response, next) {
     errors.push("Tag name must contain at most 50 characters.");
   }
 
-  if (!isValidColor(color)) {
-    errors.push("Tag color must be a valid hexadecimal color.");
-  }
-
-  const slug = createSlug(name);
-
   if (slug.length === 0) {
     errors.push("Tag slug is invalid.");
+  }
+
+  if (!isValidColor(color)) {
+    errors.push("Tag color must be a valid hexadecimal color.");
   }
 
   if (errors.length > 0) {
@@ -83,14 +82,17 @@ function validateTagUpdatePayload(request, response, next) {
 
   if (request.body.name !== undefined) {
     const name = sanitizeRequiredString(request.body.name);
+    const slug = createSlug(name);
 
     if (name.length === 0) {
       errors.push("Tag name cannot be empty.");
     } else if (name.length > 50) {
       errors.push("Tag name must contain at most 50 characters.");
+    } else if (slug.length === 0) {
+      errors.push("Tag slug is invalid.");
     } else {
       tagData.name = name;
-      tagData.slug = createSlug(name);
+      tagData.slug = slug;
     }
   }
 
@@ -106,10 +108,6 @@ function validateTagUpdatePayload(request, response, next) {
 
   if (Object.keys(tagData).length === 0) {
     errors.push("At least one valid tag field must be provided.");
-  }
-
-  if (tagData.slug !== undefined && tagData.slug.length === 0) {
-    errors.push("Tag slug is invalid.");
   }
 
   if (errors.length > 0) {
