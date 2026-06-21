@@ -6,14 +6,8 @@ node_modules/
 .env.local
 .env.*.local
 
-# Build
-dist/
-build/
-
-# Logs
-logs/
-*.log
-npm-debug.log*
+# Database
+*.sqlite
 
 # Uploads
 backend/uploads/*
@@ -22,8 +16,18 @@ backend/uploads/documents/*
 !backend/uploads/documents/
 !backend/uploads/documents/.gitkeep
 
-# Database
-*.sqlite
+# Test coverage
+coverage/
+backend/coverage/
+
+# Build
+dist/
+build/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
 
 # OS
 .DS_Store
