@@ -2107,8 +2107,338 @@ Each request is rejected because no JWT token was provided.
 
 Status:
 
+## 14. Achievements
 
-## 14. User data export
+### GET `/api/achievements` before user actions
+
+#### Goal
+
+Verify that an authenticated user can retrieve the achievements catalog.
+
+At this point, achievements should exist but should not be unlocked yet for the current user.
+
+#### Command to run
+
+```bash
+curl -s http://localhost:4000/api/achievements \
+  -H "Authorization: Bearer $TOKEN" | jq
+```
+
+#### Expected result
+
+The response should confirm that achievements are retrieved successfully.
+
+Example:
+
+```json
+{
+  "success": true,
+  "message": "Achievements retrieved successfully.",
+  "data": {
+    "achievements": [
+      {
+        "id": "*",
+        "name": "First application",
+        "slug": "first-application",
+        "description": "Create your first job application.",
+        "icon": "briefcase",
+        "unlocked": false,
+        "unlockedAt": null,
+        "createdAt": "*"
+      },
+      {
+        "id": "*",
+        "name": "First contact",
+        "slug": "first-contact",
+        "description": "Create your first professional contact.",
+        "icon": "user",
+        "unlocked": false,
+        "unlockedAt": null,
+        "createdAt": "*"
+      },
+      {
+        "id": "*",
+        "name": "First document",
+        "slug": "first-document",
+        "description": "Upload your first document.",
+        "icon": "file",
+        "unlocked": false,
+        "unlockedAt": null,
+        "createdAt": "*"
+      },
+      {
+        "id": "*",
+        "name": "First tag",
+        "slug": "first-tag",
+        "description": "Create your first organization tag.",
+        "icon": "tag",
+        "unlocked": false,
+        "unlockedAt": null,
+        "createdAt": "*"
+      },
+      {
+        "id": "*",
+        "name": "Application organized",
+        "slug": "application-organized",
+        "description": "Link a contact, a tag or a document to an application.",
+        "icon": "link",
+        "unlocked": false,
+        "unlockedAt": null,
+        "createdAt": "*"
+      },
+      {
+        "id": "*",
+        "name": "Follow-up planned",
+        "slug": "follow-up-planned",
+        "description": "Create an application with a follow-up date.",
+        "icon": "calendar",
+        "unlocked": false,
+        "unlockedAt": null,
+        "createdAt": "*"
+      },
+      {
+        "id": "*",
+        "name": "Five applications",
+        "slug": "five-applications",
+        "description": "Create five job applications.",
+        "icon": "target",
+        "unlocked": false,
+        "unlockedAt": null,
+        "createdAt": "*"
+      }
+    ]
+  }
+}
+```
+
+Status:
+
+### First application and follow-up achievements
+
+#### Goal
+
+Verify that creating an application unlocks the first application achievement.
+
+Verify that creating an application with a follow-up date unlocks the follow-up planned achievement.
+
+This validation can reuse the application created during the applications CRUD section.
+
+#### Command to run
+
+```bash
+curl -s http://localhost:4000/api/achievements \
+  -H "Authorization: Bearer $TOKEN" | jq
+```
+
+#### Expected result
+
+The `first-application` achievement should be unlocked.
+
+The `follow-up-planned` achievement should also be unlocked if the created application has a `followUpAt` value.
+
+Example:
+
+```json
+{
+  "name": "First application",
+  "slug": "first-application",
+  "unlocked": true,
+  "unlockedAt": "*"
+}
+```
+
+```json
+{
+  "name": "Follow-up planned",
+  "slug": "follow-up-planned",
+  "unlocked": true,
+  "unlockedAt": "*"
+}
+```
+
+Status:
+
+### First contact achievement
+
+#### Goal
+
+Verify that creating a contact unlocks the first contact achievement.
+
+This validation can reuse the contact created during the contacts CRUD section.
+
+#### Command to run
+
+```bash
+curl -s http://localhost:4000/api/achievements \
+  -H "Authorization: Bearer $TOKEN" | jq
+```
+
+#### Expected result
+
+The `first-contact` achievement should be unlocked.
+
+Example:
+
+```json
+{
+  "name": "First contact",
+  "slug": "first-contact",
+  "unlocked": true,
+  "unlockedAt": "*"
+}
+```
+
+Status:
+
+### First document achievement
+
+#### Goal
+
+Verify that uploading a document unlocks the first document achievement.
+
+This validation can reuse the document uploaded during the documents CRUD section.
+
+#### Command to run
+
+```bash
+curl -s http://localhost:4000/api/achievements \
+  -H "Authorization: Bearer $TOKEN" | jq
+```
+
+#### Expected result
+
+The `first-document` achievement should be unlocked.
+
+Example:
+
+```json
+{
+  "name": "First document",
+  "slug": "first-document",
+  "unlocked": true,
+  "unlockedAt": "*"
+}
+```
+
+Status:
+
+### First tag achievement
+
+#### Goal
+
+Verify that creating a tag unlocks the first tag achievement.
+
+This validation can reuse the tag created during the tags CRUD section.
+
+#### Command to run
+
+```bash
+curl -s http://localhost:4000/api/achievements \
+  -H "Authorization: Bearer $TOKEN" | jq
+```
+
+#### Expected result
+
+The `first-tag` achievement should be unlocked.
+
+Example:
+
+```json
+{
+  "name": "First tag",
+  "slug": "first-tag",
+  "unlocked": true,
+  "unlockedAt": "*"
+}
+```
+
+Status:
+
+### Application organized achievement
+
+#### Goal
+
+Verify that linking a contact, tag or document to an application unlocks the application organized achievement.
+
+This validation can reuse the links created during the business route validation.
+
+#### Command to run
+
+```bash
+curl -s http://localhost:4000/api/achievements \
+  -H "Authorization: Bearer $TOKEN" | jq
+```
+
+#### Expected result
+
+The `application-organized` achievement should be unlocked.
+
+Example:
+
+```json
+{
+  "name": "Application organized",
+  "slug": "application-organized",
+  "unlocked": true,
+  "unlockedAt": "*"
+}
+```
+
+Status:
+
+### Five applications achievement
+
+#### Goal
+
+Verify that creating five applications unlocks the five applications achievement.
+
+#### Command to run
+
+Create additional applications until the authenticated user has five applications in total.
+
+Then run:
+
+```bash
+curl -s http://localhost:4000/api/achievements \
+  -H "Authorization: Bearer $TOKEN" | jq
+```
+
+#### Expected result
+
+The `five-applications` achievement should be unlocked.
+
+Example:
+
+```json
+{
+  "name": "Five applications",
+  "slug": "five-applications",
+  "unlocked": true,
+  "unlockedAt": "*"
+}
+```
+
+Status:
+
+### GET `/api/achievements` without JWT
+
+#### Goal
+
+Verify that achievements routes are protected.
+
+#### Command to run
+
+```bash
+curl -s http://localhost:4000/api/achievements | jq
+```
+
+#### Expected result
+
+The request should fail because no JWT was provided.
+
+Status:
+
+## 15. User data export
 
 ### GET `/api/auth/export`
 
@@ -2130,7 +2460,7 @@ The response contains the authenticated user data, applications, contacts, docum
 Status:
 
 
-## 15. Cleanup and account deletion
+## 16. Cleanup and account deletion
 
 ### DELETE `/api/applications/:id`
 
@@ -2350,7 +2680,7 @@ curl -s -X POST http://localhost:4000/api/auth/login \
 Status:
 
 
-## 16. Current backend validation summary
+## 17. Current backend validation summary
 
 The following backend features have been manually validated:
 
@@ -2386,6 +2716,16 @@ The following backend features have been manually validated:
 - User data isolation on business resources.
 - Validation errors on business routes.
 - Duplicate tag protection.
+- Achievements catalog retrieval has been validated.
+- Achievement unlock status per authenticated user has been validated.
+- First application achievement has been validated.
+- First contact achievement has been validated.
+- First document achievement has been validated.
+- First tag achievement has been validated.
+- Application organized achievement has been validated.
+- Follow-up planned achievement has been validated.
+- Five applications achievement has been validated.
+- Achievements routes are protected by JWT.
 - User data export without sensitive fields.
 - Account deletion.
 - Coherent API responses.
