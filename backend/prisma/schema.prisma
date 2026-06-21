@@ -8,26 +8,27 @@ datasource db {
 }
 
 model User {
-  id                 String        @id @default(uuid()) @db.Uuid
-  email              String        @unique
-  passwordHash       String        @map("password_hash")
-  firstName          String?       @map("first_name")
-  lastName           String?       @map("last_name")
-  avatarUrl          String?       @map("avatar_url")
-  emailVerified      Boolean       @default(false) @map("email_verified")
-  emailVerifyToken   String?       @map("email_verify_token")
-  emailVerifyExpires DateTime?     @map("email_verify_expires")
-  resetToken         String?       @map("reset_token")
-  resetTokenExpires  DateTime?     @map("reset_token_expires")
-  theme              String        @default("light")
-  dailyGoal          Int           @default(5) @map("daily_goal")
-  followUpDelayDays  Int           @default(15) @map("follow_up_delay_days")
-  createdAt          DateTime      @default(now()) @map("created_at")
-  updatedAt          DateTime      @updatedAt @map("updated_at")
+  id                 String            @id @default(uuid()) @db.Uuid
+  email              String            @unique
+  passwordHash       String            @map("password_hash")
+  firstName          String?           @map("first_name")
+  lastName           String?           @map("last_name")
+  avatarUrl          String?           @map("avatar_url")
+  emailVerified      Boolean           @default(false) @map("email_verified")
+  emailVerifyToken   String?           @map("email_verify_token")
+  emailVerifyExpires DateTime?         @map("email_verify_expires")
+  resetToken         String?           @map("reset_token")
+  resetTokenExpires  DateTime?         @map("reset_token_expires")
+  theme              String            @default("light")
+  dailyGoal          Int               @default(5) @map("daily_goal")
+  followUpDelayDays  Int               @default(15) @map("follow_up_delay_days")
+  createdAt          DateTime          @default(now()) @map("created_at")
+  updatedAt          DateTime          @updatedAt @map("updated_at")
   applications       Application[]
   contacts           Contact[]
   documents          Document[]
   tags               Tag[]
+  achievements       UserAchievement[]
 
   @@map("users")
 }
@@ -164,4 +165,30 @@ model ApplicationHistory {
 
   @@index([applicationId])
   @@map("application_history")
+}
+
+model Achievement {
+  id          String            @id @default(uuid()) @db.Uuid
+  name        String
+  slug        String            @unique
+  description String
+  icon        String?
+  createdAt   DateTime          @default(now()) @map("created_at")
+  users       UserAchievement[]
+
+  @@map("achievements")
+}
+
+model UserAchievement {
+  id            String      @id @default(uuid()) @db.Uuid
+  userId        String      @map("user_id") @db.Uuid
+  achievementId String      @map("achievement_id") @db.Uuid
+  unlockedAt    DateTime    @default(now()) @map("unlocked_at")
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  achievement   Achievement @relation(fields: [achievementId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, achievementId])
+  @@index([userId])
+  @@index([achievementId])
+  @@map("user_achievements")
 }
