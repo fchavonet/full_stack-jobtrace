@@ -9,14 +9,18 @@
   "scripts": {
     "dev": "nodemon src/server.js",
     "start": "node src/server.js",
-    "lint": "eslint .",
-    "fix": "eslint . --fix",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:reset": "prisma migrate reset",
     "prisma:status": "prisma migrate status",
     "prisma:studio": "prisma studio",
-    "prisma:deploy": "prisma migrate deploy"
+    "prisma:deploy": "prisma migrate deploy",
+    "lint": "eslint .",
+    "fix": "eslint . --fix",
+    "test": "cross-env NODE_ENV=test vitest run --fileParallelism=false --slowTestThreshold=1000",
+    "test:verbose": "cross-env NODE_ENV=test vitest run --fileParallelism=false --reporter=verbose",
+    "test:watch": "cross-env NODE_ENV=test vitest --fileParallelism=false",
+    "test:coverage": "cross-env NODE_ENV=test vitest run --fileParallelism=false --coverage"
   },
   "dependencies": {
     "@prisma/client": "^6.19.3",
@@ -30,9 +34,13 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@vitest/coverage-v8": "^4.1.9",
+    "cross-env": "^10.1.0",
     "eslint": "^10.5.0",
     "globals": "^17.6.0",
     "nodemon": "^3.1.11",
-    "prisma": "^6.19.3"
+    "prisma": "^6.19.3",
+    "supertest": "^7.2.2",
+    "vitest": "^4.1.9"
   }
 }
