@@ -64,10 +64,20 @@ function expectAuthenticationRequired(response) {
 }
 
 async function cleanUploadedDocuments() {
-  await fs.rm(uploadDirectory, {
-    recursive: true,
-    force: true
+  await fs.mkdir(uploadDirectory, {
+    recursive: true
   });
+
+  const uploadedFiles = await fs.readdir(uploadDirectory);
+
+  for (const uploadedFile of uploadedFiles) {
+    if (uploadedFile !== ".gitkeep") {
+      await fs.rm(`${uploadDirectory}/${uploadedFile}`, {
+        recursive: true,
+        force: true
+      });
+    }
+  }
 }
 
 async function createTestApplication(token) {
