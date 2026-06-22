@@ -1,5 +1,7 @@
 import cors from "cors";
 import express from "express";
+import swaggerUi from "swagger-ui-express";
+import YAML from "yamljs";
 
 import errorMiddleware from "./middlewares/error.middleware.js";
 import notFoundMiddleware from "./middlewares/notFound.middleware.js";
@@ -14,6 +16,29 @@ import profileRoutes from "./routes/profile.routes.js";
 import tagRoutes from "./routes/tag.routes.js";
 
 const app = express();
+
+app.disable("x-powered-by");
+const swaggerDocument = YAML.load("docs/openapi.yaml");
+
+app.use(
+  "/api/doc",
+  swaggerUi.serve,
+  swaggerUi.setup(swaggerDocument, {
+    customSiteTitle: "JobTrace - Backend: documentation",
+    swaggerOptions: {
+      docExpansion: "list",
+      defaultModelsExpandDepth: -1
+    },
+    customCss: `
+      .swagger-ui .info .title small,
+      .swagger-ui .info .title .version-stamp,
+      .swagger-ui .info .title .version,
+      .swagger-ui .info .title small pre {
+        display: none !important;
+      }
+    `
+  })
+);
 
 app.use(cors());
 app.use(express.json());

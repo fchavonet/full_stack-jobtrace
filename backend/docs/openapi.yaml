@@ -1,0 +1,2510 @@
+openapi: 3.0.3
+
+info:
+  title: "JobTrace - Backend: documentation"
+  version: 0.1.0
+  description: |
+    JobTrace is a web application designed to help users track and organize
+    their job applications in a clear and structured way.
+
+    This OpenAPI documentation describes the backend API routes, request formats
+    and responses used by the application.
+
+servers:
+- url: http://localhost:4000
+
+tags:
+- name: Health
+  description: API and database health checks
+- name: Authentication
+  description: Registration, login, email verification and account management
+- name: Profile
+  description: User profile, settings and password management
+- name: Applications
+  description: Job application management
+- name: Tags
+  description: User tag management
+- name: Contacts
+  description: User contact management
+- name: Documents
+  description: Document upload, download and management
+- name: Relations
+  description: Application relations with tags, contacts and documents
+- name: Achievements
+  description: User achievement tracking
+
+paths:
+  /api/health:
+    get:
+      tags:
+      - Health
+      summary: Check API health
+      responses:
+        "200":
+          description: API is running.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthResponse"
+              example:
+                success: true
+                message: API is running.
+                data:
+                  status: ok
+
+  /api/health/db:
+    get:
+      tags:
+      - Health
+      summary: Check database health
+      responses:
+        "200":
+          description: Database connection is working.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthResponse"
+              example:
+                success: true
+                message: Database connection is working.
+                data:
+                  status: ok
+        "503":
+          description: Database connection failed.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                success: false
+                message: Database connection failed.
+                errors: []
+
+  /api/auth/register:
+    post:
+      tags:
+      - Authentication
+      summary: Register a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterRequest"
+      responses:
+        "201":
+          description: User registered successfully. Please check your email to 
+            verify your account.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserResponse"
+              example:
+                success: true
+                message: User registered successfully. Please check your email 
+                  to verify your account.
+                data:
+                  user:
+                    id: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+                    email: dick.grayson@example.com
+                    firstName:
+                    lastName:
+                    avatarUrl:
+                    emailVerified: false
+                    theme: light
+                    dailyGoal: 5
+                    followUpDelayDays: 15
+                    createdAt: "2026-06-22T17:12:37.374Z"
+                    updatedAt: "2026-06-22T17:12:37.374Z"
+        "400":
+          description: Email or password validation failed.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              examples:
+                emailRequired:
+                  value:
+                    success: false
+                    message: Email is required.
+                    errors: []
+                invalidPassword:
+                  value:
+                    success: false
+                    message: Password must contain at least 6 characters, one 
+                      lowercase letter, one uppercase letter and one digit.
+                    errors: []
+        "409":
+          description: Email is already registered.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                success: false
+                message: Email is already registered.
+                errors: []
+
+  /api/auth/verify-email:
+    get:
+      tags:
+      - Authentication
+      summary: Verify user email address
+      parameters:
+      - name: token
+        in: query
+        required: true
+        schema:
+          type: string
+        description: Replace this example with the email verification token received by email.
+        example: email-verification-token-value
+      responses:
+        "200":
+          description: Email verified successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserResponse"
+              example:
+                success: true
+                message: Email verified successfully.
+                data:
+                  user:
+                    id: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+                    email: dick.grayson@example.com
+                    firstName:
+                    lastName:
+                    avatarUrl:
+                    emailVerified: true
+                    theme: light
+                    dailyGoal: 5
+                    followUpDelayDays: 15
+                    createdAt: "2026-06-22T17:12:37.374Z"
+                    updatedAt: "2026-06-22T17:14:00.000Z"
+        "400":
+          description: Email verification token is missing, invalid or expired.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              examples:
+                tokenRequired:
+                  value:
+                    success: false
+                    message: Email verification token is required.
+                    errors: []
+                invalidToken:
+                  value:
+                    success: false
+                    message: Email verification token is invalid.
+                    errors: []
+                expiredToken:
+                  value:
+                    success: false
+                    message: Email verification token has expired.
+                    errors: []
+
+  /api/auth/login:
+    post:
+      tags:
+      - Authentication
+      summary: Log in a verified user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+      responses:
+        "200":
+          description: User logged in successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoginResponse"
+              example:
+                success: true
+                message: User logged in successfully.
+                data:
+                  user:
+                    id: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+                    email: dick.grayson@example.com
+                    firstName: Dick
+                    lastName: Grayson
+                    avatarUrl:
+                    emailVerified: true
+                    theme: light
+                    dailyGoal: 5
+                    followUpDelayDays: 15
+                    createdAt: "2026-06-22T17:12:37.374Z"
+                    updatedAt: "2026-06-22T17:14:00.000Z"
+                  token: jwt-token-value
+        "400":
+          description: Email or password validation failed.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              examples:
+                emailRequired:
+                  value:
+                    success: false
+                    message: Email is required.
+                    errors: []
+                passwordRequired:
+                  value:
+                    success: false
+                    message: Password is required.
+                    errors: []
+        "401":
+          description: Invalid credentials.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                success: false
+                message: Invalid credentials.
+                errors: []
+        "403":
+          description: Email must be verified before login.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                success: false
+                message: Email must be verified before login.
+                errors: []
+
+  /api/auth/me:
+    get:
+      tags:
+      - Authentication
+      summary: Get current authenticated user
+      security:
+      - JWT: []
+      responses:
+        "200":
+          description: Current user retrieved successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          description: User not found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                success: false
+                message: User not found.
+                errors: []
+    delete:
+      tags:
+      - Authentication
+      summary: Delete current authenticated user account
+      security:
+      - JWT: []
+      responses:
+        "200":
+          description: Account deleted successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmptySuccessResponse"
+              example:
+                success: true
+                message: Account deleted successfully.
+                data: {}
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          description: User not found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                success: false
+                message: User not found.
+                errors: []
+
+  /api/auth/export:
+    get:
+      tags:
+      - Authentication
+      summary: Export authenticated user data
+      security:
+      - JWT: []
+      responses:
+        "200":
+          description: User data exported successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExportResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          description: User not found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                success: false
+                message: User not found.
+                errors: []
+
+  /api/auth/forgot-password:
+    post:
+      tags:
+      - Authentication
+      summary: Request a password reset email
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ForgotPasswordRequest"
+      responses:
+        "200":
+          description: Password reset request processed successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmptySuccessResponse"
+              example:
+                success: true
+                message: Password reset request processed successfully.
+                data: {}
+        "400":
+          description: Email validation failed.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              examples:
+                emailRequired:
+                  value:
+                    success: false
+                    message: Email is required.
+                    errors: []
+                emailInvalid:
+                  value:
+                    success: false
+                    message: Email is invalid.
+                    errors: []
+
+  /api/auth/reset-password:
+    post:
+      tags:
+      - Authentication
+      summary: Reset password with token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ResetPasswordRequest"
+      responses:
+        "200":
+          description: Password reset successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmptySuccessResponse"
+              example:
+                success: true
+                message: Password reset successfully.
+                data: {}
+        "400":
+          description: Password reset token or password validation failed.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              examples:
+                tokenRequired:
+                  value:
+                    success: false
+                    message: Password reset token is required.
+                    errors: []
+                invalidToken:
+                  value:
+                    success: false
+                    message: Password reset token is invalid.
+                    errors: []
+                expiredToken:
+                  value:
+                    success: false
+                    message: Password reset token has expired.
+                    errors: []
+
+  /api/profile:
+    get:
+      tags:
+      - Profile
+      summary: Get authenticated user profile
+      security:
+      - JWT: []
+      responses:
+        "200":
+          description: Profile retrieved successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProfileResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/UserNotFound"
+    patch:
+      tags:
+      - Profile
+      summary: Update authenticated user profile
+      security:
+      - JWT: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProfileUpdateRequest"
+      responses:
+        "200":
+          description: Profile updated successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProfileResponse"
+        "400":
+          description: Profile validation failed.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              examples:
+                firstNameTooLong:
+                  value:
+                    success: false
+                    message: First name must contain at most 30 characters.
+                    errors: []
+                invalidLastName:
+                  value:
+                    success: false
+                    message: Last name can only contain letters, spaces and 
+                      hyphens.
+                    errors: []
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /api/profile/settings:
+    patch:
+      tags:
+      - Profile
+      summary: Update authenticated user settings
+      security:
+      - JWT: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SettingsUpdateRequest"
+      responses:
+        "200":
+          description: Settings updated successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProfileResponse"
+        "400":
+          description: Settings validation failed.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              examples:
+                invalidTheme:
+                  value:
+                    success: false
+                    message: Theme must be light or dark.
+                    errors: []
+                missingSetting:
+                  value:
+                    success: false
+                    message: At least one setting must be provided.
+                    errors: []
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /api/profile/password:
+    patch:
+      tags:
+      - Profile
+      summary: Update authenticated user password
+      security:
+      - JWT: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PasswordUpdateRequest"
+      responses:
+        "200":
+          description: Password updated successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmptySuccessResponse"
+              example:
+                success: true
+                message: Password updated successfully.
+                data: {}
+        "400":
+          description: Password validation failed.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              examples:
+                currentPasswordRequired:
+                  value:
+                    success: false
+                    message: Current password is required.
+                    errors: []
+                invalidNewPassword:
+                  value:
+                    success: false
+                    message: New password must contain at least 6 characters, 
+                      one lowercase letter, one uppercase letter and one digit.
+                    errors: []
+        "401":
+          description: Authentication failed or current password is incorrect.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              examples:
+                tokenRequired:
+                  value:
+                    success: false
+                    message: Authentication token is required.
+                    errors: []
+                currentPasswordIncorrect:
+                  value:
+                    success: false
+                    message: Current password is incorrect.
+                    errors: []
+        "404":
+          $ref: "#/components/responses/UserNotFound"
+
+  /api/applications:
+    get:
+      tags:
+      - Applications
+      summary: List authenticated user applications
+      security:
+      - JWT: []
+      responses:
+        "200":
+          description: Applications retrieved successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationListResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+    post:
+      tags:
+      - Applications
+      summary: Create a job application
+      security:
+      - JWT: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ApplicationRequest"
+      responses:
+        "201":
+          description: Application created successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationResponse"
+        "400":
+          $ref: "#/components/responses/InvalidApplicationData"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /api/applications/{id}:
+    get:
+      tags:
+      - Applications
+      summary: Get one job application
+      security:
+      - JWT: []
+      parameters:
+      - $ref: "#/components/parameters/ApplicationId"
+      responses:
+        "200":
+          description: Application retrieved successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/ApplicationNotFound"
+    patch:
+      tags:
+      - Applications
+      summary: Update one job application
+      security:
+      - JWT: []
+      parameters:
+      - $ref: "#/components/parameters/ApplicationId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ApplicationUpdateRequest"
+      responses:
+        "200":
+          description: Application updated successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationResponse"
+        "400":
+          $ref: "#/components/responses/InvalidApplicationData"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/ApplicationNotFound"
+    delete:
+      tags:
+      - Applications
+      summary: Delete one job application
+      security:
+      - JWT: []
+      parameters:
+      - $ref: "#/components/parameters/ApplicationId"
+      responses:
+        "200":
+          description: Application deleted successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/ApplicationNotFound"
+
+  /api/applications/{id}/history:
+    get:
+      tags:
+      - Applications
+      summary: Get application history
+      security:
+      - JWT: []
+      parameters:
+      - $ref: "#/components/parameters/ApplicationId"
+      responses:
+        "200":
+          description: Application history retrieved successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationHistoryResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/ApplicationNotFound"
+
+  /api/tags:
+    get:
+      tags:
+      - Tags
+      summary: List authenticated user tags
+      security:
+      - JWT: []
+      responses:
+        "200":
+          description: Tags retrieved successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TagListResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+    post:
+      tags:
+      - Tags
+      summary: Create a tag
+      security:
+      - JWT: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TagRequest"
+      responses:
+        "201":
+          description: Tag created successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TagResponse"
+        "400":
+          $ref: "#/components/responses/InvalidTagData"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "409":
+          $ref: "#/components/responses/TagAlreadyExists"
+
+  /api/tags/{id}:
+    get:
+      tags:
+      - Tags
+      summary: Get one tag
+      security:
+      - JWT: []
+      parameters:
+      - $ref: "#/components/parameters/TagResourceId"
+      responses:
+        "200":
+          description: Tag retrieved successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TagResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/TagNotFound"
+    patch:
+      tags:
+      - Tags
+      summary: Update one tag
+      security:
+      - JWT: []
+      parameters:
+      - $ref: "#/components/parameters/TagResourceId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TagUpdateRequest"
+      responses:
+        "200":
+          description: Tag updated successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TagResponse"
+        "400":
+          $ref: "#/components/responses/InvalidTagData"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/TagNotFound"
+        "409":
+          $ref: "#/components/responses/TagAlreadyExists"
+    delete:
+      tags:
+      - Tags
+      summary: Delete one tag
+      security:
+      - JWT: []
+      parameters:
+      - $ref: "#/components/parameters/TagResourceId"
+      responses:
+        "200":
+          description: Tag deleted successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TagResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/TagNotFound"
+
+  /api/contacts:
+    get:
+      tags:
+      - Contacts
+      summary: List authenticated user contacts
+      security:
+      - JWT: []
+      responses:
+        "200":
+          description: Contacts retrieved successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ContactListResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+    post:
+      tags:
+      - Contacts
+      summary: Create a contact
+      security:
+      - JWT: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ContactRequest"
+      responses:
+        "201":
+          description: Contact created successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ContactResponse"
+        "400":
+          description: Contact validation failed.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              examples:
+                missingField:
+                  value:
+                    success: false
+                    message: At least one contact field must be provided.
+                    errors: []
+                invalidEmail:
+                  value:
+                    success: false
+                    message: Email must be valid.
+                    errors: []
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /api/contacts/{id}:
+    get:
+      tags:
+      - Contacts
+      summary: Get one contact
+      security:
+      - JWT: []
+      parameters:
+      - $ref: "#/components/parameters/ContactResourceId"
+      responses:
+        "200":
+          description: Contact retrieved successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ContactResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/ContactNotFound"
+    patch:
+      tags:
+      - Contacts
+      summary: Update one contact
+      security:
+      - JWT: []
+      parameters:
+      - $ref: "#/components/parameters/ContactResourceId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ContactRequest"
+      responses:
+        "200":
+          description: Contact updated successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ContactResponse"
+        "400":
+          description: Contact validation failed.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              examples:
+                missingField:
+                  value:
+                    success: false
+                    message: At least one valid contact field must be provided.
+                    errors: []
+                invalidEmail:
+                  value:
+                    success: false
+                    message: Email must be valid.
+                    errors: []
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/ContactNotFound"
+    delete:
+      tags:
+      - Contacts
+      summary: Delete one contact
+      security:
+      - JWT: []
+      parameters:
+      - $ref: "#/components/parameters/ContactResourceId"
+      responses:
+        "200":
+          description: Contact deleted successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ContactResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/ContactNotFound"
+
+  /api/documents:
+    get:
+      tags:
+      - Documents
+      summary: List authenticated user documents
+      security:
+      - JWT: []
+      responses:
+        "200":
+          description: Documents retrieved successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DocumentListResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+    post:
+      tags:
+      - Documents
+      summary: Upload a document
+      security:
+      - JWT: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: "#/components/schemas/DocumentUploadRequest"
+      responses:
+        "201":
+          description: Document uploaded successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DocumentResponse"
+        "400":
+          description: Document validation failed.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              examples:
+                missingFile:
+                  value:
+                    success: false
+                    message: Invalid document data.
+                    errors:
+                    - Document file is required.
+                invalidType:
+                  value:
+                    success: false
+                    message: Invalid document data.
+                    errors:
+                    - Document type is invalid.
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "500":
+          description: Uploaded file type or size is rejected by the upload 
+            middleware.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                success: false
+                message: Only PDF, DOC, DOCX, PNG, JPG and JPEG files are 
+                  allowed.
+                errors: []
+
+  /api/documents/{id}:
+    get:
+      tags:
+      - Documents
+      summary: Get one document
+      security:
+      - JWT: []
+      parameters:
+      - $ref: "#/components/parameters/DocumentResourceId"
+      responses:
+        "200":
+          description: Document retrieved successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DocumentResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/DocumentNotFound"
+    patch:
+      tags:
+      - Documents
+      summary: Update document type
+      security:
+      - JWT: []
+      parameters:
+      - $ref: "#/components/parameters/DocumentResourceId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DocumentUpdateRequest"
+      responses:
+        "200":
+          description: Document updated successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DocumentResponse"
+        "400":
+          description: Document validation failed.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                success: false
+                message: Invalid document data.
+                errors:
+                - Document type is required.
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/DocumentNotFound"
+    delete:
+      tags:
+      - Documents
+      summary: Delete one document
+      security:
+      - JWT: []
+      parameters:
+      - $ref: "#/components/parameters/DocumentResourceId"
+      responses:
+        "200":
+          description: Document deleted successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DocumentResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/DocumentNotFound"
+
+  /api/documents/{id}/download:
+    get:
+      tags:
+      - Documents
+      summary: Download one document
+      security:
+      - JWT: []
+      parameters:
+      - $ref: "#/components/parameters/DocumentResourceId"
+      responses:
+        "200":
+          description: Document file downloaded successfully.
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/DocumentNotFound"
+
+  /api/applications/{id}/tags:
+    post:
+      tags:
+      - Relations
+      summary: Link a tag to an application
+      security:
+      - JWT: []
+      parameters:
+      - $ref: "#/components/parameters/ApplicationId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ApplicationTagLinkRequest"
+      responses:
+        "200":
+          description: Tag linked to application successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationResponse"
+        "400":
+          description: Tag link validation failed.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                success: false
+                message: Invalid application tag data.
+                errors:
+                - Tag id is required.
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          description: Application or tag not found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                success: false
+                message: Application or tag not found.
+                errors: []
+
+  /api/applications/{id}/tags/{tagId}:
+    delete:
+      tags:
+      - Relations
+      summary: Unlink a tag from an application
+      security:
+      - JWT: []
+      parameters:
+      - $ref: "#/components/parameters/ApplicationId"
+      - $ref: "#/components/parameters/LinkedTagId"
+      responses:
+        "200":
+          description: Tag unlinked from application successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          description: Application tag link not found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                success: false
+                message: Application tag link not found.
+                errors: []
+
+  /api/applications/{id}/contacts:
+    post:
+      tags:
+      - Relations
+      summary: Link a contact to an application
+      security:
+      - JWT: []
+      parameters:
+      - $ref: "#/components/parameters/ApplicationId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ApplicationContactLinkRequest"
+      responses:
+        "200":
+          description: Contact linked to application successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationResponse"
+        "400":
+          description: Contact link validation failed.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                success: false
+                message: Invalid application contact data.
+                errors:
+                - Contact id is required.
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          description: Application or contact not found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                success: false
+                message: Application or contact not found.
+                errors: []
+
+  /api/applications/{id}/contacts/{contactId}:
+    delete:
+      tags:
+      - Relations
+      summary: Unlink a contact from an application
+      security:
+      - JWT: []
+      parameters:
+      - $ref: "#/components/parameters/ApplicationId"
+      - $ref: "#/components/parameters/LinkedContactId"
+      responses:
+        "200":
+          description: Contact unlinked from application successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          description: Application contact link not found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                success: false
+                message: Application contact link not found.
+                errors: []
+
+  /api/applications/{id}/documents:
+    post:
+      tags:
+      - Relations
+      summary: Link a document to an application
+      security:
+      - JWT: []
+      parameters:
+      - $ref: "#/components/parameters/ApplicationId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ApplicationDocumentLinkRequest"
+      responses:
+        "200":
+          description: Document linked to application successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationResponse"
+        "400":
+          description: Document link validation failed.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                success: false
+                message: Invalid application document data.
+                errors:
+                - Document id is required.
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          description: Application or document not found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                success: false
+                message: Application or document not found.
+                errors: []
+
+  /api/applications/{id}/documents/{documentId}:
+    delete:
+      tags:
+      - Relations
+      summary: Unlink a document from an application
+      security:
+      - JWT: []
+      parameters:
+      - $ref: "#/components/parameters/ApplicationId"
+      - $ref: "#/components/parameters/LinkedDocumentId"
+      responses:
+        "200":
+          description: Document unlinked from application successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          description: Application document link not found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                success: false
+                message: Application document link not found.
+                errors: []
+
+  /api/achievements:
+    get:
+      tags:
+      - Achievements
+      summary: List authenticated user achievements
+      security:
+      - JWT: []
+      responses:
+        "200":
+          description: Achievements retrieved successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AchievementListResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+components:
+  securitySchemes:
+    JWT:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Paste the JWT token returned by POST /api/auth/login.
+
+  parameters:
+    ApplicationId:
+      name: id
+      in: path
+      required: true
+      description: Replace this example with an application id returned by POST /api/applications or GET /api/applications.
+      schema:
+        type: string
+        format: uuid
+      example: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+
+    TagResourceId:
+      name: id
+      in: path
+      required: true
+      description: Replace this example with a tag id returned by POST /api/tags or GET /api/tags.
+      schema:
+        type: string
+        format: uuid
+      example: 41608063-9c56-4d46-a3ff-65797479a729
+
+    ContactResourceId:
+      name: id
+      in: path
+      required: true
+      description: Replace this example with a contact id returned by POST /api/contacts or GET /api/contacts.
+      schema:
+        type: string
+        format: uuid
+      example: 6b4ed426-b5b4-4b70-8a3f-00ec0d0135bb
+
+    DocumentResourceId:
+      name: id
+      in: path
+      required: true
+      description: Replace this example with a document id returned by POST /api/documents or GET /api/documents.
+      schema:
+        type: string
+        format: uuid
+      example: 0fc9cdb6-9f14-48fa-9f1f-a1b492c79bb3
+
+    LinkedTagId:
+      name: tagId
+      in: path
+      required: true
+      description: Replace this example with a tag id returned by POST /api/tags or GET /api/tags.
+      schema:
+        type: string
+        format: uuid
+      example: 41608063-9c56-4d46-a3ff-65797479a729
+
+    LinkedContactId:
+      name: contactId
+      in: path
+      required: true
+      description: Replace this example with a contact id returned by POST /api/contacts or GET /api/contacts.
+      schema:
+        type: string
+        format: uuid
+      example: 6b4ed426-b5b4-4b70-8a3f-00ec0d0135bb
+
+    LinkedDocumentId:
+      name: documentId
+      in: path
+      required: true
+      description: Replace this example with a document id returned by POST /api/documents or GET /api/documents.
+      schema:
+        type: string
+        format: uuid
+      example: 0fc9cdb6-9f14-48fa-9f1f-a1b492c79bb3
+
+  responses:
+    Unauthorized:
+      description: Authentication token is missing, malformed, invalid or 
+        expired.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          examples:
+            missingToken:
+              value:
+                success: false
+                message: Authentication token is required.
+                errors: []
+            invalidFormat:
+              value:
+                success: false
+                message: Authentication token format is invalid.
+                errors: []
+            invalidOrExpired:
+              value:
+                success: false
+                message: Authentication token is invalid or expired.
+                errors: []
+
+    UserNotFound:
+      description: User not found.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            success: false
+            message: User not found.
+            errors: []
+
+    ApplicationNotFound:
+      description: Application not found.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            success: false
+            message: Application not found.
+            errors: []
+
+    TagNotFound:
+      description: Tag not found.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            success: false
+            message: Tag not found.
+            errors: []
+
+    ContactNotFound:
+      description: Contact not found.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            success: false
+            message: Contact not found.
+            errors: []
+
+    DocumentNotFound:
+      description: Document not found.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            success: false
+            message: Document not found.
+            errors: []
+
+    TagAlreadyExists:
+      description: Tag already exists.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            success: false
+            message: Tag already exists.
+            errors: []
+
+    InvalidApplicationData:
+      description: Invalid application data.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            success: false
+            message: Invalid application data.
+            errors:
+            - Company is required.
+            - Position is required.
+            - Status is required.
+            - Sent date is required and must be valid.
+
+    InvalidTagData:
+      description: Invalid tag data.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            success: false
+            message: Invalid tag data.
+            errors:
+            - Tag name is required.
+
+  schemas:
+    SuccessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: Operation completed successfully.
+        data:
+          type: object
+          additionalProperties: true
+
+    EmptySuccessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: Operation completed successfully.
+        data:
+          type: object
+          example: {}
+
+    ErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        message:
+          type: string
+          example: Error message.
+        errors:
+          type: array
+          items:
+            type: string
+          example: []
+
+    HealthResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: API is running.
+        data:
+          type: object
+          properties:
+            status:
+              type: string
+              example: ok
+
+    RegisterRequest:
+      type: object
+      required:
+      - email
+      - password
+      properties:
+        email:
+          type: string
+          format: email
+          example: dick.grayson@example.com
+          description: Use a real email address so the verification email can be
+            received.
+        password:
+          type: string
+          format: password
+          example: Password42
+          description: Must contain at least 6 characters, one lowercase letter,
+            one uppercase letter and one digit.
+
+    LoginRequest:
+      type: object
+      required:
+      - email
+      - password
+      properties:
+        email:
+          type: string
+          format: email
+          example: dick.grayson@example.com
+          description: Email of a verified user account.
+        password:
+          type: string
+          format: password
+          example: Password42
+          description: Password of the verified user account.
+    ForgotPasswordRequest:
+      type: object
+      required:
+      - email
+      properties:
+        email:
+          type: string
+          format: email
+          example: dick.grayson@example.com
+          description: Email address linked to the account.
+    ResetPasswordRequest:
+      type: object
+      required:
+      - token
+      - password
+      properties:
+        token:
+          type: string
+          example: password-reset-token-value
+          description: Password reset token received by email.
+        password:
+          type: string
+          format: password
+          example: NewPassword42
+          description: Must contain at least 6 characters, one lowercase letter,
+            one uppercase letter and one digit.
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+          format: email
+        firstName:
+          type: string
+          nullable: true
+        lastName:
+          type: string
+          nullable: true
+        avatarUrl:
+          type: string
+          nullable: true
+        emailVerified:
+          type: boolean
+        theme:
+          type: string
+          example: light
+        dailyGoal:
+          type: integer
+          example: 5
+        followUpDelayDays:
+          type: integer
+          example: 15
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    UserResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: Current user retrieved successfully.
+        data:
+          type: object
+          properties:
+            user:
+              $ref: "#/components/schemas/User"
+
+    LoginResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: User logged in successfully.
+        data:
+          type: object
+          properties:
+            user:
+              $ref: "#/components/schemas/User"
+            token:
+              type: string
+              example: jwt-token-value
+
+    ExportResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: User data exported successfully.
+        data:
+          type: object
+          properties:
+            exportedAt:
+              type: string
+              format: date-time
+            user:
+              $ref: "#/components/schemas/User"
+            applications:
+              type: array
+              items:
+                $ref: "#/components/schemas/Application"
+            contacts:
+              type: array
+              items:
+                $ref: "#/components/schemas/Contact"
+            documents:
+              type: array
+              items:
+                $ref: "#/components/schemas/Document"
+            tags:
+              type: array
+              items:
+                $ref: "#/components/schemas/Tag"
+
+    ProfileUpdateRequest:
+      type: object
+      properties:
+        firstName:
+          type: string
+          nullable: true
+          example: Dick
+        lastName:
+          type: string
+          nullable: true
+          example: Grayson
+        avatarUrl:
+          type: string
+          nullable: true
+          example: https://example.com/avatar.png
+
+    SettingsUpdateRequest:
+      type: object
+      properties:
+        theme:
+          type: string
+          enum:
+          - light
+          - dark
+          example: dark
+          description: 'Allowed values: light or dark.'
+        dailyGoal:
+          type: integer
+          minimum: 1
+          maximum: 50
+          example: 10
+          description: Daily application goal. Use a number between 1 and 50.
+        followUpDelayDays:
+          type: integer
+          minimum: 1
+          maximum: 90
+          example: 30
+          description: Follow-up delay in days. Use a number between 1 and 90.
+    PasswordUpdateRequest:
+      type: object
+      required:
+      - currentPassword
+      - newPassword
+      properties:
+        currentPassword:
+          type: string
+          format: password
+          example: Password42
+        newPassword:
+          type: string
+          format: password
+          example: NewPassword42
+
+    ProfileResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: Profile retrieved successfully.
+        data:
+          type: object
+          properties:
+            profile:
+              $ref: "#/components/schemas/User"
+
+    ApplicationRequest:
+      type: object
+      required:
+      - company
+      - position
+      - status
+      - sentAt
+      properties:
+        company:
+          type: string
+          example: Wayne Enterprises
+        position:
+          type: string
+          example: Robin - Sidekick
+        status:
+          type: string
+          enum:
+          - sent
+          - follow_up
+          - interview
+          - rejected
+          - accepted
+          example: sent
+          description: 'Allowed values: sent, follow_up, interview, rejected, accepted.'
+        contractType:
+          type: string
+          nullable: true
+          enum:
+          - permanent
+          - fixed_term
+          - internship
+          - apprenticeship
+          - freelance
+          - other
+          example: permanent
+          description: 'Allowed values: permanent, fixed_term, internship, apprenticeship,
+            freelance, other.'
+        location:
+          type: string
+          nullable: true
+          example: Gotham City
+        salary:
+          type: integer
+          nullable: true
+          minimum: 0
+          example: 50000
+          description: Optional salary amount. Use a number, for example 50000.
+        link:
+          type: string
+          nullable: true
+          example: https://example.com/job-offer
+        notes:
+          type: string
+          nullable: true
+          example: Application notes.
+        sentAt:
+          type: string
+          format: date
+          example: 2026-06-22
+        followUpAt:
+          type: string
+          format: date
+          nullable: true
+          example: 2026-07-07
+        interviewAt:
+          type: string
+          format: date
+          nullable: true
+          example: 2026-07-12
+
+    ApplicationUpdateRequest:
+      type: object
+      properties:
+        company:
+          type: string
+          example: Wayne Enterprises
+        position:
+          type: string
+          example: Robin - Sidekick
+        status:
+          type: string
+          enum:
+          - sent
+          - follow_up
+          - interview
+          - rejected
+          - accepted
+          example: interview
+          description: 'Allowed values: sent, follow_up, interview, rejected, accepted.'
+        contractType:
+          type: string
+          nullable: true
+          enum:
+          - permanent
+          - fixed_term
+          - internship
+          - apprenticeship
+          - freelance
+          - other
+          example: permanent
+          description: 'Allowed values: permanent, fixed_term, internship, apprenticeship,
+            freelance, other.'
+        location:
+          type: string
+          nullable: true
+          example: Gotham City
+        salary:
+          type: integer
+          nullable: true
+          minimum: 0
+          example: 50000
+          description: Optional salary amount. Use a number, for example 50000.
+        link:
+          type: string
+          nullable: true
+          example: https://example.com/job-offer
+        notes:
+          type: string
+          nullable: true
+          example: Updated application notes.
+        sentAt:
+          type: string
+          format: date
+          example: 2026-06-22
+        followUpAt:
+          type: string
+          format: date
+          nullable: true
+          example: 2026-07-07
+        interviewAt:
+          type: string
+          format: date
+          nullable: true
+          example: 2026-07-12
+
+    Application:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        company:
+          type: string
+        position:
+          type: string
+        status:
+          type: string
+        contractType:
+          type: string
+          nullable: true
+        location:
+          type: string
+          nullable: true
+        salary:
+          type: integer
+          nullable: true
+        link:
+          type: string
+          nullable: true
+        notes:
+          type: string
+          nullable: true
+        sentAt:
+          type: string
+          format: date-time
+          nullable: true
+        followUpAt:
+          type: string
+          format: date-time
+          nullable: true
+        interviewAt:
+          type: string
+          format: date-time
+          nullable: true
+        tags:
+          type: array
+          items:
+            $ref: "#/components/schemas/LinkedTag"
+        contacts:
+          type: array
+          items:
+            $ref: "#/components/schemas/LinkedContact"
+        documents:
+          type: array
+          items:
+            $ref: "#/components/schemas/LinkedDocument"
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    ApplicationResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: Application retrieved successfully.
+        data:
+          type: object
+          properties:
+            application:
+              $ref: "#/components/schemas/Application"
+
+    ApplicationListResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: Applications retrieved successfully.
+        data:
+          type: object
+          properties:
+            applications:
+              type: array
+              items:
+                $ref: "#/components/schemas/Application"
+
+    ApplicationHistoryResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: Application history retrieved successfully.
+        data:
+          type: object
+          properties:
+            history:
+              type: array
+              items:
+                $ref: "#/components/schemas/ApplicationHistoryEntry"
+
+    ApplicationHistoryEntry:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        action:
+          type: string
+          example: application_created
+        metadata:
+          type: object
+          nullable: true
+          additionalProperties: true
+        createdAt:
+          type: string
+          format: date-time
+
+    TagRequest:
+      type: object
+      required:
+      - name
+      properties:
+        name:
+          type: string
+          example: priority
+        color:
+          type: string
+          nullable: true
+          example: "#facc15"
+          description: 'Optional hexadecimal color, for example #facc15.'
+    TagUpdateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          example: priority
+        color:
+          type: string
+          nullable: true
+          example: "#facc15"
+          description: 'Optional hexadecimal color, for example #facc15.'
+    Tag:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        slug:
+          type: string
+        color:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    LinkedTag:
+      allOf:
+      - $ref: "#/components/schemas/Tag"
+      - type: object
+        properties:
+          linkedAt:
+            type: string
+            format: date-time
+
+    TagResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: Tag retrieved successfully.
+        data:
+          type: object
+          properties:
+            tag:
+              $ref: "#/components/schemas/Tag"
+
+    TagListResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: Tags retrieved successfully.
+        data:
+          type: object
+          properties:
+            tags:
+              type: array
+              items:
+                $ref: "#/components/schemas/Tag"
+
+    ContactRequest:
+      type: object
+      properties:
+        firstName:
+          type: string
+          nullable: true
+          example: Bruce
+        lastName:
+          type: string
+          nullable: true
+          example: Wayne
+        email:
+          type: string
+          format: email
+          nullable: true
+          example: bruce.wayne@wayne-enterprises.example
+        phoneNumber:
+          type: string
+          nullable: true
+          example: "0600000000"
+        company:
+          type: string
+          nullable: true
+          example: Wayne Enterprises
+        notes:
+          type: string
+          nullable: true
+          example: Recruiter contact.
+
+    Contact:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        firstName:
+          type: string
+          nullable: true
+        lastName:
+          type: string
+          nullable: true
+        email:
+          type: string
+          format: email
+          nullable: true
+        phoneNumber:
+          type: string
+          nullable: true
+        company:
+          type: string
+          nullable: true
+        notes:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    LinkedContact:
+      allOf:
+      - $ref: "#/components/schemas/Contact"
+      - type: object
+        properties:
+          role:
+            type: string
+            nullable: true
+          linkedAt:
+            type: string
+            format: date-time
+
+    ContactResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: Contact retrieved successfully.
+        data:
+          type: object
+          properties:
+            contact:
+              $ref: "#/components/schemas/Contact"
+
+    ContactListResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: Contacts retrieved successfully.
+        data:
+          type: object
+          properties:
+            contacts:
+              type: array
+              items:
+                $ref: "#/components/schemas/Contact"
+
+    DocumentUploadRequest:
+      type: object
+      required:
+      - document
+      - type
+      properties:
+        document:
+          type: string
+          format: binary
+          description: Choose a PDF, DOC, DOCX, PNG, JPG or JPEG file.
+        type:
+          type: string
+          enum:
+          - resume
+          - cover_letter
+          - portfolio
+          - other
+          example: resume
+          description: 'Allowed values: resume, cover_letter, portfolio, other.'
+    DocumentUpdateRequest:
+      type: object
+      required:
+      - type
+      properties:
+        type:
+          type: string
+          enum:
+          - resume
+          - cover_letter
+          - portfolio
+          - other
+          example: cover_letter
+          description: 'Allowed values: resume, cover_letter, portfolio, other.'
+    Document:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        type:
+          type: string
+        originalName:
+          type: string
+        storedName:
+          type: string
+        mimeType:
+          type: string
+        size:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    LinkedDocument:
+      allOf:
+      - $ref: "#/components/schemas/Document"
+      - type: object
+        properties:
+          linkedAt:
+            type: string
+            format: date-time
+
+    DocumentResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: Document retrieved successfully.
+        data:
+          type: object
+          properties:
+            document:
+              $ref: "#/components/schemas/Document"
+
+    DocumentListResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: Documents retrieved successfully.
+        data:
+          type: object
+          properties:
+            documents:
+              type: array
+              items:
+                $ref: "#/components/schemas/Document"
+
+    ApplicationTagLinkRequest:
+      type: object
+      required:
+      - tagId
+      properties:
+        tagId:
+          type: string
+          format: uuid
+          description: Replace this example with a tag id returned by POST /api/tags or GET /api/tags.
+          example: 41608063-9c56-4d46-a3ff-65797479a729
+
+    ApplicationContactLinkRequest:
+      type: object
+      required:
+      - contactId
+      properties:
+        contactId:
+          type: string
+          format: uuid
+          description: Replace this example with a contact id returned by POST /api/contacts or GET /api/contacts.
+          example: 6b4ed426-b5b4-4b70-8a3f-00ec0d0135bb
+        role:
+          type: string
+          nullable: true
+          example: recruiter
+          description: Optional role for this contact in the application, for 
+            example recruiter.
+    ApplicationDocumentLinkRequest:
+      type: object
+      required:
+      - documentId
+      properties:
+        documentId:
+          type: string
+          format: uuid
+          description: Replace this example with a document id returned by POST /api/documents or GET /api/documents.
+          example: 0fc9cdb6-9f14-48fa-9f1f-a1b492c79bb3
+
+    Achievement:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          example: First application
+        slug:
+          type: string
+          example: first-application
+        description:
+          type: string
+          example: Create your first job application.
+        icon:
+          type: string
+          example: briefcase
+        unlocked:
+          type: boolean
+        unlockedAt:
+          type: string
+          format: date-time
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+
+    AchievementListResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: Achievements retrieved successfully.
+        data:
+          type: object
+          properties:
+            achievements:
+              type: array
+              items:
+                $ref: "#/components/schemas/Achievement"
