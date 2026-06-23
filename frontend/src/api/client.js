@@ -21,3 +21,15 @@ export async function apiRequest(path, options = {}) {
 
   return data;
 }
+
+export function apiRequestWithToken(path, token, options = {}) {
+  const headers = {
+    Authorization: "Bearer " + token,
+    ...options.headers,
+  };
+
+  return apiRequest(path, {
+    ...options,
+    headers,
+  });
+}
