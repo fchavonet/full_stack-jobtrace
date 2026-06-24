@@ -277,6 +277,7 @@ function SettingsPage() {
 
       await updateUserProfile(payload);
 
+      window.dispatchEvent(new Event("jobtrace-profile-updated"));
       showToast("Profil mis à jour.", "success");
     } catch {
       showToast("Impossible de mettre à jour le profil.", "error");
@@ -433,22 +434,20 @@ function SettingsPage() {
           </div>
 
           <div className="mt-6 grid gap-6 sm:grid-cols-[220px_1fr] sm:items-start">
-            <div className="h-full rounded-xl border border-base-300 bg-base-200 p-4">
-              <div className="flex h-full w-full flex-col items-center justify-center text-center">
-                {profileForm.avatarUrl && (
-                  <img
-                    className="aspect-square w-full rounded-full object-cover"
-                    src={profileForm.avatarUrl}
-                    alt="Avatar utilisateur"
-                  />
-                )}
+            <div className="h-full min-h-56 overflow-hidden rounded-xl bg-primary">
+              {profileForm.avatarUrl && (
+                <img
+                  className="h-full min-h-56 w-full object-cover"
+                  src={profileForm.avatarUrl}
+                  alt="Avatar utilisateur"
+                />
+              )}
 
-                {!profileForm.avatarUrl && (
-                  <div className="flex aspect-square w-full items-center justify-center rounded-full bg-primary text-5xl font-bold text-primary-content">
-                    {getInitials(profileForm)}
-                  </div>
-                )}
-              </div>
+              {!profileForm.avatarUrl && (
+                <div className="flex h-full min-h-56 w-full items-center justify-center text-6xl font-bold text-primary-content">
+                  {getInitials(profileForm)}
+                </div>
+              )}
             </div>
 
             <div className="grid gap-4">
