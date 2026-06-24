@@ -28,75 +28,65 @@ function getNavLinkClassName({ isActive }) {
   return className;
 }
 
-function getDisabledLinkClassName() {
-  return "flex cursor-not-allowed items-center gap-2 rounded-lg px-3 py-2 text-base text-base-content/40";
-}
-
 function Sidebar() {
   return (
-    <nav className="flex h-full w-64 flex-col justify-between border-r border-base-300 bg-base-100">
+    <nav className="flex h-full w-64 flex-col justify-between border-r border-base-300 bg-base-100 opacity-100">
       <div className="w-full p-4">
         <ul className="menu w-full gap-2 p-0">
           <li>
-            <NavLink className={getNavLinkClassName} to="/dashboard" onClick={closeDrawer}>
+            <NavLink className={getNavLinkClassName} to="/dashboard" end onClick={closeDrawer}>
               <House />
-              Accueil
+              Tablead de bord
             </NavLink>
           </li>
 
           <li>
-            <button className={getDisabledLinkClassName()} type="button" disabled>
+            <NavLink className={getNavLinkClassName} to="/dashboard/applications" onClick={closeDrawer}>
               <FilePen />
               Candidatures
-            </button>
+            </NavLink>
           </li>
 
           <li>
-            <button className={getDisabledLinkClassName()} type="button" disabled>
+            <NavLink className={getNavLinkClassName} to="/dashboard/calendar" onClick={closeDrawer}>
               <CalendarDays />
               Calendrier
-            </button>
+            </NavLink>
           </li>
 
           <li>
-            <button className={getDisabledLinkClassName()} type="button" disabled>
+            <NavLink className={getNavLinkClassName} to="/dashboard/contacts" onClick={closeDrawer}>
               <UsersRound />
               Contacts
-            </button>
+            </NavLink>
           </li>
 
           <li>
-            <button className={getDisabledLinkClassName()} type="button" disabled>
+            <NavLink className={getNavLinkClassName} to="/dashboard/documents" onClick={closeDrawer}>
               <FileText />
               Documents
-            </button>
+            </NavLink>
           </li>
 
-          <li>
-            <button className={getDisabledLinkClassName()} type="button" disabled>
-              <Target />
-              Objectifs
-            </button>
-          </li>
+          <NavLink className={getNavLinkClassName} to="/dashboard/achievements" onClick={closeDrawer}>
+            <Target />
+            Objectifs
+          </NavLink>
 
           <li>
-            <button className={getDisabledLinkClassName()} type="button" disabled>
+            <NavLink className={getNavLinkClassName} to="/dashboard/statistics" onClick={closeDrawer}>
               <BarChart3 />
               Statistiques
-            </button>
+            </NavLink>
           </li>
         </ul>
       </div>
 
       <div className="border-t border-base-300 p-4">
-        <button
-          className="btn btn-outline btn-secondary w-full"
-          type="button"
-          disabled
-        >
-          <Settings size={20} />
+        <NavLink className={getNavLinkClassName} to="/dashboard/settings" onClick={closeDrawer}>
+          <Settings />
           Paramètres
-        </button>
+        </NavLink>
       </div>
     </nav>
   );

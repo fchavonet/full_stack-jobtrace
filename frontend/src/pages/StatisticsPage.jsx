@@ -1,11 +1,11 @@
-function DashboardPage() {
+function StatisticsPage() {
   return (
     <section>
       <h1 className="text-4xl font-bold">
-        Tableau de bord
+        Statistiques
       </h1>
     </section>
   );
 }
 
-export default DashboardPage;
+export default StatisticsPage;

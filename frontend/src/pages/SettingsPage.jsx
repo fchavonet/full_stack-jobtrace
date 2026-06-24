@@ -1,11 +1,11 @@
-function DashboardPage() {
+function SettingsPage() {
   return (
     <section>
       <h1 className="text-4xl font-bold">
-        Tableau de bord
+        Paramètres
       </h1>
     </section>
   );
 }
 
-export default DashboardPage;
+export default SettingsPage;

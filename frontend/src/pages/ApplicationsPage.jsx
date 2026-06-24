@@ -1,11 +1,11 @@
-function DashboardPage() {
+function ApplicationsPage() {
   return (
     <section>
       <h1 className="text-4xl font-bold">
-        Tableau de bord
+        Candidatures
       </h1>
     </section>
   );
 }
 
-export default DashboardPage;
+export default ApplicationsPage;
