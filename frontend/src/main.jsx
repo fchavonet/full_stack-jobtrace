@@ -5,6 +5,7 @@ import { RouterProvider, createBrowserRouter } from "react-router-dom";
 import "./global.css";
 
 import { AuthProvider } from "./contexts/AuthContext.jsx";
+import { ThemeProvider } from "./contexts/ThemeContext.jsx";
 import { ToastProvider } from "./contexts/ToastContext.jsx";
 
 import App from "./App.jsx";
@@ -97,11 +98,11 @@ const router = createBrowserRouter([
 ]);
 
 ReactDOM.createRoot(document.getElementById("root")).render(
-  <React.StrictMode>
-    <AuthProvider>
+  <AuthProvider>
+    <ThemeProvider>
       <ToastProvider>
         <RouterProvider router={router} />
       </ToastProvider>
-    </AuthProvider>
-  </React.StrictMode>
+    </ThemeProvider>
+  </AuthProvider>
 );

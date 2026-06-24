@@ -12,6 +12,7 @@ import { updateUserSettings } from "../api/settings.api";
 import PasswordRequirements from "../components/auth/PasswordRequirements";
 import LegalModal from "../components/legal/LegalModal";
 import { useAuth } from "../hooks/useAuth";
+import { useTheme } from "../hooks/useTheme";
 import { useToast } from "../hooks/useToast";
 
 const AUTH_TOKEN_STORAGE_KEY = "jobtrace_token";
@@ -149,6 +150,7 @@ function SettingsPage() {
   const navigate = useNavigate();
   const { logout } = useAuth();
   const { showToast } = useToast();
+  const { setTheme } = useTheme();
 
   const [profileForm, setProfileForm] = useState(defaultProfileForm);
   const [settingsForm, setSettingsForm] = useState(defaultSettingsForm);
@@ -171,6 +173,7 @@ function SettingsPage() {
       try {
         const response = await getUserProfile();
         const profile = getProfileFromResponse(response) || {};
+        const profileTheme = getTextValue(profile.theme) || "light";
 
         setProfileForm({
           firstName: getTextValue(profile.firstName),
@@ -179,10 +182,12 @@ function SettingsPage() {
         });
 
         setSettingsForm({
-          theme: getTextValue(profile.theme) || "light",
+          theme: profileTheme,
           dailyGoal: getNumberValue(profile.dailyGoal, 5),
           followUpDelayDays: getNumberValue(profile.followUpDelayDays, 15),
         });
+
+        setTheme(profileTheme);
       } catch {
         showToast("Impossible de charger les paramètres.", "error");
       } finally {
@@ -191,7 +196,7 @@ function SettingsPage() {
     }
 
     loadUserProfile();
-  }, [showToast]);
+  }, [showToast, setTheme]);
 
   function handleProfileChange(event) {
     const { name, value } = event.target;
@@ -213,6 +218,10 @@ function SettingsPage() {
         [name]: value,
       };
     });
+
+    if (name === "theme") {
+      setTheme(value);
+    }
   }
 
   function handlePasswordChange(event) {
@@ -290,6 +299,7 @@ function SettingsPage() {
 
       await updateUserSettings(payload);
 
+      setTheme(payload.theme);
       showToast("Préférences mises à jour.", "success");
     } catch {
       showToast("Impossible de mettre à jour les préférences.", "error");
@@ -593,6 +603,14 @@ function SettingsPage() {
           className="rounded-2xl bg-base-100 p-6 shadow-sm"
           onSubmit={handlePasswordSubmit}
         >
+          <input
+            className="hidden"
+            type="text"
+            name="username"
+            autoComplete="username"
+            value=""
+            readOnly
+          />
           <div>
             <h2 className="text-xl font-semibold">
               Sécurité
