@@ -32,7 +32,7 @@ function DashboardLayout() {
         </aside>
 
         <section className="h-full flex-1 overflow-y-auto">
-          <div className="mx-auto w-full p-4 lg:p-6">
+          <div className="w-full mx-auto  p-4 lg:p-4">
             <Outlet />
           </div>
         </section>
