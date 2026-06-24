@@ -10,6 +10,7 @@ import {
 } from "../api/profile.api";
 import { updateUserSettings } from "../api/settings.api";
 import PasswordRequirements from "../components/auth/PasswordRequirements";
+import LegalModal from "../components/legal/LegalModal";
 import { useAuth } from "../hooks/useAuth";
 import { useToast } from "../hooks/useToast";
 
@@ -81,6 +82,22 @@ function getInitials(profileForm) {
   return initials;
 }
 
+function isPasswordValid(password) {
+  const hasLength = password.length >= 6;
+  const hasLowercase = /[a-z]/.test(password);
+  const hasUppercase = /[A-Z]/.test(password);
+  const hasDigit = /\d/.test(password);
+
+  return hasLength && hasLowercase && hasUppercase && hasDigit;
+}
+
+function arePasswordsMatching(passwordForm) {
+  return (
+    passwordForm.newPassword === passwordForm.confirmPassword
+    && passwordForm.confirmPassword.length > 0
+  );
+}
+
 function getNewPasswordInputClassName(password) {
   let className = "input input-bordered w-full pr-10";
 
@@ -109,22 +126,6 @@ function getConfirmPasswordInputClassName(passwordForm) {
   return className;
 }
 
-function isPasswordValid(password) {
-  const hasLength = password.length >= 6;
-  const hasLowercase = /[a-z]/.test(password);
-  const hasUppercase = /[A-Z]/.test(password);
-  const hasDigit = /\d/.test(password);
-
-  return hasLength && hasLowercase && hasUppercase && hasDigit;
-}
-
-function arePasswordsMatching(passwordForm) {
-  return (
-    passwordForm.newPassword === passwordForm.confirmPassword
-    && passwordForm.confirmPassword.length > 0
-  );
-}
-
 function downloadJsonFile(data) {
   const formattedData = JSON.stringify(data, null, 2);
   const blob = new Blob([formattedData], {
@@ -136,7 +137,10 @@ function downloadJsonFile(data) {
 
   link.href = url;
   link.download = "jobtrace-user-data.json";
+
+  document.body.appendChild(link);
   link.click();
+  document.body.removeChild(link);
 
   URL.revokeObjectURL(url);
 }
@@ -160,12 +164,13 @@ function SettingsPage() {
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [deleteConfirmation, setDeleteConfirmation] = useState("");
+  const [legalModalType, setLegalModalType] = useState(null);
 
   useEffect(function () {
     async function loadUserProfile() {
       try {
         const response = await getUserProfile();
-        const profile = getProfileFromResponse(response);
+        const profile = getProfileFromResponse(response) || {};
 
         setProfileForm({
           firstName: getTextValue(profile.firstName),
@@ -235,6 +240,18 @@ function SettingsPage() {
     setShowNewPassword(function (currentValue) {
       return !currentValue;
     });
+  }
+
+  function openPrivacyModal() {
+    setLegalModalType("privacy");
+  }
+
+  function openDeleteModal() {
+    setLegalModalType("delete");
+  }
+
+  function closeLegalModal() {
+    setLegalModalType(null);
   }
 
   async function handleProfileSubmit(event) {
@@ -391,7 +408,10 @@ function SettingsPage() {
 
       <div className="mt-4 flex flex-col gap-6">
         {/* Profile settings */}
-        <form className="p-6 rounded-2xl bg-base-100 shadow-sm" onSubmit={handleProfileSubmit}>
+        <form
+          className="rounded-2xl bg-base-100 p-6 shadow-sm"
+          onSubmit={handleProfileSubmit}
+        >
           <div>
             <h2 className="text-xl font-semibold">
               Profil
@@ -406,7 +426,11 @@ function SettingsPage() {
             <div className="h-full rounded-xl border border-base-300 bg-base-200 p-4">
               <div className="flex h-full w-full flex-col items-center justify-center text-center">
                 {profileForm.avatarUrl && (
-                  <img className="aspect-square w-full rounded-full object-cover" src={profileForm.avatarUrl} alt="Avatar utilisateur" />
+                  <img
+                    className="aspect-square w-full rounded-full object-cover"
+                    src={profileForm.avatarUrl}
+                    alt="Avatar utilisateur"
+                  />
                 )}
 
                 {!profileForm.avatarUrl && (
@@ -466,7 +490,11 @@ function SettingsPage() {
                 />
               </label>
 
-              <button className="w-full mt-4 btn btn-primary text-white" type="submit" disabled={profileSubmitting}>
+              <button
+                className="btn btn-primary mt-4 w-full text-white"
+                type="submit"
+                disabled={profileSubmitting}
+              >
                 {profileSubmitting && (
                   <span className="loading loading-spinner loading-sm" />
                 )}
@@ -504,10 +532,6 @@ function SettingsPage() {
                 value={settingsForm.theme}
                 onChange={handleSettingsChange}
               >
-                <option value="system">
-                  Système
-                </option>
-
                 <option value="light">
                   Clair
                 </option>
@@ -552,7 +576,7 @@ function SettingsPage() {
           </div>
 
           <button
-            className="w-full btn btn-primary mt-8 text-white"
+            className="btn btn-primary mt-8 w-full text-white"
             type="submit"
             disabled={settingsSubmitting}
           >
@@ -565,7 +589,10 @@ function SettingsPage() {
         </form>
 
         {/* Password settings */}
-        <form className="p-6 rounded-2xl bg-base-100 shadow-sm" onSubmit={handleProfileSubmit}>
+        <form
+          className="rounded-2xl bg-base-100 p-6 shadow-sm"
+          onSubmit={handlePasswordSubmit}
+        >
           <div>
             <h2 className="text-xl font-semibold">
               Sécurité
@@ -619,11 +646,9 @@ function SettingsPage() {
             />
 
             <label className="form-control w-full">
-
               <span className="label mb-1">
                 Confirmer le nouveau mot de passe
               </span>
-
 
               <input
                 className={getConfirmPasswordInputClassName(passwordForm)}
@@ -638,7 +663,7 @@ function SettingsPage() {
             </label>
           </div>
 
-          <div class="divider divider-primary mt-6"></div>
+          <div className="divider divider-primary mt-6" />
 
           <label className="form-control w-full">
             <span className="label mb-1">
@@ -675,7 +700,7 @@ function SettingsPage() {
           </label>
 
           <button
-            className="w-full btn btn-primary mt-8 text-white"
+            className="btn btn-primary mt-8 w-full text-white"
             type="submit"
             disabled={passwordSubmitting}
           >
@@ -688,82 +713,102 @@ function SettingsPage() {
         </form>
 
         {/* Account settings */}
-        <div className="p-6 rounded-2xl bg-base-100 shadow-sm">
+        <div className="rounded-2xl bg-base-100 p-6 shadow-sm">
           <div>
             <h2 className="text-xl font-semibold">
               Compte
             </h2>
 
             <p className="text-sm text-base-content/60">
-              Exportez vos données ou supprimez définitivement votre compte.
+              Gérez votre compte JobTrace.
             </p>
           </div>
 
-          <div className="mt-6 grid gap-4 lg:grid-cols-2">
-            <div className="rounded-xl border border-base-300 p-4">
-              <h3 className="font-semibold">
-                Export des données
-              </h3>
+          <div className="mt-6 grid items-stretch gap-4 lg:grid-cols-2">
+            <div className="flex h-full flex-col rounded-xl border border-base-300 p-4">
+              <div>
+                <h3 className="font-semibold">
+                  Export des données
+                </h3>
 
-              <p className="mt-1 text-sm text-base-content/60">
-                Téléchargez une copie des données associées à votre compte.
-              </p>
+                <p className="mt-1 text-sm text-base-content/60">
+                  Téléchargez une copie de l’ensemble des données associées à votre compte.
+                </p>
 
-              <button
-                className="btn btn-outline btn-primary mt-4"
-                type="button"
-                disabled={exportSubmitting}
-                onClick={handleExportData}
-              >
-                {exportSubmitting && (
-                  <span className="loading loading-spinner loading-sm" />
-                )}
+                <button
+                  className="link link-primary mt-1 text-left text-sm"
+                  type="button"
+                  onClick={openPrivacyModal}
+                >
+                  Voir les informations relatives aux données personnelles.
+                </button>
+              </div>
 
-                Télécharger mes données
-              </button>
+              <div className="mt-auto pt-6">
+                <button
+                  className="btn btn-outline btn-primary w-full"
+                  type="button"
+                  disabled={exportSubmitting}
+                  onClick={handleExportData}
+                >
+                  {exportSubmitting && (
+                    <span className="loading loading-spinner loading-sm" />
+                  )}
+
+                  Télécharger mes données
+                </button>
+              </div>
             </div>
 
-            <div className="rounded-xl border border-error/40 bg-error/5 p-4">
-              <h3 className="font-semibold text-error">
-                Suppression du compte
-              </h3>
+            <div className="flex h-full flex-col rounded-xl border border-error/40 bg-error/5 p-4">
+              <div>
+                <h3 className="font-semibold text-error">
+                  Suppression du compte
+                </h3>
 
-              <p className="mt-1 text-sm text-base-content/70">
-                Cette action supprimera définitivement votre compte et les données associées.
-              </p>
+                <p className="mt-1 text-sm text-base-content/70">
+                  Cette action supprimera définitivement votre compte et les données associées.
+                </p>
 
-              <label className="form-control mt-4 w-full">
-                <div className="label">
-                  <span className="label-text">
-                    Tapez SUPPRIMER pour confirmer
-                  </span>
-                </div>
+                <button
+                  className="link link-error mt-1 block text-left text-sm"
+                  type="button"
+                  onClick={openDeleteModal}
+                >
+                  Comprendre les conséquences de la suppression.
+                </button>
+              </div>
 
-                <input
-                  className="input input-bordered w-full"
-                  type="text"
-                  value={deleteConfirmation}
-                  onChange={handleDeleteConfirmationChange}
-                  placeholder="SUPPRIMER"
-                />
-              </label>
+              <div className="mt-auto pt-6">
+                <label className="form-control w-full">
+                  <input
+                    className="input input-bordered w-full"
+                    type="text"
+                    value={deleteConfirmation}
+                    onChange={handleDeleteConfirmationChange}
+                    placeholder="Tapez SUPPRIMER pour confirmer"
+                  />
+                </label>
 
-              <button
-                className="btn btn-error mt-4 text-white"
-                type="button"
-                disabled={deleteSubmitting}
-                onClick={handleDeleteAccount}
-              >
-                {deleteSubmitting && (
-                  <span className="loading loading-spinner loading-sm" />
-                )}
+                <button
+                  className="btn btn-error mt-4 w-full text-white"
+                  type="button"
+                  disabled={deleteSubmitting}
+                  onClick={handleDeleteAccount}
+                >
+                  {deleteSubmitting && (
+                    <span className="loading loading-spinner loading-sm" />
+                  )}
 
-                Supprimer mon compte
-              </button>
+                  Supprimer mon compte
+                </button>
+              </div>
             </div>
           </div>
         </div>
       </div>
+
+      <LegalModal type={legalModalType} onClose={closeLegalModal} />
     </section>
   );
 }
