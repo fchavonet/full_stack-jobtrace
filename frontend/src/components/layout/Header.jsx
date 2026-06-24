@@ -49,8 +49,8 @@ function Header({
   }
 
   return (
-    <header className="sticky top-0 z-30 border-b border-base-300 bg-base-100/90 px-4 text-base-content backdrop-blur-sm">
-      <div className="navbar mx-auto min-h-[65px] w-full max-w-7xl px-0">
+    <header className="sticky top-0 z-30 border-b border-base-300 bg-base-100/90 px-4 text-base-content backdrop-blur-sm lg:px-8">
+      <div className="navbar min-h-[65px] w-full px-0">
         <div className="flex min-w-0 flex-1 items-center gap-4">
           <Link className="flex shrink-0 items-center gap-2 text-2xl font-bold" to="/">
             <BriefcaseBusiness className="h-6 w-6 text-primary" />
