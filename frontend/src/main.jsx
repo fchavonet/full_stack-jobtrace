@@ -11,6 +11,7 @@ import App from "./App.jsx";
 import DashboardPage from "./pages/DashboardPage.jsx";
 import HomePage from "./pages/HomePage.jsx";
 import NotFoundPage from "./pages/NotFoundPage.jsx";
+import VerifyEmailPage from "./pages/VerifyEmailPage.jsx";
 
 import ProtectedRoute from "./routes/ProtectedRoute.jsx";
 
@@ -23,6 +24,10 @@ const router = createBrowserRouter([
       {
         index: true,
         element: <HomePage />,
+      },
+      {
+        path: "verify-email",
+        element: <VerifyEmailPage />,
       },
       {
         element: <ProtectedRoute />,

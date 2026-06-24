@@ -1,11 +1,30 @@
 import { BriefcaseBusiness } from "lucide-react";
 import { useState } from "react";
+import { useLocation } from "react-router-dom";
 
 import AuthModal from "../components/auth/AuthModal";
 
 function HomePage() {
-  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
-  const [authMode, setAuthMode] = useState("login");
+  const location = useLocation();
+
+  function getInitialAuthMode() {
+    if (location.state && location.state.authMode) {
+      return location.state.authMode;
+    }
+
+    return "login";
+  }
+
+  function getInitialAuthModalState() {
+    if (location.state && location.state.openAuthModal) {
+      return true;
+    }
+
+    return false;
+  }
+
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(getInitialAuthModalState);
+  const [authMode, setAuthMode] = useState(getInitialAuthMode);
 
   function openLoginModal() {
     setAuthMode("login");
@@ -18,6 +37,7 @@ function HomePage() {
   }
 
   function closeAuthModal() {
+    setAuthMode("login");
     setIsAuthModalOpen(false);
   }
 
