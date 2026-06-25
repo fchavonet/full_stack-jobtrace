@@ -5,8 +5,13 @@ import { linkContactToApplication, linkDocumentToApplication, linkTagToApplicati
 import { createApplication } from "../../api/applications.api";
 import { createContact } from "../../api/contacts.api";
 import { listDocuments, uploadDocument } from "../../api/documents.api";
-import { createTag } from "../../api/tags.api";
+import { createTag, listTags } from "../../api/tags.api";
 import { useToast } from "../../hooks/useToast";
+import ApplicationModalContact from "./ApplicationModalContact";
+import ApplicationModalDates from "./ApplicationModalDates";
+import ApplicationModalDocument from "./ApplicationModalDocument";
+import ApplicationModalInformation from "./ApplicationModalInformation";
+import ApplicationModalNotes from "./ApplicationModalNotes";
 
 const defaultFollowUpDelayDays = 15;
 const applicationNotesMaxLength = 500;
@@ -123,7 +128,7 @@ function addSalaryField(payload, value) {
 
   const salary = Number(trimmedValue);
 
-  if (Number.isFinite(salary)) {
+  if (Number.isInteger(salary) && salary >= 0) {
     payload.salary = salary;
   }
 }
@@ -176,24 +181,6 @@ function normalizeValue(value) {
     .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase()
     .trim();
-}
-
-function getAllowedTagName(value) {
-  const normalizedValue = normalizeValue(value);
-
-  if (!normalizedValue) {
-    return "";
-  }
-
-  const allowedTag = allowedTagOptions.find(function (tagOption) {
-    return normalizeValue(tagOption) === normalizedValue;
-  });
-
-  if (allowedTag) {
-    return allowedTag;
-  }
-
-  return "";
 }
 
 function getExistingTagId(tags, tagName) {
@@ -269,11 +256,21 @@ function getErrorMessage(error, fallback) {
     return error.message;
   }
 
+  if (error && Array.isArray(error.errors) && error.errors.length > 0) {
+    return error.errors.join(" ");
+  }
+
   if (error && error.error) {
     return error.error;
   }
 
   return fallback;
+}
+
+function isTagAlreadyExistsError(error) {
+  const message = getErrorMessage(error, "");
+
+  return message.toLowerCase().includes("tag already exists");
 }
 
 function getContactLabel(contact) {
@@ -326,6 +323,8 @@ function hasNewContactValue(contactForm) {
     || contactForm.lastName.trim().length > 0
     || contactForm.email.trim().length > 0
     || contactForm.phoneNumber.trim().length > 0
+    || contactForm.company.trim().length > 0
+    || contactForm.notes.trim().length > 0
   );
 }
 
@@ -335,7 +334,11 @@ function getTagIsAlreadySelected(selectedTagNames, tagName) {
   });
 }
 
-function ApplicationModal({ contacts, tags, followUpDelayDays, isOpen, onClose, onApplicationCreated }) {
+function getTagsFromApiResponse(response) {
+  return getListFromResponse(response, "tags");
+}
+
+function ApplicationModal({ contacts = [], followUpDelayDays, isOpen, onClose, onApplicationCreated }) {
   const { showToast } = useToast();
 
   const normalizedFollowUpDelayDays = getFollowUpDelayDays(followUpDelayDays);
@@ -344,7 +347,7 @@ function ApplicationModal({ contacts, tags, followUpDelayDays, isOpen, onClose, 
     return getInitialForm(normalizedFollowUpDelayDays);
   });
 
-  const [tagQuery, setTagQuery] = useState("");
+  const [tagSelectValue, setTagSelectValue] = useState("");
   const [selectedTagNames, setSelectedTagNames] = useState([]);
 
   const [contactMode, setContactMode] = useState("none");
@@ -358,13 +361,28 @@ function ApplicationModal({ contacts, tags, followUpDelayDays, isOpen, onClose, 
   const [documentsLoading, setDocumentsLoading] = useState(false);
   const [documentsLoaded, setDocumentsLoaded] = useState(false);
   const [documentsError, setDocumentsError] = useState(false);
+  const [fileInputResetKey, setFileInputResetKey] = useState(0);
 
   const [submitting, setSubmitting] = useState(false);
+
+  const contactOptions = contacts.map(function (contact) {
+    return {
+      id: contact.id,
+      label: getContactLabel(contact),
+    };
+  });
+
+  const documentOptions = documents.map(function (document) {
+    return {
+      id: document.id,
+      label: getDocumentLabel(document),
+    };
+  });
 
   function resetModal() {
     setForm(getInitialForm(normalizedFollowUpDelayDays));
 
-    setTagQuery("");
+    setTagSelectValue("");
     setSelectedTagNames([]);
 
     setContactMode("none");
@@ -374,7 +392,13 @@ function ApplicationModal({ contacts, tags, followUpDelayDays, isOpen, onClose, 
     setDocumentMode("none");
     setSelectedDocumentId("");
     setDocumentForm(defaultDocumentForm);
+    setDocuments([]);
+    setDocumentsLoading(false);
+    setDocumentsLoaded(false);
     setDocumentsError(false);
+    setFileInputResetKey(function (currentKey) {
+      return currentKey + 1;
+    });
   }
 
   async function loadDocuments() {
@@ -417,46 +441,32 @@ function ApplicationModal({ contacts, tags, followUpDelayDays, isOpen, onClose, 
     });
   }
 
-  function handleTagQueryChange(event) {
-    setTagQuery(event.target.value);
-  }
-
-  function addTagFromQuery() {
-    const allowedTagName = getAllowedTagName(tagQuery);
-
-    if (!tagQuery.trim()) {
-      return;
-    }
-
-    if (!allowedTagName) {
-      showToast("Sélectionne un tag proposé dans la liste.", "warning");
-      return;
-    }
-
+  function addSelectedTag(tagName) {
     if (selectedTagNames.length >= maxTagsPerApplication) {
       showToast("Vous pouvez associer jusqu’à 3 tags par candidature.", "warning");
-      setTagQuery("");
       return;
     }
 
-    if (getTagIsAlreadySelected(selectedTagNames, allowedTagName)) {
+    if (getTagIsAlreadySelected(selectedTagNames, tagName)) {
       showToast("Ce tag est déjà sélectionné.", "warning");
-      setTagQuery("");
       return;
     }
 
     setSelectedTagNames(function (currentTagNames) {
-      return [...currentTagNames, allowedTagName];
+      return [...currentTagNames, tagName];
     });
-
-    setTagQuery("");
   }
 
-  function handleTagKeyDown(event) {
-    if (event.key === "Enter") {
-      event.preventDefault();
-      addTagFromQuery();
+  function handleTagSelectChange(event) {
+    const selectedTagName = event.target.value;
+
+    if (!selectedTagName) {
+      setTagSelectValue("");
+      return;
     }
+
+    addSelectedTag(selectedTagName);
+    setTagSelectValue("");
   }
 
   function removeSelectedTag(tagName) {
@@ -468,7 +478,11 @@ function ApplicationModal({ contacts, tags, followUpDelayDays, isOpen, onClose, 
   }
 
   function handleContactModeChange(event) {
-    setContactMode(event.target.value);
+    const nextContactMode = event.target.value;
+
+    setContactMode(nextContactMode);
+    setSelectedContactId("");
+    setContactForm(defaultContactForm);
   }
 
   function handleContactFormChange(event) {
@@ -490,6 +504,11 @@ function ApplicationModal({ contacts, tags, followUpDelayDays, isOpen, onClose, 
     const nextDocumentMode = event.target.value;
 
     setDocumentMode(nextDocumentMode);
+    setSelectedDocumentId("");
+    setDocumentForm(defaultDocumentForm);
+    setFileInputResetKey(function (currentKey) {
+      return currentKey + 1;
+    });
 
     if (nextDocumentMode === "existing") {
       loadDocuments();
@@ -534,24 +553,44 @@ function ApplicationModal({ contacts, tags, followUpDelayDays, isOpen, onClose, 
   async function createOrGetTagIds() {
     const tagIds = [];
 
+    if (selectedTagNames.length === 0) {
+      return tagIds;
+    }
+
+    const initialResponse = await listTags();
+    let availableTags = getTagsFromApiResponse(initialResponse);
+
     for (const selectedTagName of selectedTagNames) {
-      const existingTagId = getExistingTagId(tags, selectedTagName);
+      let tagId = getExistingTagId(availableTags, selectedTagName);
 
-      if (existingTagId) {
-        tagIds.push(existingTagId);
-      } else {
-        const response = await createTag({
-          name: selectedTagName,
-        });
+      if (!tagId) {
+        try {
+          const createResponse = await createTag({
+            name: selectedTagName,
+          });
 
-        const tagId = getEntityId(response, "tag");
+          const createdTag = getResponseEntity(createResponse, "tag");
 
-        if (tagId) {
-          tagIds.push(tagId);
-        } else {
-          throw new Error("Le tag a été créé, mais son identifiant est introuvable.");
+          if (createdTag && createdTag.id) {
+            availableTags.push(createdTag);
+            tagId = createdTag.id;
+          }
+        } catch (error) {
+          if (isTagAlreadyExistsError(error)) {
+            const refreshedResponse = await listTags();
+            availableTags = getTagsFromApiResponse(refreshedResponse);
+            tagId = getExistingTagId(availableTags, selectedTagName);
+          } else {
+            throw error;
+          }
         }
       }
+
+      if (!tagId) {
+        throw new Error("Le tag " + selectedTagName + " existe peut-être déjà, mais son identifiant est introuvable.");
+      }
+
+      tagIds.push(tagId);
     }
 
     return tagIds;
@@ -680,7 +719,11 @@ function ApplicationModal({ contacts, tags, followUpDelayDays, isOpen, onClose, 
 
       showToast("Candidature créée.", "success");
       resetModal();
-      await onApplicationCreated();
+
+      if (onApplicationCreated) {
+        await onApplicationCreated();
+      }
+
       onClose();
     } catch (error) {
       console.error("Application creation error:", error);
@@ -717,600 +760,52 @@ function ApplicationModal({ contacts, tags, followUpDelayDays, isOpen, onClose, 
 
           <div className="min-h-0 flex-1 overflow-y-auto bg-base-200 p-4 sm:p-6">
             <div className="grid gap-4">
-              <section className="rounded-2xl bg-base-100 p-4 shadow-sm sm:p-6">
-                <div>
-                  <h3 className="text-lg font-semibold">
-                    Informations principales
-                  </h3>
-                </div>
-
-                <div className="mt-4 grid gap-4 md:grid-cols-2">
-                  <label className="form-control w-full">
-                    <span className="label mb-1">
-                      Entreprise *
-                    </span>
-
-                    <input
-                      className="input input-bordered w-full"
-                      name="company"
-                      type="text"
-                      autoComplete="off"
-                      value={form.company}
-                      onChange={handleChange}
-                      placeholder="Ex : Wayne Enterprises"
-                      required
-                    />
-                  </label>
-
-                  <label className="form-control w-full">
-                    <span className="label mb-1">
-                      Poste *
-                    </span>
-
-                    <input
-                      className="input input-bordered w-full"
-                      name="position"
-                      type="text"
-                      autoComplete="off"
-                      value={form.position}
-                      onChange={handleChange}
-                      placeholder="Ex : Développeur front-end"
-                      required
-                    />
-                  </label>
-
-                  <label className="form-control w-full">
-                    <span className="label mb-1">
-                      Type de contrat
-                    </span>
-
-                    <select
-                      className="select select-bordered w-full"
-                      name="contractType"
-                      value={form.contractType}
-                      onChange={handleChange}
-                    >
-                      <option value="">
-                        Non renseigné
-                      </option>
-
-                      <option value="permanent">
-                        CDI
-                      </option>
-
-                      <option value="fixed_term">
-                        CDD
-                      </option>
-
-                      <option value="apprenticeship">
-                        Alternance
-                      </option>
-
-                      <option value="internship">
-                        Stage
-                      </option>
-
-                      <option value="freelance">
-                        Freelance
-                      </option>
-
-                      <option value="temporary">
-                        Intérim
-                      </option>
-
-                      <option value="other">
-                        Autre
-                      </option>
-                    </select>
-                  </label>
-
-                  <label className="form-control w-full">
-                    <span className="label mb-1">
-                      Statut
-                    </span>
-
-                    <select
-                      className="select select-bordered w-full"
-                      name="status"
-                      value={form.status}
-                      onChange={handleChange}
-                    >
-                      <option value="sent">
-                        Envoyée
-                      </option>
-
-                      <option value="follow_up">
-                        À relancer
-                      </option>
-
-                      <option value="interview">
-                        Entretien
-                      </option>
-
-                      <option value="rejected">
-                        Refusée
-                      </option>
-
-                      <option value="accepted">
-                        Acceptée
-                      </option>
-                    </select>
-                  </label>
-
-                  <label className="form-control w-full">
-                    <span className="label mb-1">
-                      Ville
-                    </span>
-
-                    <input
-                      className="input input-bordered w-full"
-                      name="location"
-                      type="text"
-                      autoComplete="off"
-                      value={form.location}
-                      onChange={handleChange}
-                      placeholder="Ex : Toulouse"
-                    />
-                  </label>
-
-                  <label className="form-control w-full">
-                    <span className="label mb-1">
-                      Salaire annuel brut
-                    </span>
-
-                    <input
-                      className="input input-bordered w-full"
-                      name="salary"
-                      type="number"
-                      min="0"
-                      value={form.salary}
-                      onChange={handleChange}
-                      placeholder="Ex : 38000"
-                    />
-                  </label>
-
-                  <label className="form-control w-full md:col-span-2">
-                    <span className="label mb-1">
-                      Lien de l’offre
-                    </span>
-
-                    <input
-                      className="input input-bordered w-full"
-                      name="link"
-                      type="url"
-                      autoComplete="off"
-                      value={form.link}
-                      onChange={handleChange}
-                      placeholder="https://..."
-                    />
-                  </label>
-
-                  <div className="form-control w-full md:col-span-2">
-                    <span className="label mb-1">
-                      Tags
-                    </span>
-
-                    <div className="flex flex-col gap-2 sm:flex-row">
-                      <input
-                        className="input input-bordered w-full"
-                        list="application-tag-options"
-                        value={tagQuery}
-                        onChange={handleTagQueryChange}
-                        onKeyDown={handleTagKeyDown}
-                        placeholder="Ex : Prioritaire"
-                      />
-
-                      <button
-                        className="btn btn-outline btn-primary"
-                        type="button"
-                        onClick={addTagFromQuery}
-                        disabled={selectedTagNames.length >= maxTagsPerApplication}
-                      >
-                        Ajouter
-                      </button>
-                    </div>
-
-                    <datalist id="application-tag-options">
-                      {allowedTagOptions.map(function (tagOption) {
-                        return (
-                          <option key={tagOption} value={tagOption} />
-                        );
-                      })}
-                    </datalist>
-
-                    <p className="mt-1 text-xs text-base-content/50">
-                      Jusqu’à 3 tags par candidature.
-                    </p>
-
-                    {selectedTagNames.length > 0 && (
-                      <div className="mt-2 flex flex-wrap gap-2">
-                        {selectedTagNames.map(function (tagName) {
-                          return (
-                            <span className="badge badge-primary gap-2 px-3 py-3 text-white" key={tagName}>
-                              {tagName}
-
-                              <button
-                                className="btn btn-ghost btn-xs btn-circle text-white hover:bg-primary-content/20"
-                                type="button"
-                                onClick={function () { removeSelectedTag(tagName); }}
-                                aria-label={"Retirer le tag " + tagName}
-                              >
-                                <X className="h-3 w-3" />
-                              </button>
-                            </span>
-                          );
-                        })}
-                      </div>
-                    )}
-
-                    {tagQuery.trim().length > 0 && !getAllowedTagName(tagQuery) && (
-                      <p className="mt-1 text-xs text-warning">
-                        Sélectionne un tag proposé dans la liste.
-                      </p>
-                    )}
-                  </div>
-                </div>
-              </section>
-
-              <section className="rounded-2xl bg-base-100 p-4 shadow-sm sm:p-6">
-                <div>
-                  <h3 className="text-lg font-semibold">
-                    Dates
-                  </h3>
-                </div>
-
-                <div className="mt-4 grid gap-4 md:grid-cols-3">
-                  <label className="form-control w-full">
-                    <span className="label mb-1">
-                      Date d’envoi *
-                    </span>
-
-                    <input
-                      className="input input-bordered w-full"
-                      name="sentAt"
-                      type="date"
-                      value={form.sentAt}
-                      onChange={handleChange}
-                      required
-                    />
-                  </label>
-
-                  <label className="form-control w-full">
-                    <span className="label mb-1">
-                      Date de relance
-                    </span>
-
-                    <input
-                      className="input input-bordered w-full"
-                      name="followUpAt"
-                      type="date"
-                      value={form.followUpAt}
-                      onChange={handleChange}
-                    />
-                  </label>
-
-                  <label className="form-control w-full">
-                    <span className="label mb-1">
-                      Date d’entretien
-                    </span>
-
-                    <input
-                      className="input input-bordered w-full"
-                      name="interviewAt"
-                      type="date"
-                      value={form.interviewAt}
-                      onChange={handleChange}
-                    />
-                  </label>
-                </div>
-              </section>
-
-              <section className="rounded-2xl bg-base-100 p-4 shadow-sm sm:p-6">
-                <div>
-                  <h3 className="text-lg font-semibold">
-                    Contact associé
-                  </h3>
-                </div>
-
-                <div className="mt-4 grid gap-4">
-                  <label className="form-control w-full">
-                    <span className="label mb-1">
-                      Action contact
-                    </span>
-
-                    <select
-                      className="select select-bordered w-full"
-                      value={contactMode}
-                      onChange={handleContactModeChange}
-                    >
-                      <option value="none">
-                        Aucun contact
-                      </option>
-
-                      <option value="existing">
-                        Sélectionner un contact existant
-                      </option>
-
-                      <option value="new">
-                        Créer un nouveau contact
-                      </option>
-                    </select>
-                  </label>
-
-                  {contactMode === "existing" && (
-                    <label className="form-control w-full">
-                      <span className="label mb-1">
-                        Contact existant
-                      </span>
-
-                      <select
-                        className="select select-bordered w-full"
-                        value={selectedContactId}
-                        onChange={handleSelectedContactChange}
-                      >
-                        <option value="">
-                          Aucun contact sélectionné
-                        </option>
-
-                        {contacts.map(function (contact) {
-                          return (
-                            <option key={contact.id} value={contact.id}>
-                              {getContactLabel(contact)}
-                            </option>
-                          );
-                        })}
-                      </select>
-                    </label>
-                  )}
-
-                  {contactMode === "new" && (
-                    <div className="grid gap-4 md:grid-cols-2">
-                      <label className="form-control w-full">
-                        <span className="label mb-1">
-                          Prénom
-                        </span>
-
-                        <input
-                          className="input input-bordered w-full"
-                          name="firstName"
-                          type="text"
-                          autoComplete="off"
-                          value={contactForm.firstName}
-                          onChange={handleContactFormChange}
-                        />
-                      </label>
-
-                      <label className="form-control w-full">
-                        <span className="label mb-1">
-                          Nom
-                        </span>
-
-                        <input
-                          className="input input-bordered w-full"
-                          name="lastName"
-                          type="text"
-                          autoComplete="off"
-                          value={contactForm.lastName}
-                          onChange={handleContactFormChange}
-                        />
-                      </label>
-
-                      <label className="form-control w-full">
-                        <span className="label mb-1">
-                          Email
-                        </span>
-
-                        <input
-                          className="input input-bordered w-full"
-                          name="email"
-                          type="email"
-                          autoComplete="off"
-                          value={contactForm.email}
-                          onChange={handleContactFormChange}
-                        />
-                      </label>
-
-                      <label className="form-control w-full">
-                        <span className="label mb-1">
-                          Téléphone
-                        </span>
-
-                        <input
-                          className="input input-bordered w-full"
-                          name="phoneNumber"
-                          type="text"
-                          autoComplete="off"
-                          value={contactForm.phoneNumber}
-                          onChange={handleContactFormChange}
-                        />
-                      </label>
-
-                      <label className="form-control w-full">
-                        <span className="label mb-1">
-                          Entreprise
-                        </span>
-
-                        <input
-                          className="input input-bordered w-full"
-                          name="company"
-                          type="text"
-                          autoComplete="off"
-                          value={contactForm.company}
-                          onChange={handleContactFormChange}
-                          placeholder="Reprend l’entreprise si vide"
-                        />
-                      </label>
-
-                      <label className="form-control w-full md:col-span-2">
-                        <span className="label mb-1">
-                          Notes contact
-                        </span>
-
-                        <textarea
-                          className="textarea textarea-bordered min-h-24 w-full resize-none"
-                          name="notes"
-                          maxLength={contactNotesMaxLength}
-                          value={contactForm.notes}
-                          onChange={handleContactFormChange}
-                        />
-
-                        <span className="mt-1 text-right text-xs text-base-content/50">
-                          {contactForm.notes.length} / {contactNotesMaxLength}
-                        </span>
-                      </label>
-                    </div>
-                  )}
-                </div>
-              </section>
-
-              <section className="rounded-2xl bg-base-100 p-4 shadow-sm sm:p-6">
-                <div>
-                  <h3 className="text-lg font-semibold">
-                    Document associé
-                  </h3>
-
-                  <p className="text-sm text-base-content/60">
-                    Liez un document existant ou ajoutez un fichier pendant la création.
-                  </p>
-                </div>
-
-                <div className="mt-4 grid gap-4">
-                  <label className="form-control w-full">
-                    <span className="label mb-1">
-                      Action document
-                    </span>
-
-                    <select
-                      className="select select-bordered w-full"
-                      value={documentMode}
-                      onChange={handleDocumentModeChange}
-                    >
-                      <option value="none">
-                        Aucun document
-                      </option>
-
-                      <option value="existing">
-                        Sélectionner un document existant
-                      </option>
-
-                      <option value="upload">
-                        Ajouter un nouveau document
-                      </option>
-                    </select>
-                  </label>
-
-                  {documentMode === "existing" && (
-                    <div className="grid gap-2">
-                      {documentsLoading && (
-                        <div className="flex items-center gap-2 text-sm text-base-content/60">
-                          <span className="loading loading-spinner loading-sm" />
-                          Chargement des documents...
-                        </div>
-                      )}
-
-                      {documentsError && (
-                        <div className="alert alert-warning">
-                          <span>
-                            Les documents existants ne peuvent pas être chargés pour le moment.
-                          </span>
-                        </div>
-                      )}
-
-                      {!documentsLoading && !documentsError && documents.length === 0 && (
-                        <div className="alert">
-                          <span>
-                            Aucun document existant disponible.
-                          </span>
-                        </div>
-                      )}
-
-                      {!documentsLoading && !documentsError && documents.length > 0 && (
-                        <label className="form-control w-full">
-                          <span className="label mb-1">
-                            Document existant
-                          </span>
-
-                          <select
-                            className="select select-bordered w-full"
-                            value={selectedDocumentId}
-                            onChange={handleSelectedDocumentChange}
-                          >
-                            <option value="">
-                              Aucun document sélectionné
-                            </option>
-
-                            {documents.map(function (document) {
-                              return (
-                                <option key={document.id} value={document.id}>
-                                  {getDocumentLabel(document)}
-                                </option>
-                              );
-                            })}
-                          </select>
-                        </label>
-                      )}
-                    </div>
-                  )}
-
-                  {documentMode === "upload" && (
-                    <div className="grid gap-4 md:grid-cols-2">
-                      <label className="form-control w-full">
-                        <span className="label mb-1">
-                          Type de document
-                        </span>
-
-                        <select
-                          className="select select-bordered w-full"
-                          value={documentForm.type}
-                          onChange={handleDocumentTypeChange}
-                        >
-                          <option value="resume">
-                            CV
-                          </option>
-
-                          <option value="cover_letter">
-                            Lettre de motivation
-                          </option>
-                        </select>
-                      </label>
-
-                      <label className="form-control w-full">
-                        <span className="label mb-1">
-                          Fichier
-                        </span>
-
-                        <input
-                          className="file-input file-input-bordered w-full"
-                          type="file"
-                          accept=".pdf,.doc,.docx,.png,.jpg,.jpeg"
-                          onChange={handleDocumentFileChange}
-                        />
-                      </label>
-                    </div>
-                  )}
-                </div>
-              </section>
-
-              <section className="rounded-2xl bg-base-100 p-4 shadow-sm sm:p-6">
-                <label className="form-control w-full">
-                  <span className="label mb-1">
-                    Notes candidature
-                  </span>
-
-                  <textarea
-                    className="textarea textarea-bordered min-h-28 w-full resize-none"
-                    name="notes"
-                    maxLength={applicationNotesMaxLength}
-                    value={form.notes}
-                    onChange={handleChange}
-                    placeholder="Informations utiles sur la candidature..."
-                  />
-
-                  <span className="mt-1 text-right text-xs text-base-content/50">
-                    {form.notes.length} / {applicationNotesMaxLength}
-                  </span>
-                </label>
-              </section>
+              <ApplicationModalInformation
+                form={form}
+                tagSelectValue={tagSelectValue}
+                selectedTagNames={selectedTagNames}
+                allowedTagOptions={allowedTagOptions}
+                maxTagsPerApplication={maxTagsPerApplication}
+                onFieldChange={handleChange}
+                onTagSelectChange={handleTagSelectChange}
+                onRemoveTag={removeSelectedTag}
+              />
+
+              <ApplicationModalDates
+                form={form}
+                onFieldChange={handleChange}
+              />
+
+              <ApplicationModalContact
+                contactOptions={contactOptions}
+                contactMode={contactMode}
+                selectedContactId={selectedContactId}
+                contactForm={contactForm}
+                contactNotesMaxLength={contactNotesMaxLength}
+                onContactModeChange={handleContactModeChange}
+                onSelectedContactChange={handleSelectedContactChange}
+                onContactFormChange={handleContactFormChange}
+              />
+
+              <ApplicationModalDocument
+                documentOptions={documentOptions}
+                documentMode={documentMode}
+                selectedDocumentId={selectedDocumentId}
+                documentForm={documentForm}
+                documentsLoading={documentsLoading}
+                documentsError={documentsError}
+                fileInputResetKey={fileInputResetKey}
+                onDocumentModeChange={handleDocumentModeChange}
+                onSelectedDocumentChange={handleSelectedDocumentChange}
+                onDocumentTypeChange={handleDocumentTypeChange}
+                onDocumentFileChange={handleDocumentFileChange}
+              />
+
+              <ApplicationModalNotes
+                form={form}
+                applicationNotesMaxLength={applicationNotesMaxLength}
+                onFieldChange={handleChange}
+              />
             </div>
           </div>
 
