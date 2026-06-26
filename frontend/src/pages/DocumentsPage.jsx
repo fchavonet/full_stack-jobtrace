@@ -67,13 +67,28 @@ function fixDocumentNameEncoding(value) {
   return value.normalize("NFC");
 }
 
+function removeControlCharacters(value) {
+  let cleanedValue = "";
+
+  for (const character of value) {
+    const characterCode = character.charCodeAt(0);
+    const isControlCharacter =
+      characterCode <= 31 ||
+      (characterCode >= 127 && characterCode <= 159);
+
+    if (!isControlCharacter) {
+      cleanedValue += character;
+    }
+  }
+
+  return cleanedValue;
+}
+
 function cleanDocumentName(value) {
   const fixedValue = fixDocumentNameEncoding(value);
+  const safeFileName = fixedValue.replace(/[\\/]/g, "-");
 
-  return fixedValue
-    .replace(/[\\/]/g, "-")
-    .replace(/[\u0000-\u001F\u007F-\u009F]/g, "")
-    .trim();
+  return removeControlCharacters(safeFileName).trim();
 }
 
 function getDocumentName(doc) {
