@@ -151,6 +151,116 @@ function formatDate(value) {
   return new Intl.DateTimeFormat("fr-FR").format(date);
 }
 
+function getApplicationFollowUpIsRelevant(application) {
+  if (application.interviewAt) {
+    return false;
+  }
+
+  if (application.status === "accepted") {
+    return false;
+  }
+
+  if (application.status === "rejected") {
+    return false;
+  }
+
+  return true;
+}
+
+function getApplicationFollowUpAt(application) {
+  if (!getApplicationFollowUpIsRelevant(application)) {
+    return "";
+  }
+
+  return application.followUpAt;
+}
+
+function getStartOfDayTimestamp(value) {
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return null;
+  }
+
+  return new Date(
+    date.getFullYear(),
+    date.getMonth(),
+    date.getDate(),
+  ).getTime();
+}
+
+function getFollowUpDisplay(value) {
+  const followUpTimestamp = getStartOfDayTimestamp(value);
+
+  if (followUpTimestamp === null) {
+    return null;
+  }
+
+  const todayTimestamp = getStartOfDayTimestamp(new Date());
+  const millisecondsPerDay = 24 * 60 * 60 * 1000;
+  const daysDifference = Math.round(
+    (followUpTimestamp - todayTimestamp) / millisecondsPerDay,
+  );
+
+  if (daysDifference < 0) {
+    return {
+      label: "En retard",
+      className: "badge badge-error",
+    };
+  }
+
+  if (daysDifference === 0) {
+    return {
+      label: "Aujourd’hui",
+      className: "badge badge-warning",
+    };
+  }
+
+  if (daysDifference === 1) {
+    return {
+      label: "Demain",
+      className: "badge badge-info",
+    };
+  }
+
+  if (daysDifference <= 7) {
+    return {
+      label: "Dans " + daysDifference + " jours",
+      className: "badge badge-info",
+    };
+  }
+
+  return {
+    label: "Dans " + daysDifference + " jours",
+    className: "badge badge-ghost",
+  };
+}
+
+function FollowUpCell({ application }) {
+  const followUpAt = getApplicationFollowUpAt(application);
+  const followUpDisplay = getFollowUpDisplay(followUpAt);
+
+  if (!followUpDisplay) {
+    return (
+      <span className="block truncate text-base-content/40">
+        —
+      </span>
+    );
+  }
+
+  return (
+    <div className="flex flex-col items-center gap-1">
+      <span className="block truncate">
+        {formatDate(followUpAt)}
+      </span>
+
+      <span className={followUpDisplay.className}>
+        {followUpDisplay.label}
+      </span>
+    </div>
+  );
+}
+
 function getDateTimestamp(value) {
   if (!value) {
     return null;
@@ -182,7 +292,7 @@ function getSearchableValue(application) {
       getContractTypeLabel(application.contractType),
       getStatusLabel(application.status),
       formatDate(application.sentAt),
-      formatDate(application.followUpAt),
+      formatDate(getApplicationFollowUpAt(application)),
       formatDate(application.interviewAt),
     ].join(" "),
   );
@@ -210,7 +320,7 @@ function getSortableValue(application, sortKey) {
   }
 
   if (sortKey === "followUpAt") {
-    return getDateTimestamp(application.followUpAt);
+    return getDateTimestamp(getApplicationFollowUpAt(application));
   }
 
   if (sortKey === "interviewAt") {
@@ -566,9 +676,7 @@ function ApplicationsTable({
                     </td>
 
                     <td className="text-center align-middle">
-                      <span className="block truncate">
-                        {formatDate(application.followUpAt)}
-                      </span>
+                      <FollowUpCell application={application} />
                     </td>
 
                     <td className="text-center align-middle">

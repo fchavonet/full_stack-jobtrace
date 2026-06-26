@@ -17,6 +17,7 @@ import ApplicationModalTags from "./ApplicationModalTags";
 
 const maxTagsPerApplication = 3;
 const applicationNotesMaxLength = 500;
+const defaultFollowUpDelayDays = 15;
 
 const allowedTagOptions = [
   "Prioritaire",
@@ -230,6 +231,28 @@ function getDateInputValue(value) {
   if (Number.isNaN(date.getTime())) {
     return "";
   }
+
+  return date.toISOString().slice(0, 10);
+}
+
+function getFollowUpDelayDays(value) {
+  const parsedDelay = Number(value);
+
+  if (Number.isFinite(parsedDelay) && parsedDelay > 0) {
+    return parsedDelay;
+  }
+
+  return defaultFollowUpDelayDays;
+}
+
+function getFollowUpInputValue(sentAt, followUpDelayDays) {
+  const date = new Date(sentAt);
+
+  if (Number.isNaN(date.getTime())) {
+    return "";
+  }
+
+  date.setDate(date.getDate() + followUpDelayDays);
 
   return date.toISOString().slice(0, 10);
 }
@@ -513,6 +536,13 @@ function getEditFormFromApplication(application) {
     salary = String(application.salary);
   }
 
+  const interviewAt = getDateInputValue(application.interviewAt);
+  let followUpAt = getDateInputValue(application.followUpAt);
+
+  if (interviewAt) {
+    followUpAt = "";
+  }
+
   return {
     company: application.company || "",
     position: application.position || "",
@@ -522,13 +552,43 @@ function getEditFormFromApplication(application) {
     salary,
     link: application.link || "",
     sentAt: getDateInputValue(application.sentAt),
-    followUpAt: getDateInputValue(application.followUpAt),
-    interviewAt: getDateInputValue(application.interviewAt),
+    followUpAt,
+    interviewAt,
     notes: application.notes || "",
   };
 }
 
+function getNullableDatePayloadValue(value) {
+  if (value) {
+    return value;
+  }
+
+  return null;
+}
+
+function getStatusIsFinal(status) {
+  if (status === "accepted") {
+    return true;
+  }
+
+  if (status === "rejected") {
+    return true;
+  }
+
+  return false;
+}
+
 function buildAnnouncementUpdatePayload(form) {
+  let followUpAt = form.followUpAt;
+
+  if (form.interviewAt) {
+    followUpAt = "";
+  }
+
+  if (getStatusIsFinal(form.status)) {
+    followUpAt = "";
+  }
+
   return {
     company: form.company,
     position: form.position,
@@ -538,10 +598,18 @@ function buildAnnouncementUpdatePayload(form) {
     salary: form.salary,
     link: form.link,
     sentAt: form.sentAt,
-    followUpAt: form.followUpAt,
-    interviewAt: form.interviewAt,
+    followUpAt: getNullableDatePayloadValue(followUpAt),
+    interviewAt: getNullableDatePayloadValue(form.interviewAt),
     notes: form.notes,
   };
+}
+
+function getApplicationFollowUpDateLabel(application) {
+  if (application && application.interviewAt) {
+    return "—";
+  }
+
+  return formatDate(application.followUpAt);
 }
 
 function InfoItem({ label, value }) {
@@ -563,12 +631,14 @@ function ApplicationDetailsModal({
   history,
   loading,
   updating,
+  followUpDelayDays,
   isOpen,
   onClose,
   onUpdateApplication,
   onApplicationChanged,
 }) {
   const { showToast } = useToast();
+  const normalizedFollowUpDelayDays = getFollowUpDelayDays(followUpDelayDays);
 
   const [activeTab, setActiveTab] = useState("announcement");
   const [isEditingAnnouncement, setIsEditingAnnouncement] = useState(false);
@@ -644,10 +714,50 @@ function ApplicationDetailsModal({
     const { name, value } = event.target;
 
     setEditForm(function (currentForm) {
-      return {
+      const nextForm = {
         ...currentForm,
         [name]: value,
       };
+
+      if (name === "interviewAt" && value) {
+        nextForm.followUpAt = "";
+        nextForm.status = "interview";
+      }
+
+      if (name === "interviewAt" && !value) {
+        nextForm.followUpAt = getFollowUpInputValue(
+          nextForm.sentAt,
+          normalizedFollowUpDelayDays,
+        );
+
+        if (currentForm.status === "interview") {
+          nextForm.status = "follow_up";
+        }
+      }
+
+      if (name === "sentAt" && !nextForm.interviewAt && !getStatusIsFinal(nextForm.status)) {
+        nextForm.followUpAt = getFollowUpInputValue(
+          value,
+          normalizedFollowUpDelayDays,
+        );
+      }
+
+      if (name === "status" && value === "interview") {
+        nextForm.followUpAt = "";
+      }
+
+      if (name === "status" && getStatusIsFinal(value)) {
+        nextForm.followUpAt = "";
+      }
+
+      if (name === "status" && !getStatusIsFinal(value) && value !== "interview" && !nextForm.interviewAt) {
+        nextForm.followUpAt = getFollowUpInputValue(
+          nextForm.sentAt,
+          normalizedFollowUpDelayDays,
+        );
+      }
+
+      return nextForm;
     });
   }
 
@@ -657,7 +767,7 @@ function ApplicationDetailsModal({
     }
   }
 
-function getContactId(contact) {
+  function getContactId(contact) {
     if (contact && contact.contact && contact.contact.id) {
       return contact.contact.id;
     }
@@ -1029,7 +1139,7 @@ function getContactId(contact) {
     );
   }
 
-function renderAnnouncementReadOnly() {
+  function renderAnnouncementReadOnly() {
     return (
       <div className="grid gap-4">
         <section className="rounded-2xl bg-base-100 p-4 shadow-sm sm:p-6">
@@ -1081,7 +1191,7 @@ function renderAnnouncementReadOnly() {
 
           <div className="mt-5 grid gap-3 md:grid-cols-3">
             <InfoItem label="Envoi" value={formatDate(application.sentAt)} />
-            <InfoItem label="Relance" value={formatDate(application.followUpAt)} />
+            <InfoItem label="Relance" value={getApplicationFollowUpDateLabel(application)} />
             <InfoItem label="Entretien" value={formatDate(application.interviewAt)} />
           </div>
         </section>
@@ -1315,6 +1425,8 @@ function renderAnnouncementReadOnly() {
                 type="date"
                 value={editForm.followUpAt}
                 onChange={handleFieldChange}
+                disabled={Boolean(editForm.interviewAt)}
+                max={editForm.interviewAt}
               />
             </label>
 

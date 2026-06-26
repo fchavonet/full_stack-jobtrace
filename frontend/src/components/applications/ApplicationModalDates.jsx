@@ -1,4 +1,7 @@
-function ApplicationModalDates({ form, onFieldChange }) {
+function ApplicationModalDates({
+  form,
+  onFieldChange,
+}) {
   return (
     <section className="rounded-2xl bg-base-100 p-4 shadow-sm sm:p-6">
       <div>
@@ -34,6 +37,8 @@ function ApplicationModalDates({ form, onFieldChange }) {
             type="date"
             value={form.followUpAt}
             onChange={onFieldChange}
+            disabled={Boolean(form.interviewAt)}
+            max={form.interviewAt}
           />
         </label>
 

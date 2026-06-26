@@ -134,6 +134,14 @@ function addSalaryField(payload, value) {
   }
 }
 
+function getSafeFollowUpAt(form) {
+  if (form.interviewAt) {
+    return "";
+  }
+
+  return form.followUpAt;
+}
+
 function buildApplicationPayload(form) {
   const payload = {
     company: form.company.trim(),
@@ -147,7 +155,7 @@ function buildApplicationPayload(form) {
   addTextField(payload, "link", form.link);
   addTextField(payload, "notes", form.notes);
   addSalaryField(payload, form.salary);
-  addDateField(payload, "followUpAt", form.followUpAt);
+  addDateField(payload, "followUpAt", getSafeFollowUpAt(form));
   addDateField(payload, "interviewAt", form.interviewAt);
 
   return payload;
@@ -434,8 +442,22 @@ function ApplicationModal({ contacts = [], followUpDelayDays, isOpen, onClose, o
         [name]: value,
       };
 
-      if (name === "sentAt") {
-        nextForm.followUpAt = getFollowUpInputValue(value, normalizedFollowUpDelayDays);
+      if (name === "interviewAt" && value) {
+        nextForm.followUpAt = "";
+      }
+
+      if (name === "interviewAt" && !value) {
+        nextForm.followUpAt = getFollowUpInputValue(
+          nextForm.sentAt,
+          normalizedFollowUpDelayDays,
+        );
+      }
+
+      if (name === "sentAt" && !nextForm.interviewAt) {
+        nextForm.followUpAt = getFollowUpInputValue(
+          value,
+          normalizedFollowUpDelayDays,
+        );
       }
 
       return nextForm;

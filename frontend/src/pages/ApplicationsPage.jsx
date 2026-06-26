@@ -355,6 +355,7 @@ function ApplicationsPage() {
         history={selectedApplicationHistory}
         loading={detailsLoading}
         updating={updatingApplication}
+        followUpDelayDays={followUpDelayDays}
         isOpen={isDetailsModalOpen}
         onClose={closeApplicationDetails}
         onUpdateApplication={handleUpdateApplication}
