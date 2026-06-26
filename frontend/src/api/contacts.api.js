@@ -14,3 +14,18 @@ export function createContact(payload) {
     authenticated: true,
   });
 }
+
+export function updateContact(id, payload) {
+  return apiRequest("/contacts/" + id, {
+    method: "PATCH",
+    body: payload,
+    authenticated: true,
+  });
+}
+
+export function deleteContact(id) {
+  return apiRequest("/contacts/" + id, {
+    method: "DELETE",
+    authenticated: true,
+  });
+}
