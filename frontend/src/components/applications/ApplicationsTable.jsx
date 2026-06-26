@@ -1,4 +1,5 @@
-import { Eye, Trash2 } from "lucide-react";
+import { useMemo, useState } from "react";
+import { ChevronDown, ChevronUp, ChevronsUpDown, Eye, Trash2 } from "lucide-react";
 
 function getStatusLabel(status) {
   if (status === "sent") {
@@ -22,6 +23,30 @@ function getStatusLabel(status) {
   }
 
   return "Inconnu";
+}
+
+function getStatusSortValue(status) {
+  if (status === "sent") {
+    return 1;
+  }
+
+  if (status === "follow_up") {
+    return 2;
+  }
+
+  if (status === "interview") {
+    return 3;
+  }
+
+  if (status === "accepted") {
+    return 4;
+  }
+
+  if (status === "rejected") {
+    return 5;
+  }
+
+  return 99;
 }
 
 function getStatusBadgeClassName(status) {
@@ -92,11 +117,170 @@ function formatDate(value) {
   return new Intl.DateTimeFormat("fr-FR").format(date);
 }
 
+function getDateTimestamp(value) {
+  if (!value) {
+    return null;
+  }
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return null;
+  }
+
+  return date.getTime();
+}
+
+function getTextSortValue(value) {
+  return String(value || "").toLowerCase().trim();
+}
+
+function getSortableValue(application, sortKey) {
+  if (sortKey === "company") {
+    return getTextSortValue(application.company);
+  }
+
+  if (sortKey === "position") {
+    return getTextSortValue(application.position);
+  }
+
+  if (sortKey === "contractType") {
+    return getTextSortValue(getContractTypeLabel(application.contractType));
+  }
+
+  if (sortKey === "status") {
+    return getStatusSortValue(application.status);
+  }
+
+  if (sortKey === "sentAt") {
+    return getDateTimestamp(application.sentAt);
+  }
+
+  if (sortKey === "followUpAt") {
+    return getDateTimestamp(application.followUpAt);
+  }
+
+  if (sortKey === "interviewAt") {
+    return getDateTimestamp(application.interviewAt);
+  }
+
+  return "";
+}
+
+function compareSortableValues(firstValue, secondValue, direction) {
+  if (firstValue === null && secondValue === null) {
+    return 0;
+  }
+
+  if (firstValue === null) {
+    return 1;
+  }
+
+  if (secondValue === null) {
+    return -1;
+  }
+
+  let result = 0;
+
+  if (typeof firstValue === "number" && typeof secondValue === "number") {
+    if (firstValue < secondValue) {
+      result = -1;
+    }
+
+    if (firstValue > secondValue) {
+      result = 1;
+    }
+  } else {
+    result = String(firstValue).localeCompare(String(secondValue), "fr-FR");
+  }
+
+  if (direction === "desc") {
+    result = result * -1;
+  }
+
+  return result;
+}
+
+function getSortedApplications(applications, sortConfig) {
+  if (!sortConfig.key) {
+    return applications;
+  }
+
+  const sortedApplications = [...applications];
+
+  sortedApplications.sort(function (firstApplication, secondApplication) {
+    const firstValue = getSortableValue(firstApplication, sortConfig.key);
+    const secondValue = getSortableValue(secondApplication, sortConfig.key);
+
+    return compareSortableValues(firstValue, secondValue, sortConfig.direction);
+  });
+
+  return sortedApplications;
+}
+
+function getNextSortDirection(currentSortConfig, sortKey) {
+  if (currentSortConfig.key === sortKey && currentSortConfig.direction === "asc") {
+    return "desc";
+  }
+
+  return "asc";
+}
+
+function SortIcon({ sortConfig, sortKey }) {
+  if (sortConfig.key !== sortKey) {
+    return <ChevronsUpDown className="h-4 w-4 text-base-content/40" />;
+  }
+
+  if (sortConfig.direction === "desc") {
+    return <ChevronDown className="h-4 w-4" />;
+  }
+
+  return <ChevronUp className="h-4 w-4" />;
+}
+
+function SortableHeader({
+  label,
+  sortKey,
+  sortConfig,
+  onSort,
+}) {
+  return (
+    <th className="text-center">
+      <button
+        className="btn btn-ghost btn-xs mx-auto gap-1 font-semibold"
+        type="button"
+        onClick={function () { onSort(sortKey); }}
+      >
+        {label}
+        <SortIcon sortConfig={sortConfig} sortKey={sortKey} />
+      </button>
+    </th>
+  );
+}
+
 function ApplicationsTable({
   applications,
   onOpenApplication,
   onDeleteApplication,
 }) {
+  const [sortConfig, setSortConfig] = useState({
+    key: "",
+    direction: "asc",
+  });
+
+  const sortedApplications = useMemo(function () {
+    return getSortedApplications(applications, sortConfig);
+  }, [applications, sortConfig]);
+
+  function handleSort(sortKey) {
+    setSortConfig(function (currentSortConfig) {
+      return {
+        key: sortKey,
+        direction: getNextSortDirection(currentSortConfig, sortKey),
+      };
+    });
+  }
+
   if (applications.length === 0) {
     return (
       <div className="mt-6 rounded-2xl bg-base-100 p-6 text-center shadow-sm">
@@ -124,36 +308,57 @@ function ApplicationsTable({
       </div>
 
       <div className="overflow-x-auto">
-        <table className="table table-zebra">
+        <table className="table">
           <thead>
             <tr>
-              <th className="text-center">
-                Entreprise
-              </th>
+              <SortableHeader
+                label="Entreprise"
+                sortKey="company"
+                sortConfig={sortConfig}
+                onSort={handleSort}
+              />
 
-              <th className="text-center">
-                Poste
-              </th>
+              <SortableHeader
+                label="Poste"
+                sortKey="position"
+                sortConfig={sortConfig}
+                onSort={handleSort}
+              />
 
-              <th className="text-center">
-                Type de contrat
-              </th>
+              <SortableHeader
+                label="Type de contrat"
+                sortKey="contractType"
+                sortConfig={sortConfig}
+                onSort={handleSort}
+              />
 
-              <th className="text-center">
-                Statut
-              </th>
+              <SortableHeader
+                label="Statut"
+                sortKey="status"
+                sortConfig={sortConfig}
+                onSort={handleSort}
+              />
 
-              <th className="text-center">
-                Date d’envoi
-              </th>
+              <SortableHeader
+                label="Date d’envoi"
+                sortKey="sentAt"
+                sortConfig={sortConfig}
+                onSort={handleSort}
+              />
 
-              <th className="text-center">
-                Date de relance
-              </th>
+              <SortableHeader
+                label="Date de relance"
+                sortKey="followUpAt"
+                sortConfig={sortConfig}
+                onSort={handleSort}
+              />
 
-              <th className="text-center">
-                Date d’entretien
-              </th>
+              <SortableHeader
+                label="Date d’entretien"
+                sortKey="interviewAt"
+                sortConfig={sortConfig}
+                onSort={handleSort}
+              />
 
               <th className="text-center">
                 Actions
@@ -162,9 +367,12 @@ function ApplicationsTable({
           </thead>
 
           <tbody>
-            {applications.map(function (application) {
+            {sortedApplications.map(function (application) {
               return (
-                <tr key={application.id} className="hover">
+                <tr
+                  key={application.id}
+                  className="border-b border-base-200 last:border-b-0 hover:bg-base-200/50"
+                >
                   <td className="text-center align-middle">
                     <button
                       className="link link-hover font-semibold"

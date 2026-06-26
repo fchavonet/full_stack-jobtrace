@@ -12,7 +12,7 @@ import ApplicationModalDates from "./ApplicationModalDates";
 import ApplicationModalDocument from "./ApplicationModalDocument";
 import ApplicationModalInformation from "./ApplicationModalInformation";
 import ApplicationModalNotes from "./ApplicationModalNotes";
-import ApplicationTagsField from "./ApplicationTagsField";
+import ApplicationModalTags from "./ApplicationModalTags";
 
 const defaultFollowUpDelayDays = 15;
 const applicationNotesMaxLength = 500;
@@ -772,7 +772,7 @@ function ApplicationModal({ contacts = [], followUpDelayDays, isOpen, onClose, o
               />
 
               <section className="rounded-2xl bg-base-100 p-4 shadow-sm sm:p-6">
-                <ApplicationTagsField
+                <ApplicationModalTags
                   selectedTags={selectedTagNames}
                   allowedTagOptions={allowedTagOptions}
                   maxTagsPerApplication={maxTagsPerApplication}

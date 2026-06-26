@@ -13,7 +13,7 @@ import { listContacts } from "../../api/contacts.api";
 import { listDocuments } from "../../api/documents.api";
 import { createTag, listTags } from "../../api/tags.api";
 import { useToast } from "../../hooks/useToast";
-import ApplicationTagsField from "./ApplicationTagsField";
+import ApplicationModalTags from "./ApplicationModalTags";
 
 const maxTagsPerApplication = 3;
 const applicationNotesMaxLength = 500;
@@ -1087,7 +1087,7 @@ function renderAnnouncementReadOnly() {
         </section>
 
         <section className="rounded-2xl bg-base-100 p-4 shadow-sm sm:p-6">
-          <ApplicationTagsField
+          <ApplicationModalTags
             selectedTags={getApplicationTags(application)}
             allowedTagOptions={allowedTagOptions}
             maxTagsPerApplication={maxTagsPerApplication}
@@ -1335,7 +1335,7 @@ function renderAnnouncementReadOnly() {
         </section>
 
         <section className="rounded-2xl bg-base-100 p-4 shadow-sm sm:p-6">
-          <ApplicationTagsField
+          <ApplicationModalTags
             selectedTags={getApplicationTags(application)}
             allowedTagOptions={allowedTagOptions}
             maxTagsPerApplication={maxTagsPerApplication}
