@@ -12,6 +12,7 @@ import ApplicationModalDates from "./ApplicationModalDates";
 import ApplicationModalDocument from "./ApplicationModalDocument";
 import ApplicationModalInformation from "./ApplicationModalInformation";
 import ApplicationModalNotes from "./ApplicationModalNotes";
+import ApplicationTagsField from "./ApplicationTagsField";
 
 const defaultFollowUpDelayDays = 15;
 const applicationNotesMaxLength = 500;
@@ -762,19 +763,24 @@ function ApplicationModal({ contacts = [], followUpDelayDays, isOpen, onClose, o
             <div className="grid gap-4">
               <ApplicationModalInformation
                 form={form}
-                tagSelectValue={tagSelectValue}
-                selectedTagNames={selectedTagNames}
-                allowedTagOptions={allowedTagOptions}
-                maxTagsPerApplication={maxTagsPerApplication}
                 onFieldChange={handleChange}
-                onTagSelectChange={handleTagSelectChange}
-                onRemoveTag={removeSelectedTag}
               />
 
               <ApplicationModalDates
                 form={form}
                 onFieldChange={handleChange}
               />
+
+              <section className="rounded-2xl bg-base-100 p-4 shadow-sm sm:p-6">
+                <ApplicationTagsField
+                  selectedTags={selectedTagNames}
+                  allowedTagOptions={allowedTagOptions}
+                  maxTagsPerApplication={maxTagsPerApplication}
+                  tagSelectValue={tagSelectValue}
+                  onTagSelectChange={handleTagSelectChange}
+                  onRemoveTag={removeSelectedTag}
+                />
+              </section>
 
               <ApplicationModalContact
                 contactOptions={contactOptions}

@@ -36,3 +36,10 @@ export function deleteApplication(id) {
     authenticated: true,
   });
 }
+
+export function getApplicationHistory(id) {
+  return apiRequest("/applications/" + id + "/history", {
+    method: "GET",
+    authenticated: true,
+  });
+}

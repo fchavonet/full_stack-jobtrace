@@ -1,14 +1,6 @@
-import { X } from "lucide-react";
-
 function ApplicationModalInformation({
   form,
-  tagSelectValue,
-  selectedTagNames,
-  allowedTagOptions,
-  maxTagsPerApplication,
   onFieldChange,
-  onTagSelectChange,
-  onRemoveTag,
 }) {
   return (
     <section className="rounded-2xl bg-base-100 p-4 shadow-sm sm:p-6">
@@ -175,56 +167,6 @@ function ApplicationModalInformation({
             placeholder="https://..."
           />
         </label>
-
-        <div className="form-control w-full md:col-span-2">
-          <span className="label mb-1">
-            Tags
-          </span>
-
-          <select
-            className="select select-bordered w-full"
-            value={tagSelectValue}
-            onChange={onTagSelectChange}
-            disabled={selectedTagNames.length >= maxTagsPerApplication}
-          >
-            <option value="">
-              Ajouter un tag
-            </option>
-
-            {allowedTagOptions.map(function (tagOption) {
-              return (
-                <option key={tagOption} value={tagOption}>
-                  {tagOption}
-                </option>
-              );
-            })}
-          </select>
-
-          <p className="mt-1 text-xs text-base-content/50">
-            Jusqu’à 3 tags par candidature.
-          </p>
-
-          {selectedTagNames.length > 0 && (
-            <div className="mt-2 flex flex-wrap gap-2">
-              {selectedTagNames.map(function (tagName) {
-                return (
-                  <span className="badge badge-primary gap-2 px-3 py-3 text-white" key={tagName}>
-                    {tagName}
-
-                    <button
-                      className="btn btn-ghost btn-xs btn-circle text-white hover:bg-primary-content/20"
-                      type="button"
-                      onClick={function () { onRemoveTag(tagName); }}
-                      aria-label={"Retirer le tag " + tagName}
-                    >
-                      <X className="h-3 w-3" />
-                    </button>
-                  </span>
-                );
-              })}
-            </div>
-          )}
-        </div>
       </div>
     </section>
   );
