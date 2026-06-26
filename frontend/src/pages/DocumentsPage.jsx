@@ -619,7 +619,7 @@ function DocumentsPage() {
   }
 
   return (
-    <section>
+    <section className="w-full min-w-0">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-4xl font-bold">
@@ -692,7 +692,7 @@ function DocumentsPage() {
       )}
 
       {!loading && displayedDocuments.length > 0 && (
-        <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        <div className="mt-6 grid w-full min-w-0 gap-4 md:grid-cols-2 xl:grid-cols-3">
           {displayedDocuments.map(function (doc) {
             return (
               <DocumentCard

@@ -353,14 +353,14 @@ function PdfThumbnail({ previewUrl }) {
 function DocumentPreview({ doc, previewUrl, previewFailed, onPreviewDocument }) {
   return (
     <button
-      className="flex h-full min-h-36 w-full items-center justify-center overflow-hidden rounded-xl border border-base-300 bg-base-100 p-0 transition hover:border-primary focus:outline-none focus:ring-2 focus:ring-primary"
+      className="mx-auto flex h-40 w-28 items-center justify-center overflow-hidden rounded-xl border border-base-300 bg-base-100 p-0 transition hover:border-primary focus:outline-none focus:ring-2 focus:ring-primary sm:h-full sm:min-h-36 sm:w-full"
       type="button"
       onClick={function () {
         onPreviewDocument(doc);
       }}
       aria-label={"Agrandir l’aperçu de " + getDocumentName(doc)}
     >
-      <div className="flex aspect-[210/297] h-full max-h-48 min-h-32 w-full items-center justify-center overflow-hidden rounded bg-white shadow-sm ring-1 ring-base-300">
+      <div className="flex aspect-[210/297] h-full w-full items-center justify-center overflow-hidden rounded bg-white shadow-sm ring-1 ring-base-300 sm:max-h-48 sm:min-h-32">
         {previewUrl && isImageDocument(doc) && (
           <img
             className="h-full w-full object-cover"
@@ -405,7 +405,7 @@ function DocumentCard({
   onDeleteDocument,
 }) {
   return (
-    <article className="flex h-80 flex-col rounded-2xl bg-base-100 p-4 shadow-sm sm:p-5">
+    <article className="flex h-auto w-full min-w-0 flex-col rounded-2xl bg-base-100 p-4 shadow-sm sm:h-80 sm:p-5">
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
           <h2 className="truncate text-lg font-semibold">
@@ -449,8 +449,8 @@ function DocumentCard({
         </div>
       </div>
 
-      <div className="mt-4 min-h-0 flex-1 overflow-hidden rounded-xl border border-base-300 bg-base-200/50 p-3 text-sm text-base-content/70">
-        <div className="grid h-full gap-3 sm:grid-cols-[minmax(0,1fr)_8rem]">
+      <div className="mt-4 min-w-0 overflow-hidden rounded-xl border border-base-300 bg-base-200/50 p-3 text-sm text-base-content/70 sm:min-h-0 sm:flex-1">
+        <div className="grid min-w-0 gap-4 sm:h-full sm:grid-cols-[minmax(0,1fr)_8rem] sm:gap-3">
           <div className="flex min-w-0 flex-col justify-center gap-3">
             <div className="flex min-w-0 items-center gap-2 text-base-content/70">
               {getDocumentIcon(doc)}
