@@ -1,15 +1,7 @@
 import { X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
-import {
-  linkContactToApplication,
-  linkDocumentToApplication,
-  linkTagToApplication,
-} from "../../api/applicationRelations.api";
-import { createApplication } from "../../api/applications.api";
-import { createContact } from "../../api/contacts.api";
-import { listDocuments, uploadDocument } from "../../api/documents.api";
-import { createTag, listTags } from "../../api/tags.api";
+import { listDocuments } from "../../api/documents.api";
 import {
   APPLICATION_ALLOWED_TAG_OPTIONS,
   APPLICATION_CONTACT_NOTES_MAX_LENGTH,
@@ -18,11 +10,10 @@ import {
 } from "../../constants/application.constants";
 import { useToast } from "../../hooks/useToast";
 import {
-  getEntityId,
   getErrorMessage,
   getListFromResponse,
-  getResponseEntity,
 } from "../../utils/apiResponse.utils";
+import { createApplicationWithRelations } from "../../utils/applicationCreation.utils";
 import {
   getFollowUpDelayDays,
   getFollowUpInputValue,
@@ -33,11 +24,7 @@ import {
   getContactLabel,
   getDocumentLabel,
 } from "../../utils/applicationLabel.utils";
-import {
-  getExistingTagId,
-  getTagIsAlreadySelected,
-  getTagsFromApiResponse,
-} from "../../utils/applicationRelation.utils";
+import { getTagIsAlreadySelected } from "../../utils/applicationRelation.utils";
 import { normalizeValue } from "../../utils/string.utils";
 import ApplicationFormContact from "./form-sections/ApplicationFormContact";
 import ApplicationFormDates from "./form-sections/ApplicationFormDates";
@@ -92,101 +79,6 @@ function getModalClassName(isOpen) {
   }
 
   return className;
-}
-
-function addTextField(payload, fieldName, value) {
-  const trimmedValue = String(value || "").trim();
-
-  if (trimmedValue) {
-    payload[fieldName] = trimmedValue;
-  }
-}
-
-function addDateField(payload, fieldName, value) {
-  if (value) {
-    payload[fieldName] = value;
-  }
-}
-
-function addSalaryField(payload, value) {
-  const trimmedValue = String(value || "").trim();
-
-  if (!trimmedValue) {
-    return;
-  }
-
-  const salary = Number(trimmedValue);
-
-  if (Number.isInteger(salary) && salary >= 0) {
-    payload.salary = salary;
-  }
-}
-
-function getSafeFollowUpAt(form) {
-  if (form.interviewAt) {
-    return "";
-  }
-
-  return form.followUpAt;
-}
-
-function buildApplicationPayload(form) {
-  const payload = {
-    company: form.company.trim(),
-    position: form.position.trim(),
-    status: form.status,
-    sentAt: form.sentAt,
-  };
-
-  addTextField(payload, "contractType", form.contractType);
-  addTextField(payload, "location", form.location);
-  addTextField(payload, "link", form.link);
-  addTextField(payload, "notes", form.notes);
-  addSalaryField(payload, form.salary);
-  addDateField(payload, "followUpAt", getSafeFollowUpAt(form));
-  addDateField(payload, "interviewAt", form.interviewAt);
-
-  return payload;
-}
-
-function buildContactPayload(contactForm, applicationCompany) {
-  const payload = {};
-
-  addTextField(payload, "firstName", contactForm.firstName);
-  addTextField(payload, "lastName", contactForm.lastName);
-  addTextField(payload, "email", contactForm.email);
-  addTextField(payload, "phoneNumber", contactForm.phoneNumber);
-  addTextField(payload, "company", contactForm.company);
-  addTextField(payload, "notes", contactForm.notes);
-
-  if (!payload.company) {
-    addTextField(payload, "company", applicationCompany);
-  }
-
-  return payload;
-}
-
-function buildContactRelationPayload(contactId) {
-  return {
-    contactId,
-  };
-}
-
-function isTagAlreadyExistsError(error) {
-  const message = getErrorMessage(error, "");
-
-  return message.toLowerCase().includes("tag already exists");
-}
-
-function hasNewContactValue(contactForm) {
-  return (
-    contactForm.firstName.trim().length > 0
-    || contactForm.lastName.trim().length > 0
-    || contactForm.email.trim().length > 0
-    || contactForm.phoneNumber.trim().length > 0
-    || contactForm.company.trim().length > 0
-    || contactForm.notes.trim().length > 0
-  );
 }
 
 function ApplicationModal({
@@ -449,137 +341,6 @@ function ApplicationModal({
     onClose();
   }
 
-  async function createOrGetTagIds() {
-    const tagIds = [];
-
-    if (selectedTagNames.length === 0) {
-      return tagIds;
-    }
-
-    const initialResponse = await listTags();
-    let availableTags = getTagsFromApiResponse(initialResponse);
-
-    for (const selectedTagName of selectedTagNames) {
-      let tagId = getExistingTagId(availableTags, selectedTagName);
-
-      if (!tagId) {
-        try {
-          const createResponse = await createTag({
-            name: selectedTagName,
-          });
-
-          const createdTag = getResponseEntity(createResponse, "tag");
-
-          if (createdTag && createdTag.id) {
-            availableTags.push(createdTag);
-            tagId = createdTag.id;
-          }
-        } catch (error) {
-          if (isTagAlreadyExistsError(error)) {
-            const refreshedResponse = await listTags();
-            availableTags = getTagsFromApiResponse(refreshedResponse);
-            tagId = getExistingTagId(availableTags, selectedTagName);
-          } else {
-            throw error;
-          }
-        }
-      }
-
-      if (!tagId) {
-        throw new Error("Le tag " + selectedTagName + " existe peut-être déjà, mais son identifiant est introuvable.");
-      }
-
-      tagIds.push(tagId);
-    }
-
-    return tagIds;
-  }
-
-  async function createOrGetContactId() {
-    if (contactMode === "existing") {
-      return selectedContactId;
-    }
-
-    if (contactMode !== "new") {
-      return "";
-    }
-
-    if (!hasNewContactValue(contactForm)) {
-      return "";
-    }
-
-    const payload = buildContactPayload(contactForm, form.company);
-    const response = await createContact(payload);
-    const contactId = getEntityId(response, "contact");
-
-    if (contactId) {
-      return contactId;
-    }
-
-    throw new Error("Le contact a été créé, mais son identifiant est introuvable.");
-  }
-
-  async function uploadOrGetDocumentId() {
-    if (documentMode === "existing") {
-      return selectedDocumentId;
-    }
-
-    if (documentMode !== "upload") {
-      return "";
-    }
-
-    if (!documentForm.file) {
-      return "";
-    }
-
-    const formData = new FormData();
-    formData.append("type", documentForm.type);
-    formData.append("document", documentForm.file);
-
-    const response = await uploadDocument(formData);
-    const documentId = getEntityId(response, "document");
-
-    if (documentId) {
-      return documentId;
-    }
-
-    throw new Error("Le document a été ajouté, mais son identifiant est introuvable.");
-  }
-
-  async function linkSelectedTags(applicationId) {
-    const tagIds = await createOrGetTagIds();
-
-    for (const tagId of tagIds) {
-      await linkTagToApplication(applicationId, {
-        tagId,
-      });
-    }
-  }
-
-  async function linkSelectedContact(applicationId) {
-    const contactId = await createOrGetContactId();
-
-    if (!contactId) {
-      return;
-    }
-
-    const payload = buildContactRelationPayload(contactId);
-
-    await linkContactToApplication(applicationId, payload);
-  }
-
-  async function linkSelectedDocument(applicationId) {
-    const documentId = await uploadOrGetDocumentId();
-
-    if (!documentId) {
-      return;
-    }
-
-    await linkDocumentToApplication(applicationId, {
-      documentId,
-    });
-  }
-
   async function handleSubmit(event) {
     event.preventDefault();
 
@@ -604,17 +365,16 @@ function ApplicationModal({
     setSubmitting(true);
 
     try {
-      const applicationPayload = buildApplicationPayload(form);
-      const applicationResponse = await createApplication(applicationPayload);
-      const applicationId = getEntityId(applicationResponse, "application");
-
-      if (!applicationId) {
-        throw new Error("La candidature a été créée, mais son identifiant est introuvable.");
-      }
-
-      await linkSelectedTags(applicationId);
-      await linkSelectedContact(applicationId);
-      await linkSelectedDocument(applicationId);
+      await createApplicationWithRelations({
+        form,
+        selectedTagNames,
+        contactMode,
+        selectedContactId,
+        contactForm,
+        documentMode,
+        selectedDocumentId,
+        documentForm,
+      });
 
       showToast("Candidature créée.", "success");
       resetModal();
