@@ -1,6 +1,11 @@
 import { X } from "lucide-react";
 import { useState } from "react";
 
+import {
+  ContactFormFields,
+  ContactNotesField,
+} from "./ContactFormFields";
+
 const contactNotesMaxLength = 300;
 
 const emptyContactForm = {
@@ -10,6 +15,14 @@ const emptyContactForm = {
   phoneNumber: "",
   company: "",
   notes: "",
+};
+
+const contactFieldPlaceholders = {
+  firstName: "Ex : Bruce",
+  lastName: "Ex : Wayne",
+  email: "bruce.wayne@example.com",
+  phoneNumber: "06 00 00 00 00",
+  company: "Ex : Wayne Enterprises",
 };
 
 function getModalClassName(isOpen) {
@@ -118,86 +131,14 @@ function ContactModal({
                 Informations du contact
               </h3>
 
-              <div className="mt-4 grid gap-4 md:grid-cols-2">
-                <label className="form-control w-full">
-                  <span className="label mb-1">
-                    Prénom
-                  </span>
-
-                  <input
-                    className="input input-bordered w-full"
-                    name="firstName"
-                    type="text"
-                    autoComplete="given-name"
-                    value={form.firstName}
-                    onChange={handleFieldChange}
-                    placeholder="Ex : Bruce"
-                  />
-                </label>
-
-                <label className="form-control w-full">
-                  <span className="label mb-1">
-                    Nom
-                  </span>
-
-                  <input
-                    className="input input-bordered w-full"
-                    name="lastName"
-                    type="text"
-                    autoComplete="family-name"
-                    value={form.lastName}
-                    onChange={handleFieldChange}
-                    placeholder="Ex : Wayne"
-                  />
-                </label>
-
-                <label className="form-control w-full">
-                  <span className="label mb-1">
-                    Email
-                  </span>
-
-                  <input
-                    className="input input-bordered w-full"
-                    name="email"
-                    type="email"
-                    autoComplete="email"
-                    value={form.email}
-                    onChange={handleFieldChange}
-                    placeholder="bruce.wayne@example.com"
-                  />
-                </label>
-
-                <label className="form-control w-full">
-                  <span className="label mb-1">
-                    Téléphone
-                  </span>
-
-                  <input
-                    className="input input-bordered w-full"
-                    name="phoneNumber"
-                    type="tel"
-                    autoComplete="tel"
-                    value={form.phoneNumber}
-                    onChange={handleFieldChange}
-                    placeholder="06 00 00 00 00"
-                  />
-                </label>
-
-                <label className="form-control w-full md:col-span-2">
-                  <span className="label mb-1">
-                    Entreprise
-                  </span>
-
-                  <input
-                    className="input input-bordered w-full"
-                    name="company"
-                    type="text"
-                    autoComplete="organization"
-                    value={form.company}
-                    onChange={handleFieldChange}
-                    placeholder="Ex : Wayne Enterprises"
-                  />
-                </label>
+              <div className="mt-4">
+                <ContactFormFields
+                  form={form}
+                  browserAutocomplete={true}
+                  placeholders={contactFieldPlaceholders}
+                  phoneInputType="tel"
+                  onFieldChange={handleFieldChange}
+                />
               </div>
             </section>
 
@@ -208,20 +149,13 @@ function ContactModal({
                 </h3>
               </div>
 
-              <label className="form-control w-full">
-                <textarea
-                  className="textarea textarea-bordered min-h-28 w-full resize-none"
-                  name="notes"
-                  maxLength={contactNotesMaxLength}
-                  value={form.notes}
-                  onChange={handleFieldChange}
-                  placeholder="Informations utiles sur ce contact..."
-                />
-
-                <span className="mt-1 text-right text-xs text-base-content/50">
-                  {form.notes.length} / {contactNotesMaxLength}
-                </span>
-              </label>
+              <ContactNotesField
+                form={form}
+                notesMaxLength={contactNotesMaxLength}
+                placeholder="Informations utiles sur ce contact..."
+                minHeightClassName="min-h-28"
+                onFieldChange={handleFieldChange}
+              />
             </section>
           </div>
 
