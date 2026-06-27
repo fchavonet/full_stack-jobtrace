@@ -1,4 +1,4 @@
-import { normalizeValue } from "./string.utils";
+import { normalizeValue } from "../common/string.utils";
 
 const maxDocumentFileSize = 5 * 1024 * 1024;
 
@@ -77,29 +77,39 @@ export function cleanDocumentName(value) {
   return removeControlCharacters(safeFileName).trim();
 }
 
+function getDocumentSource(doc) {
+  if (doc && doc.document) {
+    return doc.document;
+  }
+
+  return doc;
+}
+
 export function getDocumentName(doc) {
-  if (!doc) {
+  const document = getDocumentSource(doc);
+
+  if (!document) {
     return "Document sans nom";
   }
 
-  if (doc.originalName) {
-    const name = cleanDocumentName(doc.originalName);
+  if (document.originalName) {
+    const name = cleanDocumentName(document.originalName);
 
     if (name) {
       return name;
     }
   }
 
-  if (doc.original_name) {
-    const name = cleanDocumentName(doc.original_name);
+  if (document.original_name) {
+    const name = cleanDocumentName(document.original_name);
 
     if (name) {
       return name;
     }
   }
 
-  if (doc.name) {
-    const name = cleanDocumentName(doc.name);
+  if (document.name) {
+    const name = cleanDocumentName(document.name);
 
     if (name) {
       return name;
@@ -109,41 +119,57 @@ export function getDocumentName(doc) {
   return "Document sans nom";
 }
 
+export function getDocumentLabel(doc) {
+  return getDocumentName(doc);
+}
+
 export function getDocumentMimeType(doc) {
-  if (doc && doc.mimeType) {
-    return doc.mimeType;
+  const document = getDocumentSource(doc);
+
+  if (document && document.mimeType) {
+    return document.mimeType;
   }
 
-  if (doc && doc.mime_type) {
-    return doc.mime_type;
+  if (document && document.mime_type) {
+    return document.mime_type;
   }
 
   return "";
 }
 
 export function getDocumentSize(doc) {
-  if (doc && typeof doc.size === "number") {
-    return doc.size;
+  const document = getDocumentSource(doc);
+
+  if (document && typeof document.size === "number") {
+    return document.size;
   }
 
   return 0;
 }
 
 export function getDocumentDate(doc) {
-  if (doc && doc.createdAt) {
-    return doc.createdAt;
+  const document = getDocumentSource(doc);
+
+  if (document && document.createdAt) {
+    return document.createdAt;
   }
 
-  if (doc && doc.created_at) {
-    return doc.created_at;
+  if (document && document.created_at) {
+    return document.created_at;
   }
 
   return "";
 }
 
 export function getDocumentType(doc) {
-  if (doc && doc.type) {
-    return doc.type;
+  const document = getDocumentSource(doc);
+
+  if (typeof document === "string") {
+    return document;
+  }
+
+  if (document && document.type) {
+    return document.type;
   }
 
   return "document";

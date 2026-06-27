@@ -3,6 +3,10 @@ import { Settings } from "lucide-react";
 import { NavLink } from "react-router-dom";
 
 import { DASHBOARD_NAVIGATION_GROUPS } from "../../../constants/navigation.constants";
+import {
+  getProfileDisplayName,
+  getProfileInitials,
+} from "../../../utils/profile/profile.utils";
 
 import SidebarNavItem from "./SidebarNavItem";
 
@@ -23,33 +27,6 @@ function getSettingsLinkClassName({ isActive }) {
   }
 
   return baseClass + " text-primary hover:text-primary-content hover:bg-primary";
-}
-
-function getDisplayName(userProfile) {
-  const fullName = `${userProfile.firstName} ${userProfile.lastName}`.trim();
-
-  if (fullName) {
-    return fullName;
-  }
-
-  if (userProfile.email) {
-    return userProfile.email;
-  }
-
-  return "Utilisateur";
-}
-
-function getInitials(userProfile) {
-  const firstInitial = userProfile.firstName.trim().charAt(0).toUpperCase();
-  const lastInitial = userProfile.lastName.trim().charAt(0).toUpperCase();
-
-  let initials = firstInitial + lastInitial;
-
-  if (!initials) {
-    initials = "JT";
-  }
-
-  return initials;
 }
 
 function Sidebar({ userProfile }) {
@@ -86,12 +63,12 @@ function Sidebar({ userProfile }) {
 
             {!userProfile.avatarUrl && (
               <div className="w-10 h-10 flex shrink-0 justify-center items-center text-sm font-bold text-primary-content rounded-full bg-primary">
-                {getInitials(userProfile)}
+                {getProfileInitials(userProfile)}
               </div>
             )}
 
             <p className="min-w-0 text-sm font-medium truncate">
-              {getDisplayName(userProfile)}
+              {getProfileDisplayName(userProfile)}
             </p>
           </div>
         </div>

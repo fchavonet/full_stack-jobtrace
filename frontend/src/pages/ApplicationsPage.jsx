@@ -10,73 +10,16 @@ import {
 } from "../api/applications.api";
 import { listContacts } from "../api/contacts.api";
 import { getUserProfile } from "../api/profile.api";
-import { listTags } from "../api/tags.api";
 import ApplicationDetailsModal from "../components/applications/ApplicationDetailsModal";
 import ApplicationModal from "../components/applications/ApplicationModal";
 import ApplicationsTable from "../components/applications/ApplicationsTable";
 import { useToast } from "../hooks/useToast";
-
-function getListFromResponse(response, listName) {
-  if (Array.isArray(response)) {
-    return response;
-  }
-
-  if (response && Array.isArray(response[listName])) {
-    return response[listName];
-  }
-
-  if (response && response.data && Array.isArray(response.data)) {
-    return response.data;
-  }
-
-  if (response && response.data && Array.isArray(response.data[listName])) {
-    return response.data[listName];
-  }
-
-  return [];
-}
-
-function getProfileFromResponse(response) {
-  if (response && response.data && response.data.user) {
-    return response.data.user;
-  }
-
-  if (response && response.data && response.data.profile) {
-    return response.data.profile;
-  }
-
-  if (response && response.data) {
-    return response.data;
-  }
-
-  return {};
-}
-
-function getApplicationFromResponse(response) {
-  if (response && response.data && response.data.application) {
-    return response.data.application;
-  }
-
-  if (response && response.application) {
-    return response.application;
-  }
-
-  if (response && response.id) {
-    return response;
-  }
-
-  return null;
-}
-
-function getFollowUpDelayDaysFromProfile(profile) {
-  const parsedDelay = Number(profile.followUpDelayDays);
-
-  if (Number.isFinite(parsedDelay) && parsedDelay > 0) {
-    return parsedDelay;
-  }
-
-  return 15;
-}
+import { getFollowUpDelayDays } from "../utils/applications/dates.utils";
+import {
+  getListFromResponse,
+  getResponseEntity,
+} from "../utils/common/apiResponse.utils";
+import { getProfileFromResponse } from "../utils/profile/profile.utils";
 
 function getDetailsModalKey(application) {
   if (application && application.id) {
@@ -91,7 +34,6 @@ function ApplicationsPage() {
 
   const [applications, setApplications] = useState([]);
   const [contacts, setContacts] = useState([]);
-  const [tags, setTags] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshingApplications, setRefreshingApplications] = useState(false);
   const [followUpDelayDays, setFollowUpDelayDays] = useState(15);
@@ -108,12 +50,10 @@ function ApplicationsPage() {
         const [
           applicationsResponse,
           contactsResponse,
-          tagsResponse,
           profileResponse,
         ] = await Promise.all([
           listApplications(),
           listContacts(),
-          listTags(),
           getUserProfile(),
         ]);
 
@@ -121,8 +61,7 @@ function ApplicationsPage() {
 
         setApplications(getListFromResponse(applicationsResponse, "applications"));
         setContacts(getListFromResponse(contactsResponse, "contacts"));
-        setTags(getListFromResponse(tagsResponse, "tags"));
-        setFollowUpDelayDays(getFollowUpDelayDaysFromProfile(profile));
+        setFollowUpDelayDays(getFollowUpDelayDays(profile.followUpDelayDays));
       } catch {
         showToast("Impossible de charger les candidatures.", "error");
       } finally {
@@ -149,13 +88,9 @@ function ApplicationsPage() {
 
   async function reloadModalData() {
     try {
-      const [contactsResponse, tagsResponse] = await Promise.all([
-        listContacts(),
-        listTags(),
-      ]);
+      const contactsResponse = await listContacts();
 
       setContacts(getListFromResponse(contactsResponse, "contacts"));
-      setTags(getListFromResponse(tagsResponse, "tags"));
     } catch {
       showToast("Impossible de recharger les données de création.", "error");
     }
@@ -167,15 +102,13 @@ function ApplicationsPage() {
         applicationResponse,
         historyResponse,
         applicationsResponse,
-        tagsResponse,
       ] = await Promise.all([
         getApplication(applicationId),
         getApplicationHistory(applicationId),
         listApplications(),
-        listTags(),
       ]);
 
-      const detailedApplication = getApplicationFromResponse(applicationResponse);
+      const detailedApplication = getResponseEntity(applicationResponse, "application");
 
       if (detailedApplication) {
         setSelectedApplication(detailedApplication);
@@ -183,7 +116,6 @@ function ApplicationsPage() {
 
       setSelectedApplicationHistory(getListFromResponse(historyResponse, "history"));
       setApplications(getListFromResponse(applicationsResponse, "applications"));
-      setTags(getListFromResponse(tagsResponse, "tags"));
     } catch {
       showToast("Impossible de recharger la candidature.", "error");
     }
@@ -209,7 +141,7 @@ function ApplicationsPage() {
         getApplicationHistory(application.id),
       ]);
 
-      const detailedApplication = getApplicationFromResponse(applicationResponse);
+      const detailedApplication = getResponseEntity(applicationResponse, "application");
       const history = getListFromResponse(historyResponse, "history");
 
       if (detailedApplication) {
@@ -237,7 +169,7 @@ function ApplicationsPage() {
 
     try {
       const response = await updateApplication(applicationId, payload);
-      const updatedApplication = getApplicationFromResponse(response);
+      const updatedApplication = getResponseEntity(response, "application");
 
       if (updatedApplication) {
         setSelectedApplication(updatedApplication);
@@ -342,7 +274,6 @@ function ApplicationsPage() {
 
       <ApplicationModal
         contacts={contacts}
-        tags={tags}
         followUpDelayDays={followUpDelayDays}
         isOpen={isModalOpen}
         onClose={closeModal}

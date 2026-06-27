@@ -1,6 +1,6 @@
-import { APPLICATION_ALLOWED_TAG_OPTIONS } from "../constants/application.constants";
-import { getListFromResponse } from "./apiResponse.utils";
-import { normalizeValue } from "./string.utils";
+import { APPLICATION_ALLOWED_TAG_OPTIONS } from "../../constants/application.constants";
+import { getListFromResponse } from "../common/apiResponse.utils";
+import { normalizeValue } from "../common/string.utils";
 
 export function getApplicationTags(application) {
   if (application && Array.isArray(application.tags)) {

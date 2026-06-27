@@ -13,15 +13,15 @@ import {
   getApplicationContractTypeLabel,
   getApplicationStatusBadgeClassName,
   getApplicationStatusLabel,
-} from "../../utils/application.utils";
+} from "../../utils/applications/display.utils";
 import {
   getApplicationFollowUpAt,
   getFilteredApplications,
   getFollowUpDisplay,
   getNextSortDirection,
   getSortedApplications,
-} from "../../utils/applicationTable.utils";
-import { formatDate } from "../../utils/format.utils";
+} from "../../utils/applications/table.utils";
+import { formatDate } from "../../utils/common/format.utils";
 
 const statusFilters = [
   {

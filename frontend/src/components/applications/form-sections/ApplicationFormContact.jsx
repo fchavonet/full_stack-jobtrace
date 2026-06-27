@@ -1,7 +1,4 @@
-import {
-  ContactFormFields,
-  ContactNotesField,
-} from "../../contacts/ContactFormFields";
+import { ContactFormFields, ContactNotesField } from "../../contacts/ContactFormFields";
 
 const applicationContactPlaceholders = {
   company: "Reprend l’entreprise si vide",
@@ -18,7 +15,7 @@ function ApplicationFormContact({
   onContactFormChange,
 }) {
   return (
-    <section className="rounded-2xl bg-base-100 p-4 shadow-sm sm:p-6">
+    <section className="p-4 sm:p-6 rounded-2xl bg-base-100 shadow-sm">
       <div>
         <h3 className="text-lg font-semibold">
           Contact associé
@@ -28,14 +25,10 @@ function ApplicationFormContact({
       <div className="mt-4 grid gap-4">
         <label className="form-control w-full">
           <span className="label mb-1">
-            Action contact
+            Ajouter un contact
           </span>
 
-          <select
-            className="select select-bordered w-full"
-            value={contactMode}
-            onChange={onContactModeChange}
-          >
+          <select className="select select-bordered w-full" value={contactMode} onChange={onContactModeChange}>
             <option value="none">
               Aucun contact
             </option>
@@ -56,11 +49,7 @@ function ApplicationFormContact({
               Contact existant
             </span>
 
-            <select
-              className="select select-bordered w-full"
-              value={selectedContactId}
-              onChange={onSelectedContactChange}
-            >
+            <select className="select select-bordered w-full" value={selectedContactId} onChange={onSelectedContactChange}>
               <option value="">
                 Aucun contact sélectionné
               </option>
@@ -78,20 +67,9 @@ function ApplicationFormContact({
 
         {contactMode === "new" && (
           <div className="grid gap-4">
-            <ContactFormFields
-              form={contactForm}
-              placeholders={applicationContactPlaceholders}
-              phoneInputType="text"
-              onFieldChange={onContactFormChange}
-            />
+            <ContactFormFields form={contactForm} placeholders={applicationContactPlaceholders} phoneInputType="text" onFieldChange={onContactFormChange} />
 
-            <ContactNotesField
-              form={contactForm}
-              notesMaxLength={contactNotesMaxLength}
-              label="Notes contact"
-              minHeightClassName="min-h-24"
-              onFieldChange={onContactFormChange}
-            />
+            <ContactNotesField form={contactForm} notesMaxLength={contactNotesMaxLength} label="Notes contact" minHeightClassName="min-h-24" onFieldChange={onContactFormChange} />
           </div>
         )}
       </div>

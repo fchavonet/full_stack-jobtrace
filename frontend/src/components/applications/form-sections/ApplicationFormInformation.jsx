@@ -8,29 +8,20 @@ function ApplicationFormInformation({
   onFieldChange,
 }) {
   return (
-    <section className="rounded-2xl bg-base-100 p-4 shadow-sm sm:p-6">
+    <section className="p-4  sm:p-6 rounded-2xl bg-base-100 shadow-sm">
       <div>
         <h3 className="text-lg font-semibold">
           Informations principales
         </h3>
       </div>
 
-      <div className="mt-4 grid gap-4 md:grid-cols-2">
+      <div className="mt-4 grid md:grid-cols-2 gap-4">
         <label className="form-control w-full">
           <span className="label mb-1">
             Entreprise *
           </span>
 
-          <input
-            className="input input-bordered w-full"
-            name="company"
-            type="text"
-            autoComplete="off"
-            value={form.company}
-            onChange={onFieldChange}
-            placeholder="Ex : Wayne Enterprises"
-            required
-          />
+          <input className="input input-bordered w-full" name="company" type="text" autoComplete="off" value={form.company} onChange={onFieldChange} placeholder="Nom de l'entreprise..." required />
         </label>
 
         <label className="form-control w-full">
@@ -38,16 +29,7 @@ function ApplicationFormInformation({
             Poste *
           </span>
 
-          <input
-            className="input input-bordered w-full"
-            name="position"
-            type="text"
-            autoComplete="off"
-            value={form.position}
-            onChange={onFieldChange}
-            placeholder="Ex : Développeur front-end"
-            required
-          />
+          <input className="input input-bordered w-full" name="position" type="text" autoComplete="off" value={form.position} onChange={onFieldChange} placeholder="Intitulé du poste..." required />
         </label>
 
         <label className="form-control w-full">
@@ -55,12 +37,7 @@ function ApplicationFormInformation({
             Type de contrat
           </span>
 
-          <select
-            className="select select-bordered w-full"
-            name="contractType"
-            value={form.contractType}
-            onChange={onFieldChange}
-          >
+          <select className="select select-bordered w-full" name="contractType" value={form.contractType} onChange={onFieldChange}>
             {APPLICATION_CONTRACT_TYPE_OPTIONS.map(function (option) {
               return (
                 <option key={option.value} value={option.value}>
@@ -76,12 +53,7 @@ function ApplicationFormInformation({
             Statut
           </span>
 
-          <select
-            className="select select-bordered w-full"
-            name="status"
-            value={form.status}
-            onChange={onFieldChange}
-          >
+          <select className="select select-bordered w-full" name="status" value={form.status} onChange={onFieldChange}>
             {APPLICATION_STATUS_OPTIONS.map(function (option) {
               return (
                 <option key={option.value} value={option.value}>
@@ -97,15 +69,7 @@ function ApplicationFormInformation({
             Ville
           </span>
 
-          <input
-            className="input input-bordered w-full"
-            name="location"
-            type="text"
-            autoComplete="off"
-            value={form.location}
-            onChange={onFieldChange}
-            placeholder="Ex : Toulouse"
-          />
+          <input className="input input-bordered w-full" name="location" type="text" autoComplete="off" value={form.location} onChange={onFieldChange} placeholder="Localisation..." />
         </label>
 
         <label className="form-control w-full">
@@ -113,16 +77,7 @@ function ApplicationFormInformation({
             Salaire annuel brut
           </span>
 
-          <input
-            className="input input-bordered w-full"
-            name="salary"
-            type="number"
-            min="0"
-            step="1"
-            value={form.salary}
-            onChange={onFieldChange}
-            placeholder="Ex : 38000"
-          />
+          <input className="input input-bordered w-full" name="salary" type="number" min="0" step="1" value={form.salary} onChange={onFieldChange} placeholder="22404" />
         </label>
 
         <label className="form-control w-full md:col-span-2">
@@ -130,14 +85,7 @@ function ApplicationFormInformation({
             Lien de l’offre
           </span>
 
-          <input
-            className="input input-bordered w-full"
-            name="link"
-            type="url"
-            autoComplete="off"
-            value={form.link}
-            onChange={onFieldChange}
-            placeholder="https://..."
+          <input className="input input-bordered w-full" name="link" type="url" autoComplete="off" value={form.link} onChange={onFieldChange} placeholder="https://..."
           />
         </label>
       </div>

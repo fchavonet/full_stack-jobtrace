@@ -1,7 +1,7 @@
 import {
   APPLICATION_CONTRACT_TYPE_OPTIONS,
   APPLICATION_STATUS_OPTIONS
-} from "../constants/application.constants";
+} from "../../constants/application.constants";
 
 export function getOptionLabel(options, value, fallback) {
   const option = options.find(function (item) {

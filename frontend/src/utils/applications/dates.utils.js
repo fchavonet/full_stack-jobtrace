@@ -1,4 +1,4 @@
-import { APPLICATION_FALLBACK_FOLLOW_UP_DELAY_DAYS } from "../constants/application.constants";
+import { APPLICATION_FALLBACK_FOLLOW_UP_DELAY_DAYS } from "../../constants/application.constants";
 
 export function getTodayInputValue() {
   return new Date().toISOString().slice(0, 10);

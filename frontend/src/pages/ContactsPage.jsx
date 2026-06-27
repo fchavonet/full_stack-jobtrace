@@ -10,83 +10,12 @@ import {
 import ContactCard from "../components/contacts/ContactCard";
 import ContactModal from "../components/contacts/ContactModal";
 import { useToast } from "../hooks/useToast";
-
-function getListFromResponse(response, listName) {
-  if (Array.isArray(response)) {
-    return response;
-  }
-
-  if (response && Array.isArray(response[listName])) {
-    return response[listName];
-  }
-
-  if (response && response.data && Array.isArray(response.data)) {
-    return response.data;
-  }
-
-  if (response && response.data && Array.isArray(response.data[listName])) {
-    return response.data[listName];
-  }
-
-  return [];
-}
-
-function getContactFromResponse(response) {
-  if (response && response.data && response.data.contact) {
-    return response.data.contact;
-  }
-
-  if (response && response.contact) {
-    return response.contact;
-  }
-
-  if (response && response.id) {
-    return response;
-  }
-
-  return null;
-}
-
-function getContactModalKey(contact) {
-  if (contact) {
-    return contact.id;
-  }
-
-  return "new-contact";
-}
-
-function normalizeValue(value) {
-  return String(value || "")
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase()
-    .trim();
-}
-
-function getContactSearchValue(contact) {
-  return normalizeValue(
-    [
-      contact.firstName,
-      contact.lastName,
-      contact.email,
-      contact.phoneNumber,
-      contact.company,
-      contact.notes,
-    ].join(" "),
-  );
-}
-
-function getFilteredContacts(contacts, searchValue) {
-  const normalizedSearch = normalizeValue(searchValue);
-
-  if (!normalizedSearch) {
-    return contacts;
-  }
-
-  return contacts.filter(function (contact) {
-    return getContactSearchValue(contact).includes(normalizedSearch);
-  });
-}
+import { getListFromResponse } from "../utils/common/apiResponse.utils";
+import {
+  getContactFromResponse,
+  getContactModalKey,
+  getFilteredContacts,
+} from "../utils/contacts/contact.utils";
 
 function ContactsPage() {
   const { showToast } = useToast();

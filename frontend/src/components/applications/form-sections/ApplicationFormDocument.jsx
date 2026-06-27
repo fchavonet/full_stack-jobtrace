@@ -14,7 +14,7 @@ function ApplicationFormDocument({
   onDocumentFileChange,
 }) {
   return (
-    <section className="rounded-2xl bg-base-100 p-4 shadow-sm sm:p-6">
+    <section className="p-4 sm:p-6 rounded-2xl bg-base-100 shadow-sm ">
       <div>
         <h3 className="text-lg font-semibold">
           Document associé
@@ -24,14 +24,10 @@ function ApplicationFormDocument({
       <div className="mt-4 grid gap-4">
         <label className="form-control w-full">
           <span className="label mb-1">
-            Action document
+            Ajouter un document
           </span>
 
-          <select
-            className="select select-bordered w-full"
-            value={documentMode}
-            onChange={onDocumentModeChange}
-          >
+          <select className="select select-bordered w-full" value={documentMode} onChange={onDocumentModeChange}>
             <option value="none">
               Aucun document
             </option>
@@ -77,11 +73,7 @@ function ApplicationFormDocument({
                   Document existant
                 </span>
 
-                <select
-                  className="select select-bordered w-full"
-                  value={selectedDocumentId}
-                  onChange={onSelectedDocumentChange}
-                >
+                <select className="select select-bordered w-full" value={selectedDocumentId} onChange={onSelectedDocumentChange}>
                   <option value="">
                     Aucun document sélectionné
                   </option>
@@ -100,12 +92,7 @@ function ApplicationFormDocument({
         )}
 
         {documentMode === "upload" && (
-          <DocumentUploadFields
-            documentType={documentForm.type}
-            fileInputResetKey={fileInputResetKey}
-            onDocumentTypeChange={onDocumentTypeChange}
-            onDocumentFileChange={onDocumentFileChange}
-          />
+          <DocumentUploadFields documentType={documentForm.type} fileInputResetKey={fileInputResetKey} onDocumentTypeChange={onDocumentTypeChange} onDocumentFileChange={onDocumentFileChange} />
         )}
       </div>
     </section>

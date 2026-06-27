@@ -1,9 +1,9 @@
-import { getApplicationStatusIsFinal } from "./application.utils";
+import { getApplicationStatusIsFinal } from "./display.utils";
 import {
   getDateInputValue,
   getFollowUpInputValue,
-} from "./applicationDate.utils";
-import { formatDate } from "./format.utils";
+} from "./dates.utils";
+import { formatDate } from "../common/format.utils";
 
 export function getEmptyApplicationEditForm() {
   return {

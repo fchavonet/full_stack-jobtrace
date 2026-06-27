@@ -2,9 +2,9 @@ import {
   getApplicationContractTypeLabel,
   getApplicationStatusLabel,
   getApplicationStatusSortValue,
-} from "./application.utils";
-import { formatDate } from "./format.utils";
-import { normalizeValue } from "./string.utils";
+} from "./display.utils";
+import { formatDate } from "../common/format.utils";
+import { normalizeValue } from "../common/string.utils";
 
 export function getApplicationFollowUpIsRelevant(application) {
   if (application.interviewAt) {

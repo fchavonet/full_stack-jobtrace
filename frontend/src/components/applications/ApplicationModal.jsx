@@ -12,20 +12,18 @@ import { useToast } from "../../hooks/useToast";
 import {
   getErrorMessage,
   getListFromResponse,
-} from "../../utils/apiResponse.utils";
-import { createApplicationWithRelations } from "../../utils/applicationCreation.utils";
+} from "../../utils/common/apiResponse.utils";
+import { createApplicationWithRelations } from "../../utils/applications/creation.utils";
 import {
   getFollowUpDelayDays,
   getFollowUpInputValue,
   getFormUsesAutomaticFollowUpDate,
   getTodayInputValue,
-} from "../../utils/applicationDate.utils";
-import {
-  getContactLabel,
-  getDocumentLabel,
-} from "../../utils/applicationLabel.utils";
-import { getTagIsAlreadySelected } from "../../utils/applicationRelation.utils";
-import { normalizeValue } from "../../utils/string.utils";
+} from "../../utils/applications/dates.utils";
+import { getContactLabel } from "../../utils/contacts/contact.utils";
+import { getDocumentLabel } from "../../utils/documents/document.utils";
+import { getTagIsAlreadySelected } from "../../utils/applications/relations.utils";
+import { normalizeValue } from "../../utils/common/string.utils";
 import ApplicationFormContact from "./form-sections/ApplicationFormContact";
 import ApplicationFormDates from "./form-sections/ApplicationFormDates";
 import ApplicationFormDocument from "./form-sections/ApplicationFormDocument";
@@ -403,7 +401,7 @@ function ApplicationModal({
               </h2>
 
               <p className="text-sm text-base-content/60">
-                Enregistrez l’offre et ajoutez les informations utiles si vous les avez déjà.
+                Ajoutez les informations utiles que vous avez.
               </p>
             </div>
 

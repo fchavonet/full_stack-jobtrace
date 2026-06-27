@@ -12,14 +12,7 @@ function ApplicationFormNotes({
       </div>
 
       <label className="form-control w-full">
-        <textarea
-          className="textarea textarea-bordered min-h-28 w-full resize-none"
-          name="notes"
-          maxLength={applicationNotesMaxLength}
-          value={form.notes}
-          onChange={onFieldChange}
-          placeholder="Informations utiles sur la candidature..."
-        />
+        <textarea className="textarea textarea-bordered min-h-28 w-full resize-none" name="notes" maxLength={applicationNotesMaxLength} value={form.notes} onChange={onFieldChange} placeholder="Informations complémentaires sur la candidature..." />
 
         <span className="mt-1 text-right text-xs text-base-content/50">
           {form.notes.length} / {applicationNotesMaxLength}

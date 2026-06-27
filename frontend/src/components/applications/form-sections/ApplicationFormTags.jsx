@@ -81,12 +81,7 @@ function ApplicationFormTags({
         {title}
       </h3>
 
-      <select
-        className="select select-bordered mt-4 w-full"
-        value={tagSelectValue}
-        onChange={onTagSelectChange}
-        disabled={selectIsDisabled}
-      >
+      <select className="select select-bordered w-full mt-4" value={tagSelectValue} onChange={onTagSelectChange} disabled={selectIsDisabled}>
         <option value="">
           Ajouter un tag
         </option>
@@ -100,7 +95,7 @@ function ApplicationFormTags({
         })}
       </select>
 
-      <div className="mt-4 flex h-20 items-center overflow-y-auto rounded-xl border border-dashed border-base-300 bg-base-200/50 p-4">
+      <div className="h-40 sm:h-20 mt-4 p-4 flex items-center rounded-xl border border-base-300 bg-base-200/50 overflow-y-auto">
         {selectedTags.length === 0 && (
           <p className="text-sm text-base-content/60">
             Aucun tag associé.
@@ -114,16 +109,10 @@ function ApplicationFormTags({
               const tagKey = getTagKey(tag);
 
               return (
-                <span className="badge badge-primary gap-2 px-3 py-3 text-white" key={tagKey}>
+                <span className="badge badge-primary p-4 gap-2 text-white" key={tagKey}>
                   {tagName}
 
-                  <button
-                    className="btn btn-ghost btn-xs btn-circle text-white hover:bg-primary-content/20"
-                    type="button"
-                    onClick={function () { onRemoveTag(tag); }}
-                    disabled={disabled}
-                    aria-label={"Retirer le tag " + tagName}
-                  >
+                  <button className="btn btn-xs btn-circle btn-ghost text-white hover:bg-primary-content/20" type="button" onClick={function () { onRemoveTag(tag); }} disabled={disabled} aria-label={"Retirer le tag " + tagName}>
                     <X className="h-3 w-3" />
                   </button>
                 </span>

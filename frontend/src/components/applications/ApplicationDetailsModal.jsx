@@ -8,7 +8,7 @@ import {
   unlinkContactFromApplication,
   unlinkDocumentFromApplication,
   unlinkTagFromApplication,
-} from "../../api/applicationRelations.api";
+} from "../../api/relations.api";
 import { listContacts } from "../../api/contacts.api";
 import { listDocuments } from "../../api/documents.api";
 import { createTag, listTags } from "../../api/tags.api";
@@ -22,19 +22,19 @@ import {
   getApplicationContractTypeLabel,
   getApplicationStatusBadgeClassName,
   getApplicationStatusLabel,
-} from "../../utils/application.utils";
+} from "../../utils/applications/display.utils";
 import {
   getErrorMessage,
   getListFromResponse,
   getResponseEntity,
-} from "../../utils/apiResponse.utils";
-import { getFollowUpDelayDays } from "../../utils/applicationDate.utils";
+} from "../../utils/common/apiResponse.utils";
+import { getFollowUpDelayDays } from "../../utils/applications/dates.utils";
+import { getHistoryActionLabel } from "../../utils/applications/history.utils";
+import { getContactLabel } from "../../utils/contacts/contact.utils";
 import {
-  getContactLabel,
   getDocumentLabel,
   getDocumentTypeLabel,
-  getHistoryActionLabel,
-} from "../../utils/applicationLabel.utils";
+} from "../../utils/documents/document.utils";
 import {
   getAllowedTagName,
   getApplicationContacts,
@@ -48,20 +48,20 @@ import {
   getTagId,
   getTagIsAlreadySelected,
   getTagsFromApiResponse,
-} from "../../utils/applicationRelation.utils";
+} from "../../utils/applications/relations.utils";
 import {
   formatDate,
   formatDateTime,
   formatFileSize,
   formatSalary,
-} from "../../utils/format.utils";
+} from "../../utils/common/format.utils";
 import {
   buildAnnouncementUpdatePayload,
   getApplicationFollowUpDateLabel,
   getEditFormFromApplication,
   getEmptyApplicationEditForm,
   getNextApplicationEditForm,
-} from "../../utils/applicationDetails.utils";
+} from "../../utils/applications/detailsForm.utils";
 import ApplicationFormDates from "./form-sections/ApplicationFormDates";
 import ApplicationFormInformation from "./form-sections/ApplicationFormInformation";
 import ApplicationFormNotes from "./form-sections/ApplicationFormNotes";
@@ -217,12 +217,12 @@ function ApplicationDetailsModal({
     const { name, value } = event.target;
 
     setEditForm(function (currentForm) {
-      return getNextApplicationEditForm(
+      return getNextApplicationEditForm({
         currentForm,
-        name,
+        fieldName: name,
         value,
-        normalizedFollowUpDelayDays,
-      );
+        followUpDelayDays: normalizedFollowUpDelayDays,
+      });
     });
   }
 
@@ -474,56 +474,32 @@ function ApplicationDetailsModal({
     return (
       <div className="mt-5 -mb-px">
         <div className="tabs tabs-lift w-full" role="tablist">
-          <button
-            className={getTabClassName(activeTab, "announcement")}
-            type="button"
-            role="tab"
-            onClick={showAnnouncementTab}
-            aria-label="Annonce"
-          >
-            <BriefcaseBusiness className="h-5 w-5 sm:hidden" />
+          <button className={getTabClassName(activeTab, "announcement")} type="button" role="tab" onClick={showAnnouncementTab} aria-label="Annonce">
+            <BriefcaseBusiness className="h-6 w-6 sm:hidden" />
+
             <span className="hidden sm:inline">
               Annonce
             </span>
           </button>
 
-          <button
-            className={getTabClassName(activeTab, "contacts")}
-            type="button"
-            role="tab"
-            onClick={showContactsTab}
-            disabled={isEditingAnnouncement}
-            aria-label="Contacts"
-          >
-            <Users className="h-5 w-5 sm:hidden" />
+          <button className={getTabClassName(activeTab, "contacts")} type="button" role="tab" onClick={showContactsTab} disabled={isEditingAnnouncement} aria-label="Contacts">
+            <Users className="h-6 w-6 sm:hidden" />
+
             <span className="hidden sm:inline">
               Contacts
             </span>
           </button>
 
-          <button
-            className={getTabClassName(activeTab, "documents")}
-            type="button"
-            role="tab"
-            onClick={showDocumentsTab}
-            disabled={isEditingAnnouncement}
-            aria-label="Documents"
-          >
-            <FileText className="h-5 w-5 sm:hidden" />
+          <button className={getTabClassName(activeTab, "documents")} type="button" role="tab" onClick={showDocumentsTab} disabled={isEditingAnnouncement} aria-label="Documents">
+            <FileText className="w-6 h-6 sm:hidden" />
+
             <span className="hidden sm:inline">
               Documents
             </span>
           </button>
 
-          <button
-            className={getTabClassName(activeTab, "history")}
-            type="button"
-            role="tab"
-            onClick={showHistoryTab}
-            disabled={isEditingAnnouncement}
-            aria-label="Historique"
-          >
-            <History className="h-5 w-5 sm:hidden" />
+          <button className={getTabClassName(activeTab, "history")} type="button" role="tab" onClick={showHistoryTab} disabled={isEditingAnnouncement} aria-label="Historique">
+            <History className="w-6 h-6 sm:hidden" />
             <span className="hidden sm:inline">
               Historique
             </span>
@@ -535,8 +511,8 @@ function ApplicationDetailsModal({
 
   function renderStatusInfoItem() {
     return (
-      <div className="rounded-xl border border-base-300 bg-base-200/50 p-3">
-        <p className="text-xs font-medium uppercase tracking-wide text-base-content/50">
+      <div className="p-4 rounded-xl border border-base-300 bg-base-200/50">
+        <p className="text-xs font-medium tracking-wide uppercase text-base-content/50">
           Statut
         </p>
 
@@ -550,12 +526,12 @@ function ApplicationDetailsModal({
   function renderAnnouncementReadOnly() {
     return (
       <div className="grid gap-4">
-        <section className="rounded-2xl bg-base-100 p-4 shadow-sm sm:p-6">
+        <section className="p-4 sm:p-6 rounded-2xl bg-base-100 shadow-sm ">
           <h3 className="font-semibold">
             Informations de l’annonce
           </h3>
 
-          <div className="mt-5 grid gap-3 md:grid-cols-2">
+          <div className="mt-5 grid gap-4 md:grid-cols-2">
             <InfoItem label="Entreprise" value={application.company} />
             <InfoItem label="Poste" value={application.position} />
             <InfoItem label="Contrat" value={getApplicationContractTypeLabel(application.contractType)} />
@@ -566,21 +542,16 @@ function ApplicationDetailsModal({
 
           <div className="mt-3">
             {application.link && (
-              <div className="rounded-xl border border-base-300 bg-base-200/50 p-3">
-                <p className="text-xs font-medium uppercase tracking-wide text-base-content/50">
+              <div className="p-4 rounded-xl border border-base-300 bg-base-200/50">
+                <p className="text-xs font-medium tracking-wide uppercase text-base-content/50">
                   Lien
                 </p>
 
                 <div className="mt-1 flex items-center gap-2 text-sm font-medium">
-                  <LinkIcon className="h-4 w-4 text-primary" />
+                  <LinkIcon className="w-4 h-4 text-primary" />
 
-                  <a
-                    className="link link-primary truncate"
-                    href={application.link}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    Ouvrir l’annonce
+                  <a className="link link-primary truncate" href={application.link} target="_blank" rel="noreferrer">
+                    Ouvrir l’annonce...
                   </a>
                 </div>
               </div>
@@ -592,36 +563,28 @@ function ApplicationDetailsModal({
           </div>
         </section>
 
-        <section className="rounded-2xl bg-base-100 p-4 shadow-sm sm:p-6">
+        <section className="p-4 sm:p-6 rounded-2xl bg-base-100 shadow-sm">
           <h3 className="font-semibold">
             Dates
           </h3>
 
-          <div className="mt-5 grid gap-3 md:grid-cols-3">
+          <div className="mt-5 grid md:grid-cols-3 gap-4">
             <InfoItem label="Envoi" value={formatDate(application.sentAt)} />
             <InfoItem label="Relance" value={getApplicationFollowUpDateLabel(application)} />
             <InfoItem label="Entretien" value={formatDate(application.interviewAt)} />
           </div>
         </section>
 
-        <section className="rounded-2xl bg-base-100 p-4 shadow-sm sm:p-6">
-          <ApplicationFormTags
-            selectedTags={getApplicationTags(application)}
-            allowedTagOptions={APPLICATION_ALLOWED_TAG_OPTIONS}
-            maxTagsPerApplication={APPLICATION_MAX_TAGS}
-            tagSelectValue={tagSelectValue}
-            disabled={tagsUpdating}
-            onTagSelectChange={handleTagSelectChange}
-            onRemoveTag={handleRemoveTag}
-          />
+        <section className="p-4 sm:p-6 rounded-2xl bg-base-100 shadow-sm ">
+          <ApplicationFormTags selectedTags={getApplicationTags(application)} allowedTagOptions={APPLICATION_ALLOWED_TAG_OPTIONS} maxTagsPerApplication={APPLICATION_MAX_TAGS} tagSelectValue={tagSelectValue} disabled={tagsUpdating} onTagSelectChange={handleTagSelectChange} onRemoveTag={handleRemoveTag} />
         </section>
 
-        <section className="rounded-2xl bg-base-100 p-4 shadow-sm sm:p-6">
+        <section className="p-4 sm:p-6 rounded-2xl bg-base-100 shadow-sm ">
           <h3 className="font-semibold">
             Notes
           </h3>
 
-          <p className="mt-3 min-h-32 whitespace-pre-wrap rounded-xl border border-base-300 bg-base-200/50 p-4 text-sm text-base-content/70">
+          <p className="min-h-32 mt-4 p-4 text-sm whitespace-pre-wrap text-base-content/70 rounded-xl border border-base-300 bg-base-200/50">
             {application.notes || "Aucune note renseignée."}
           </p>
         </section>
@@ -632,33 +595,15 @@ function ApplicationDetailsModal({
   function renderAnnouncementEditForm() {
     return (
       <div className="grid gap-4">
-        <ApplicationFormInformation
-          form={editForm}
-          onFieldChange={handleFieldChange}
-        />
+        <ApplicationFormInformation form={editForm} onFieldChange={handleFieldChange} />
 
-        <ApplicationFormDates
-          form={editForm}
-          onFieldChange={handleFieldChange}
-        />
+        <ApplicationFormDates form={editForm} onFieldChange={handleFieldChange} />
 
-        <section className="rounded-2xl bg-base-100 p-4 shadow-sm sm:p-6">
-          <ApplicationFormTags
-            selectedTags={getApplicationTags(application)}
-            allowedTagOptions={APPLICATION_ALLOWED_TAG_OPTIONS}
-            maxTagsPerApplication={APPLICATION_MAX_TAGS}
-            tagSelectValue={tagSelectValue}
-            disabled={tagsUpdating}
-            onTagSelectChange={handleTagSelectChange}
-            onRemoveTag={handleRemoveTag}
-          />
+        <section className="p-4 sm:p-6 rounded-2xl bg-base-100 shadow-sm">
+          <ApplicationFormTags selectedTags={getApplicationTags(application)} allowedTagOptions={APPLICATION_ALLOWED_TAG_OPTIONS} maxTagsPerApplication={APPLICATION_MAX_TAGS} tagSelectValue={tagSelectValue} disabled={tagsUpdating} onTagSelectChange={handleTagSelectChange} onRemoveTag={handleRemoveTag} />
         </section>
 
-        <ApplicationFormNotes
-          form={editForm}
-          applicationNotesMaxLength={APPLICATION_NOTES_MAX_LENGTH}
-          onFieldChange={handleFieldChange}
-        />
+        <ApplicationFormNotes form={editForm} applicationNotesMaxLength={APPLICATION_NOTES_MAX_LENGTH} onFieldChange={handleFieldChange} />
       </div>
     );
   }
@@ -673,7 +618,7 @@ function ApplicationDetailsModal({
           Contacts associés
         </h3>
 
-        <div className="mt-4 flex flex-col gap-3 sm:flex-row">
+        <div className="mt-4 flex flex-col gap-4 sm:flex-row">
           <select
             className="select select-bordered w-full"
             value={selectedContactId}
@@ -720,13 +665,13 @@ function ApplicationDetailsModal({
         )}
 
         {contacts.length > 0 && (
-          <div className="mt-4 grid gap-3">
+          <div className="mt-4 grid gap-4">
             {contacts.map(function (contact) {
               const contactId = getContactId(contact);
 
               return (
                 <div className="rounded-xl border border-base-300 bg-base-200/50 p-4" key={contactId}>
-                  <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                  <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                     <div>
                       <p className="font-medium">
                         {getContactLabel(contact)}
@@ -785,7 +730,7 @@ function ApplicationDetailsModal({
           Documents associés
         </h3>
 
-        <div className="mt-4 flex flex-col gap-3 sm:flex-row">
+        <div className="mt-4 flex flex-col gap-4 sm:flex-row">
           <select
             className="select select-bordered w-full"
             value={selectedDocumentId}
@@ -832,13 +777,13 @@ function ApplicationDetailsModal({
         )}
 
         {documents.length > 0 && (
-          <div className="mt-4 grid gap-3">
+          <div className="mt-4 grid gap-4">
             {documents.map(function (applicationDocument) {
               const documentId = getDocumentId(applicationDocument);
 
               return (
                 <div className="rounded-xl border border-base-300 bg-base-200/50 p-4" key={documentId}>
-                  <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                  <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                     <div>
                       <p className="font-medium">
                         {getDocumentLabel(applicationDocument)}
@@ -914,22 +859,12 @@ function ApplicationDetailsModal({
   function renderFooter() {
     if (isEditingAnnouncement) {
       return (
-        <div className="flex flex-col-reverse gap-3 border-t border-base-300 bg-base-100 p-4 sm:flex-row sm:justify-end sm:p-6">
-          <button
-            className="btn btn-ghost"
-            type="button"
-            onClick={cancelEditingAnnouncement}
-            disabled={updating}
-          >
+        <div className="flex flex-col-reverse gap-4 border-t border-base-300 bg-base-100 p-4 sm:flex-row sm:justify-end sm:p-6">
+          <button className="btn btn-ghost" type="button" onClick={cancelEditingAnnouncement} disabled={updating}>
             Annuler
           </button>
 
-          <button
-            className="btn btn-primary text-white"
-            type="button"
-            onClick={handleAnnouncementSave}
-            disabled={updating}
-          >
+          <button className="btn btn-primary text-white" type="button" onClick={handleAnnouncementSave} disabled={updating}>
             {updating && (
               <span className="loading loading-spinner loading-sm" />
             )}
@@ -942,22 +877,12 @@ function ApplicationDetailsModal({
 
     if (activeTab === "announcement") {
       return (
-        <div className="flex flex-col-reverse gap-3 border-t border-base-300 bg-base-100 p-4 sm:flex-row sm:justify-end sm:p-6">
-          <button
-            className="btn btn-ghost"
-            type="button"
-            onClick={handleClose}
-            disabled={updating || tagsUpdating}
-          >
+        <div className="flex flex-col-reverse gap-4 border-t border-base-300 bg-base-100 p-4 sm:flex-row sm:justify-end sm:p-6">
+          <button className="btn btn-ghost" type="button" onClick={handleClose} disabled={updating || tagsUpdating}>
             Fermer
           </button>
 
-          <button
-            className="btn btn-primary text-white"
-            type="button"
-            onClick={startEditingAnnouncement}
-            disabled={loading || updating || tagsUpdating}
-          >
+          <button className="btn btn-primary text-white" type="button" onClick={startEditingAnnouncement} disabled={loading || updating || tagsUpdating}>
             Modifier la candidature
           </button>
         </div>
@@ -965,13 +890,8 @@ function ApplicationDetailsModal({
     }
 
     return (
-      <div className="flex flex-col-reverse gap-3 border-t border-base-300 bg-base-100 p-4 sm:flex-row sm:justify-end sm:p-6">
-        <button
-          className="btn btn-ghost"
-          type="button"
-          onClick={handleClose}
-          disabled={updating || tagsUpdating}
-        >
+      <div className="p-4 sm:p-6 flex sm:flex-row flex-col-reverse sm:justify-end gap-4 border-t border-base-300 bg-base-100">
+        <button className="btn btn-ghost" type="button" onClick={handleClose} disabled={updating || tagsUpdating}>
           Fermer
         </button>
       </div>
@@ -1006,13 +926,8 @@ function ApplicationDetailsModal({
     return (
       <div className={getModalClassName(isOpen)}>
         <div className="modal-box rounded-2xl">
-          <button
-            className="btn btn-ghost btn-sm btn-circle absolute right-4 top-4"
-            type="button"
-            onClick={handleClose}
-            aria-label="Fermer le détail"
-          >
-            <X className="h-5 w-5" />
+          <button className="btn btn-sm btn-circle btn-ghost absolute top-4 right-4" type="button" onClick={handleClose} aria-label="Fermer le détail">
+            <X className="h-6 w-6" />
           </button>
 
           <p>
@@ -1027,9 +942,9 @@ function ApplicationDetailsModal({
 
   return (
     <div className={getModalClassName(isOpen)}>
-      <div className="modal-box flex h-full max-h-none w-full max-w-5xl flex-col overflow-hidden rounded-none bg-base-100 p-0 shadow-sm sm:h-[92vh] sm:max-h-[92vh] sm:rounded-2xl">
+      <div className="modal-box w -full max-w-5xl max-h-none sm:max-h-[92vh] h-full sm:h-[92vh] p-0 flex  flex-col rounded-none sm:rounded-2xl bg-base-100 shadow-sm  overflow-hidden">
         <div className="flex min-h-0 flex-1 flex-col">
-          <div className="shrink-0 bg-base-100 px-4 pt-4 sm:px-6 sm:pt-6">
+          <div className="px-4 sm:px-6 pt-4 sm:pt-6 shrink-0 bg-base-100 ">
             <div className="flex items-start justify-between gap-4">
               <div className="min-w-0">
                 <h2 className="truncate text-xl font-semibold">
@@ -1041,23 +956,18 @@ function ApplicationDetailsModal({
                 </p>
               </div>
 
-              <button
-                className="btn btn-ghost btn-sm btn-circle"
-                type="button"
-                onClick={handleClose}
-                aria-label="Fermer le détail"
-              >
-                <X className="h-5 w-5" />
+              <button className="btn btn-ghost btn-sm btn-circle" type="button" onClick={handleClose} aria-label="Fermer le détail">
+                <X className="w-6 h-6" />
               </button>
             </div>
 
             {renderTabs()}
           </div>
 
-          <div className="min-h-0 flex-1 overflow-y-auto border-t border-base-300 bg-base-200 p-4 sm:p-6">
+          <div className="min-h-0 p-4 sm:p-6 flex-1 overflow-y-auto border-t border-base-300 bg-base-200">
             {loading && (
-              <div className="mb-4 flex items-center gap-2 rounded-2xl bg-base-100 p-4 text-sm text-base-content/60 shadow-sm">
-                <span className="loading loading-spinner loading-sm" />
+              <div className="mb-4 p-4  flex items-center gap-2 text-sm text-base-content/60 rounded-2xl bg-base-100 shadow-sm">
+                <span className="loading loading-sm loading-spinner" />
                 Chargement des détails...
               </div>
             )}
@@ -1069,11 +979,7 @@ function ApplicationDetailsModal({
         </div>
       </div>
 
-      <div
-        className="modal-backdrop"
-        onClick={handleClose}
-        aria-label="Fermer le détail"
-      />
+      <div className="modal-backdrop" onClick={handleClose} aria-label="Fermer le détail" />
     </div>
   );
 }

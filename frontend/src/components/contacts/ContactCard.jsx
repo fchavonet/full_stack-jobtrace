@@ -1,24 +1,6 @@
 import { Mail, Pencil, Phone, Trash2 } from "lucide-react";
 
-function getContactName(contact) {
-  const parts = [];
-
-  if (contact.firstName) {
-    parts.push(contact.firstName);
-  }
-
-  if (contact.lastName) {
-    parts.push(contact.lastName);
-  }
-
-  const name = parts.join(" ").trim();
-
-  if (name) {
-    return name;
-  }
-
-  return "Contact sans nom";
-}
+import { getContactName } from "../../utils/contacts/contact.utils";
 
 function ContactCard({
   contact,

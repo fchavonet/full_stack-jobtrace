@@ -13,7 +13,7 @@ import {
   getDocumentTypeLabel,
   isImageDocument,
   isPdfDocument,
-} from "../../utils/document.utils";
+} from "../../utils/documents/document.utils";
 
 GlobalWorkerOptions.workerSrc = pdfWorker;
 

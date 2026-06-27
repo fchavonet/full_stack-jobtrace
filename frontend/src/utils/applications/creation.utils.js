@@ -2,26 +2,26 @@ import {
   linkContactToApplication,
   linkDocumentToApplication,
   linkTagToApplication,
-} from "../api/applicationRelations.api";
-import { createApplication } from "../api/applications.api";
-import { createContact } from "../api/contacts.api";
-import { uploadDocument } from "../api/documents.api";
-import { createTag, listTags } from "../api/tags.api";
+} from "../../api/relations.api";
+import { createApplication } from "../../api/applications.api";
+import { createContact } from "../../api/contacts.api";
+import { uploadDocument } from "../../api/documents.api";
+import { createTag, listTags } from "../../api/tags.api";
 import {
   getEntityId,
   getErrorMessage,
   getResponseEntity,
-} from "./apiResponse.utils";
+} from "../common/apiResponse.utils";
 import {
   buildApplicationPayload,
   buildContactPayload,
   buildContactRelationPayload,
   hasNewContactValue,
-} from "./applicationPayload.utils";
+} from "./payload.utils";
 import {
   getExistingTagId,
   getTagsFromApiResponse,
-} from "./applicationRelation.utils";
+} from "./relations.utils";
 
 function isTagAlreadyExistsError(error) {
   const message = getErrorMessage(error, "");

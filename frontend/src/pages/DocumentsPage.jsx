@@ -12,7 +12,7 @@ import DocumentCard from "../components/documents/DocumentCard";
 import DocumentModal from "../components/documents/DocumentModal";
 import DocumentPreviewModal from "../components/documents/DocumentPreviewModal";
 import { useToast } from "../hooks/useToast";
-import { getListFromResponse } from "../utils/apiResponse.utils";
+import { getListFromResponse } from "../utils/common/apiResponse.utils";
 import {
   canPreviewDocument,
   getDocumentName,
@@ -21,7 +21,7 @@ import {
   revokePreviewUrls,
   revokeUrl,
   validateDocumentFile,
-} from "../utils/document.utils";
+} from "../utils/documents/document.utils";
 
 function DocumentsPage() {
   const { showToast } = useToast();

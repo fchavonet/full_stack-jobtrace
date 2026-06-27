@@ -4,7 +4,7 @@ import {
   getDocumentName,
   isImageDocument,
   isPdfDocument,
-} from "../../utils/document.utils";
+} from "../../utils/documents/document.utils";
 
 function DocumentPreviewModal({
   doc,

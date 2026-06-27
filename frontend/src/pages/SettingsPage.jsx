@@ -14,6 +14,12 @@ import LegalModal from "../components/legal/LegalModal";
 import { useAuth } from "../hooks/useAuth";
 import { useTheme } from "../hooks/useTheme";
 import { useToast } from "../hooks/useToast";
+import {
+  getNumberValue,
+  getProfileFromResponse,
+  getProfileInitials,
+  getTextValue,
+} from "../utils/profile/profile.utils";
 
 const AUTH_TOKEN_STORAGE_KEY = "jobtrace_token";
 
@@ -34,54 +40,6 @@ const defaultPasswordForm = {
   newPassword: "",
   confirmPassword: "",
 };
-
-function getProfileFromResponse(response) {
-  let profile = response.data;
-
-  if (response.data && response.data.user) {
-    profile = response.data.user;
-  }
-
-  if (response.data && response.data.profile) {
-    profile = response.data.profile;
-  }
-
-  return profile;
-}
-
-function getTextValue(value) {
-  let textValue = "";
-
-  if (typeof value === "string") {
-    textValue = value;
-  }
-
-  return textValue;
-}
-
-function getNumberValue(value, defaultValue) {
-  let numberValue = defaultValue;
-  const parsedValue = Number(value);
-
-  if (Number.isFinite(parsedValue) && parsedValue > 0) {
-    numberValue = parsedValue;
-  }
-
-  return numberValue;
-}
-
-function getInitials(profileForm) {
-  const firstInitial = profileForm.firstName.trim().charAt(0).toUpperCase();
-  const lastInitial = profileForm.lastName.trim().charAt(0).toUpperCase();
-
-  let initials = firstInitial + lastInitial;
-
-  if (!initials) {
-    initials = "JT";
-  }
-
-  return initials;
-}
 
 function isPasswordValid(password) {
   const hasLength = password.length >= 6;
@@ -445,7 +403,7 @@ function SettingsPage() {
 
               {!profileForm.avatarUrl && (
                 <div className="flex h-full min-h-56 w-full items-center justify-center text-6xl font-bold text-primary-content">
-                  {getInitials(profileForm)}
+                  {getProfileInitials(profileForm)}
                 </div>
               )}
             </div>

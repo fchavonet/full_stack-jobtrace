@@ -5,39 +5,14 @@ import { Outlet } from "react-router-dom";
 
 import { getUserProfile } from "../../api/profile.api";
 
+import {
+  defaultUserProfile,
+  getProfileFromResponse,
+  getTextValue,
+} from "../../utils/profile/profile.utils";
+
 import Header from "./Header";
 import Sidebar from "./sidebar/Sidebar";
-
-const defaultUserProfile = {
-  firstName: "",
-  lastName: "",
-  email: "",
-  avatarUrl: "",
-};
-
-function getProfileFromResponse(response) {
-  let profile = response.data;
-
-  if (response.data && response.data.user) {
-    profile = response.data.user;
-  }
-
-  if (response.data && response.data.profile) {
-    profile = response.data.profile;
-  }
-
-  return profile;
-}
-
-function getTextValue(value) {
-  let textValue = "";
-
-  if (typeof value === "string") {
-    textValue = value;
-  }
-
-  return textValue;
-}
 
 function DashboardLayout() {
   const [userProfile, setUserProfile] = useState(defaultUserProfile);
