@@ -15,6 +15,7 @@ import {
   getApplicationStatusLabel,
   getApplicationStatusSortValue,
 } from "../../utils/application.utils";
+import { formatDate } from "../../utils/format.utils";
 
 const statusFilters = [
   {
@@ -23,20 +24,6 @@ const statusFilters = [
   },
   ...APPLICATION_STATUS_OPTIONS,
 ];
-
-function formatDate(value) {
-  if (!value) {
-    return "—";
-  }
-
-  const date = new Date(value);
-
-  if (Number.isNaN(date.getTime())) {
-    return "—";
-  }
-
-  return new Intl.DateTimeFormat("fr-FR").format(date);
-}
 
 function getApplicationFollowUpIsRelevant(application) {
   if (application.interviewAt) {

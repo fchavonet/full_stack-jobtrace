@@ -1,5 +1,5 @@
 import { X } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import {
   linkContactToApplication,
@@ -77,6 +77,31 @@ function getFollowUpInputValue(sentAt, followUpDelayDays) {
   date.setDate(date.getDate() + followUpDelayDays);
 
   return date.toISOString().slice(0, 10);
+}
+
+function getFormUsesAutomaticFollowUpDate(form, followUpDelayDays) {
+  if (!form.sentAt) {
+    return false;
+  }
+
+  if (form.interviewAt) {
+    return false;
+  }
+
+  const automaticFollowUpAt = getFollowUpInputValue(
+    form.sentAt,
+    followUpDelayDays,
+  );
+
+  if (form.followUpAt === automaticFollowUpAt) {
+    return true;
+  }
+
+  if (!form.followUpAt) {
+    return true;
+  }
+
+  return false;
 }
 
 function getInitialForm(normalizedFollowUpDelayDays) {
@@ -350,15 +375,40 @@ function ApplicationModal({
   const { showToast } = useToast();
 
   const normalizedFollowUpDelayDays = getFollowUpDelayDays(followUpDelayDays);
+  const previousFollowUpDelayDaysRef = useRef(normalizedFollowUpDelayDays);
 
   const [form, setForm] = useState(function () {
     return getInitialForm(normalizedFollowUpDelayDays);
   });
 
-  const [tagSelectValue, setTagSelectValue] = useState("");
-  const [selectedTagNames, setSelectedTagNames] = useState([]);
+  useEffect(function () {
+    setForm(function (currentForm) {
+      const previousFollowUpDelayDays = previousFollowUpDelayDaysRef.current;
+      const formUsesAutomaticFollowUpDate = getFormUsesAutomaticFollowUpDate(
+        currentForm,
+        previousFollowUpDelayDays,
+      );
 
-  const [contactMode, setContactMode] = useState("none");
+      if (!formUsesAutomaticFollowUpDate) {
+        return currentForm;
+      }
+
+      return {
+        ...currentForm,
+        followUpAt: getFollowUpInputValue(
+          currentForm.sentAt,
+          normalizedFollowUpDelayDays,
+        ),
+      };
+    });
+
+    previousFollowUpDelayDaysRef.current = normalizedFollowUpDelayDays;
+  }, [normalizedFollowUpDelayDays]);
+
+const [tagSelectValue, setTagSelectValue] = useState("");
+const [selectedTagNames, setSelectedTagNames] = useState([]);
+
+const [contactMode, setContactMode] = useState("none");
   const [selectedContactId, setSelectedContactId] = useState("");
   const [contactForm, setContactForm] = useState(defaultContactForm);
 

@@ -1,4 +1,4 @@
-import { BriefcaseBusiness, FileText, FileX, History, LinkIcon, Users, X } from "lucide-react";
+import { BriefcaseBusiness, FileText, History, LinkIcon, Users, X } from "lucide-react";
 import { useState } from "react";
 
 import {
@@ -27,6 +27,12 @@ import {
   getApplicationStatusIsFinal,
   getApplicationStatusLabel,
 } from "../../utils/application.utils";
+import {
+  formatDate,
+  formatDateTime,
+  formatFileSize,
+  formatSalary,
+} from "../../utils/format.utils";
 import ApplicationModalTags from "./ApplicationModalTags";
 
 function getModalClassName(isOpen) {
@@ -109,37 +115,6 @@ function getHistoryActionLabel(action) {
   return "Action enregistrée";
 }
 
-function formatDate(value) {
-  if (!value) {
-    return "—";
-  }
-
-  const date = new Date(value);
-
-  if (Number.isNaN(date.getTime())) {
-    return "—";
-  }
-
-  return new Intl.DateTimeFormat("fr-FR").format(date);
-}
-
-function formatDateTime(value) {
-  if (!value) {
-    return "—";
-  }
-
-  const date = new Date(value);
-
-  if (Number.isNaN(date.getTime())) {
-    return "—";
-  }
-
-  return new Intl.DateTimeFormat("fr-FR", {
-    dateStyle: "short",
-    timeStyle: "short",
-  }).format(date);
-}
-
 function getDateInputValue(value) {
   if (!value) {
     return "";
@@ -174,34 +149,6 @@ function getFollowUpInputValue(sentAt, followUpDelayDays) {
   date.setDate(date.getDate() + followUpDelayDays);
 
   return date.toISOString().slice(0, 10);
-}
-
-function formatSalary(value) {
-  if (value === null || value === undefined || value === "") {
-    return "Non renseigné";
-  }
-
-  const numberValue = Number(value);
-
-  if (!Number.isFinite(numberValue)) {
-    return "Non renseigné";
-  }
-
-  return new Intl.NumberFormat("fr-FR").format(numberValue) + " €";
-}
-
-function formatFileSize(value) {
-  const numberValue = Number(value);
-
-  if (!Number.isFinite(numberValue) || numberValue <= 0) {
-    return "Taille inconnue";
-  }
-
-  if (numberValue < 1024 * 1024) {
-    return Math.round(numberValue / 1024) + " Ko";
-  }
-
-  return (numberValue / 1024 / 1024).toFixed(1) + " Mo";
 }
 
 function getApplicationTags(application) {
