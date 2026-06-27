@@ -37,6 +37,12 @@ import {
   getFollowUpInputValue,
 } from "../../utils/applicationDate.utils";
 import {
+  getContactLabel,
+  getDocumentLabel,
+  getDocumentTypeLabel,
+  getHistoryActionLabel,
+} from "../../utils/applicationLabel.utils";
+import {
   getAllowedTagName,
   getApplicationContacts,
   getApplicationDocuments,
@@ -76,106 +82,6 @@ function getTabClassName(activeTab, tabName) {
   }
 
   return className;
-}
-
-function getDocumentTypeLabel(type) {
-  if (type === "resume") {
-    return "CV";
-  }
-
-  if (type === "cover_letter") {
-    return "Lettre de motivation";
-  }
-
-  if (type === "portfolio") {
-    return "Portfolio";
-  }
-
-  if (type === "other") {
-    return "Autre";
-  }
-
-  return "Document";
-}
-
-function getHistoryActionLabel(action) {
-  if (action === "application_created") {
-    return "Candidature créée";
-  }
-
-  if (action === "application_updated") {
-    return "Candidature modifiée";
-  }
-
-  if (action === "application_status_updated") {
-    return "Statut modifié";
-  }
-
-  if (action === "tag_linked") {
-    return "Tag ajouté";
-  }
-
-  if (action === "tag_unlinked") {
-    return "Tag retiré";
-  }
-
-  if (action === "contact_linked") {
-    return "Contact ajouté";
-  }
-
-  if (action === "contact_unlinked") {
-    return "Contact retiré";
-  }
-
-  if (action === "document_linked") {
-    return "Document ajouté";
-  }
-
-  if (action === "document_unlinked") {
-    return "Document retiré";
-  }
-
-  return "Action enregistrée";
-}
-
-function getContactLabel(contact) {
-  const parts = [];
-
-  if (contact.firstName) {
-    parts.push(contact.firstName);
-  }
-
-  if (contact.lastName) {
-    parts.push(contact.lastName);
-  }
-
-  let label = parts.join(" ").trim();
-
-  if (!label && contact.email) {
-    label = contact.email;
-  }
-
-  if (!label) {
-    label = "Contact sans nom";
-  }
-
-  return label;
-}
-
-function getDocumentLabel(applicationDocument) {
-  if (applicationDocument.originalName) {
-    return applicationDocument.originalName;
-  }
-
-  if (applicationDocument.name) {
-    return applicationDocument.name;
-  }
-
-  if (applicationDocument.storedName) {
-    return applicationDocument.storedName;
-  }
-
-  return "Document sans nom";
 }
 
 function isTagAlreadyExistsError(error) {

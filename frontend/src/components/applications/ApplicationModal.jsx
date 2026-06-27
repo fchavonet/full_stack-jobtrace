@@ -30,6 +30,10 @@ import {
   getTodayInputValue,
 } from "../../utils/applicationDate.utils";
 import {
+  getContactLabel,
+  getDocumentLabel,
+} from "../../utils/applicationLabel.utils";
+import {
   getExistingTagId,
   getTagIsAlreadySelected,
   getTagsFromApiResponse,
@@ -174,50 +178,6 @@ function isTagAlreadyExistsError(error) {
   return message.toLowerCase().includes("tag already exists");
 }
 
-function getContactLabel(contact) {
-  const parts = [];
-
-  if (contact.firstName) {
-    parts.push(contact.firstName);
-  }
-
-  if (contact.lastName) {
-    parts.push(contact.lastName);
-  }
-
-  let label = parts.join(" ").trim();
-
-  if (!label && contact.email) {
-    label = contact.email;
-  }
-
-  if (!label) {
-    label = "Contact sans nom";
-  }
-
-  if (contact.company) {
-    label = label + " - " + contact.company;
-  }
-
-  return label;
-}
-
-function getDocumentLabel(document) {
-  if (document.originalName) {
-    return document.originalName;
-  }
-
-  if (document.name) {
-    return document.name;
-  }
-
-  if (document.storedName) {
-    return document.storedName;
-  }
-
-  return "Document sans nom";
-}
-
 function hasNewContactValue(contactForm) {
   return (
     contactForm.firstName.trim().length > 0
@@ -290,7 +250,7 @@ function ApplicationModal({
   const contactOptions = contacts.map(function (contact) {
     return {
       id: contact.id,
-      label: getContactLabel(contact),
+      label: getContactLabel(contact, true),
     };
   });
 
