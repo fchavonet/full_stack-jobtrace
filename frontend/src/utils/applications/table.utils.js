@@ -60,34 +60,34 @@ export function getFollowUpDisplay(value) {
   if (daysDifference < 0) {
     return {
       label: "En retard",
-      className: "badge badge-error",
+      className: "badge badge-error text-[10px]",
     };
   }
 
   if (daysDifference === 0) {
     return {
       label: "Aujourd’hui",
-      className: "badge badge-warning",
+      className: "badge badge-warning text-[10px]",
     };
   }
 
   if (daysDifference === 1) {
     return {
       label: "Demain",
-      className: "badge badge-info",
+      className: "badge badge-info text-[10px]",
     };
   }
 
   if (daysDifference <= 7) {
     return {
       label: "Dans " + daysDifference + " jours",
-      className: "badge badge-info",
+      className: "badge badge-info text-[10px]",
     };
   }
 
   return {
     label: "Dans " + daysDifference + " jours",
-    className: "badge badge-ghost",
+    className: "badge badge-ghost text-[10px]",
   };
 }
 

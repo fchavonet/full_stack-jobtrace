@@ -1,5 +1,6 @@
-import { Plus, RefreshCw } from "lucide-react";
-import { useEffect, useState } from "react";
+import { CalendarDays, Plus, RefreshCw, X } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 
 import {
   deleteApplication,
@@ -31,6 +32,7 @@ function getDetailsModalKey(application) {
 
 function ApplicationsPage() {
   const { showToast } = useToast();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const [applications, setApplications] = useState([]);
   const [contacts, setContacts] = useState([]);
@@ -43,6 +45,34 @@ function ApplicationsPage() {
   const [detailsLoading, setDetailsLoading] = useState(false);
   const [updatingApplication, setUpdatingApplication] = useState(false);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+
+  const applicationFilterId = searchParams.get("application") || "";
+
+  const filteredApplications = useMemo(function () {
+    if (!applicationFilterId) {
+      return applications;
+    }
+
+    return applications.filter(function (application) {
+      return application.id === applicationFilterId;
+    });
+  }, [applications, applicationFilterId]);
+
+  const calendarFilteredApplication = useMemo(function () {
+    if (!applicationFilterId) {
+      return null;
+    }
+
+    const foundApplication = applications.find(function (application) {
+      return application.id === applicationFilterId;
+    });
+
+    if (foundApplication) {
+      return foundApplication;
+    }
+
+    return null;
+  }, [applications, applicationFilterId]);
 
   useEffect(function () {
     async function loadInitialData() {
@@ -119,6 +149,20 @@ function ApplicationsPage() {
     } catch {
       showToast("Impossible de recharger la candidature.", "error");
     }
+  }
+
+  function clearApplicationFilter() {
+    const nextSearchParams = new URLSearchParams(searchParams);
+    nextSearchParams.delete("application");
+    setSearchParams(nextSearchParams);
+  }
+
+  function getCalendarFilterLabel() {
+    if (!calendarFilteredApplication) {
+      return "Candidature introuvable.";
+    }
+
+    return calendarFilteredApplication.company + " — " + calendarFilteredApplication.position;
   }
 
   function openModal() {
@@ -264,9 +308,42 @@ function ApplicationsPage() {
         </div>
       )}
 
-      {!loading && (
+      {applicationFilterId && (
+        <div className="alert mt-6 border border-base-300 bg-base-100">
+          <CalendarDays className="h-5 w-5" />
+
+          <div className="flex-1">
+            <h2 className="font-semibold">
+              Filtre calendrier actif
+            </h2>
+
+            <p className="text-sm text-base-content/70">
+              {getCalendarFilterLabel()}
+            </p>
+          </div>
+
+          <button className="btn btn-ghost btn-sm" type="button" onClick={clearApplicationFilter}>
+            <X className="h-4 w-4" />
+            Afficher toutes
+          </button>
+        </div>
+      )}
+
+      {!loading && applicationFilterId && filteredApplications.length === 0 && (
+        <div className="mt-6 rounded-2xl bg-base-100 p-6 text-center shadow-sm">
+          <h2 className="text-lg font-semibold">
+            Aucune candidature trouvée
+          </h2>
+
+          <p className="mt-1 text-sm text-base-content/60">
+            La candidature liée à cet événement calendrier n’existe plus ou n’est plus disponible.
+          </p>
+        </div>
+      )}
+
+      {!loading && (!applicationFilterId || filteredApplications.length > 0) && (
         <ApplicationsTable
-          applications={applications}
+          applications={filteredApplications}
           onOpenApplication={openApplicationDetails}
           onDeleteApplication={handleDeleteApplication}
         />
