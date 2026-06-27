@@ -21,7 +21,6 @@ import { useToast } from "../../hooks/useToast";
 import {
   getApplicationContractTypeLabel,
   getApplicationStatusBadgeClassName,
-  getApplicationStatusIsFinal,
   getApplicationStatusLabel,
 } from "../../utils/application.utils";
 import {
@@ -29,11 +28,7 @@ import {
   getListFromResponse,
   getResponseEntity,
 } from "../../utils/apiResponse.utils";
-import {
-  getDateInputValue,
-  getFollowUpDelayDays,
-  getFollowUpInputValue,
-} from "../../utils/applicationDate.utils";
+import { getFollowUpDelayDays } from "../../utils/applicationDate.utils";
 import {
   getContactLabel,
   getDocumentLabel,
@@ -60,6 +55,13 @@ import {
   formatFileSize,
   formatSalary,
 } from "../../utils/format.utils";
+import {
+  buildAnnouncementUpdatePayload,
+  getApplicationFollowUpDateLabel,
+  getEditFormFromApplication,
+  getEmptyApplicationEditForm,
+  getNextApplicationEditForm,
+} from "../../utils/applicationDetails.utils";
 import ApplicationFormDates from "./form-sections/ApplicationFormDates";
 import ApplicationFormInformation from "./form-sections/ApplicationFormInformation";
 import ApplicationFormNotes from "./form-sections/ApplicationFormNotes";
@@ -127,77 +129,6 @@ async function createOrGetTagId(tagName) {
   throw new Error("Le tag existe peut-être déjà, mais son identifiant est introuvable.");
 }
 
-function getEditFormFromApplication(application) {
-  let salary = "";
-
-  if (application.salary !== null && application.salary !== undefined) {
-    salary = String(application.salary);
-  }
-
-  const interviewAt = getDateInputValue(application.interviewAt);
-  let followUpAt = getDateInputValue(application.followUpAt);
-
-  if (interviewAt) {
-    followUpAt = "";
-  }
-
-  return {
-    company: application.company || "",
-    position: application.position || "",
-    status: application.status || "sent",
-    contractType: application.contractType || "",
-    location: application.location || "",
-    salary,
-    link: application.link || "",
-    sentAt: getDateInputValue(application.sentAt),
-    followUpAt,
-    interviewAt,
-    notes: application.notes || "",
-  };
-}
-
-function getNullableDatePayloadValue(value) {
-  if (value) {
-    return value;
-  }
-
-  return null;
-}
-
-function buildAnnouncementUpdatePayload(form) {
-  let followUpAt = form.followUpAt;
-
-  if (form.interviewAt) {
-    followUpAt = "";
-  }
-
-  if (getApplicationStatusIsFinal(form.status)) {
-    followUpAt = "";
-  }
-
-  return {
-    company: form.company,
-    position: form.position,
-    status: form.status,
-    contractType: form.contractType,
-    location: form.location,
-    salary: form.salary,
-    link: form.link,
-    sentAt: form.sentAt,
-    followUpAt: getNullableDatePayloadValue(followUpAt),
-    interviewAt: getNullableDatePayloadValue(form.interviewAt),
-    notes: form.notes,
-  };
-}
-
-function getApplicationFollowUpDateLabel(application) {
-  if (application && application.interviewAt) {
-    return "—";
-  }
-
-  return formatDate(application.followUpAt);
-}
-
 function InfoItem({ label, value }) {
   return (
     <div className="rounded-xl border border-base-300 bg-base-200/50 p-3">
@@ -228,19 +159,7 @@ function ApplicationDetailsModal({
 
   const [activeTab, setActiveTab] = useState("announcement");
   const [isEditingAnnouncement, setIsEditingAnnouncement] = useState(false);
-  const [editForm, setEditForm] = useState({
-    company: "",
-    position: "",
-    status: "sent",
-    contractType: "",
-    location: "",
-    salary: "",
-    link: "",
-    sentAt: "",
-    followUpAt: "",
-    interviewAt: "",
-    notes: "",
-  });
+  const [editForm, setEditForm] = useState(getEmptyApplicationEditForm);
   const [tagSelectValue, setTagSelectValue] = useState("");
   const [tagsUpdating, setTagsUpdating] = useState(false);
   const [availableContacts, setAvailableContacts] = useState([]);
@@ -298,50 +217,12 @@ function ApplicationDetailsModal({
     const { name, value } = event.target;
 
     setEditForm(function (currentForm) {
-      const nextForm = {
-        ...currentForm,
-        [name]: value,
-      };
-
-      if (name === "interviewAt" && value) {
-        nextForm.followUpAt = "";
-        nextForm.status = "interview";
-      }
-
-      if (name === "interviewAt" && !value) {
-        nextForm.followUpAt = getFollowUpInputValue(
-          nextForm.sentAt,
-          normalizedFollowUpDelayDays,
-        );
-
-        if (currentForm.status === "interview") {
-          nextForm.status = "follow_up";
-        }
-      }
-
-      if (name === "sentAt" && !nextForm.interviewAt && !getApplicationStatusIsFinal(nextForm.status)) {
-        nextForm.followUpAt = getFollowUpInputValue(
-          value,
-          normalizedFollowUpDelayDays,
-        );
-      }
-
-      if (name === "status" && value === "interview") {
-        nextForm.followUpAt = "";
-      }
-
-      if (name === "status" && getApplicationStatusIsFinal(value)) {
-        nextForm.followUpAt = "";
-      }
-
-      if (name === "status" && !getApplicationStatusIsFinal(value) && value !== "interview" && !nextForm.interviewAt) {
-        nextForm.followUpAt = getFollowUpInputValue(
-          nextForm.sentAt,
-          normalizedFollowUpDelayDays,
-        );
-      }
-
-      return nextForm;
+      return getNextApplicationEditForm(
+        currentForm,
+        name,
+        value,
+        normalizedFollowUpDelayDays,
+      );
     });
   }
 
