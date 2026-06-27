@@ -1,3 +1,5 @@
+import DocumentUploadFields from "../../documents/DocumentUploadFields";
+
 function ApplicationFormDocument({
   documentOptions,
   documentMode,
@@ -98,41 +100,12 @@ function ApplicationFormDocument({
         )}
 
         {documentMode === "upload" && (
-          <div className="grid gap-4 md:grid-cols-2">
-            <label className="form-control w-full">
-              <span className="label mb-1">
-                Type de document
-              </span>
-
-              <select
-                className="select select-bordered w-full"
-                value={documentForm.type}
-                onChange={onDocumentTypeChange}
-              >
-                <option value="resume">
-                  CV
-                </option>
-
-                <option value="cover_letter">
-                  Lettre de motivation
-                </option>
-              </select>
-            </label>
-
-            <label className="form-control w-full">
-              <span className="label mb-1">
-                Fichier
-              </span>
-
-              <input
-                key={fileInputResetKey}
-                className="file-input file-input-bordered w-full"
-                type="file"
-                accept=".pdf,.doc,.docx,.png,.jpg,.jpeg"
-                onChange={onDocumentFileChange}
-              />
-            </label>
-          </div>
+          <DocumentUploadFields
+            documentType={documentForm.type}
+            fileInputResetKey={fileInputResetKey}
+            onDocumentTypeChange={onDocumentTypeChange}
+            onDocumentFileChange={onDocumentFileChange}
+          />
         )}
       </div>
     </section>

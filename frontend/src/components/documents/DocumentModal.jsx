@@ -1,6 +1,8 @@
 import { X } from "lucide-react";
 import { useState } from "react";
 
+import DocumentUploadFields from "./DocumentUploadFields";
+
 function DocumentModal({ submitting, onClose, onSubmitDocument }) {
   const [type, setType] = useState("resume");
   const [file, setFile] = useState(null);
@@ -63,56 +65,14 @@ function DocumentModal({ submitting, onClose, onSubmitDocument }) {
 
         <form className="mt-4" onSubmit={handleSubmit}>
           <fieldset className="fieldset w-full rounded-xl border border-base-300 bg-base-200 p-4">
-            <div className="grid gap-4 md:grid-cols-2">
-              <label className="form-control">
-                <span className="label mb-1">
-                  Type de document
-                </span>
-
-                <select
-                  className="select select-bordered w-full"
-                  value={type}
-                  onChange={handleTypeChange}
-                  disabled={submitting}
-                >
-                  <option value="resume">
-                    CV
-                  </option>
-
-                  <option value="cover_letter">
-                    Lettre de motivation
-                  </option>
-
-                  <option value="other">
-                    Autre document
-                  </option>
-                </select>
-              </label>
-
-              <label className="form-control">
-                <span className="label mb-1">
-                  Fichier
-                </span>
-
-                <input
-                  className="file-input file-input-bordered w-full"
-                  type="file"
-                  accept=".pdf,.doc,.docx,.png,.jpg,.jpeg"
-                  onChange={handleFileChange}
-                  disabled={submitting}
-                />
-              </label>
-            </div>
-
-            <div className="mt-4 rounded-xl border border-base-300 bg-base-100 p-3 text-sm text-base-content/70">
-              <p>
-                Formats acceptés : PDF, DOC, DOCX, PNG, JPG, JPEG.
-              </p>
-
-              <p>
-                Taille maximale : 5 Mo.
-              </p>
-            </div>
+            <DocumentUploadFields
+              documentType={type}
+              disabled={submitting}
+              includeOtherType={true}
+              showHelp={true}
+              onDocumentTypeChange={handleTypeChange}
+              onDocumentFileChange={handleFileChange}
+            />
           </fieldset>
 
           <div className="mt-4 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
