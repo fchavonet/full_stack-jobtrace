@@ -1,4 +1,4 @@
-function ApplicationModalNotes({
+function ApplicationFormNotes({
   form,
   applicationNotesMaxLength,
   onFieldChange,
@@ -11,7 +11,7 @@ function ApplicationModalNotes({
         </h3>
       </div>
 
-      <label className=" form-control w-full">
+      <label className="form-control w-full">
         <textarea
           className="textarea textarea-bordered min-h-28 w-full resize-none"
           name="notes"
@@ -29,4 +29,4 @@ function ApplicationModalNotes({
   );
 }
 
-export default ApplicationModalNotes;
+export default ApplicationFormNotes;

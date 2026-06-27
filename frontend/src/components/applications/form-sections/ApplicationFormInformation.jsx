@@ -1,9 +1,9 @@
 import {
   APPLICATION_CONTRACT_TYPE_OPTIONS,
   APPLICATION_STATUS_OPTIONS,
-} from "../../constants/application.constants";
+} from "../../../constants/application.constants";
 
-function ApplicationModalInformation({
+function ApplicationFormInformation({
   form,
   onFieldChange,
 }) {
@@ -145,4 +145,4 @@ function ApplicationModalInformation({
   );
 }
 
-export default ApplicationModalInformation;
+export default ApplicationFormInformation;

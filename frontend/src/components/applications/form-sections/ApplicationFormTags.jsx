@@ -58,7 +58,7 @@ function getSelectIsDisabled(disabled, selectedTags, maxTagsPerApplication) {
   return false;
 }
 
-function ApplicationModalTags({
+function ApplicationFormTags({
   className = "",
   title = "Tags",
   selectedTags = [],
@@ -136,4 +136,4 @@ function ApplicationModalTags({
   );
 }
 
-export default ApplicationModalTags;
+export default ApplicationFormTags;

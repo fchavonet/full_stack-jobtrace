@@ -1,4 +1,4 @@
-function ApplicationModalDocument({
+function ApplicationFormDocument({
   documentOptions,
   documentMode,
   selectedDocumentId,
@@ -139,4 +139,4 @@ function ApplicationModalDocument({
   );
 }
 
-export default ApplicationModalDocument;
+export default ApplicationFormDocument;

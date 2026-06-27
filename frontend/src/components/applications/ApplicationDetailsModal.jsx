@@ -14,10 +14,8 @@ import { listDocuments } from "../../api/documents.api";
 import { createTag, listTags } from "../../api/tags.api";
 import {
   APPLICATION_ALLOWED_TAG_OPTIONS,
-  APPLICATION_CONTRACT_TYPE_OPTIONS,
   APPLICATION_MAX_TAGS,
   APPLICATION_NOTES_MAX_LENGTH,
-  APPLICATION_STATUS_OPTIONS,
 } from "../../constants/application.constants";
 import { useToast } from "../../hooks/useToast";
 import {
@@ -62,7 +60,10 @@ import {
   formatFileSize,
   formatSalary,
 } from "../../utils/format.utils";
-import ApplicationModalTags from "./ApplicationModalTags";
+import ApplicationFormDates from "./form-sections/ApplicationFormDates";
+import ApplicationFormInformation from "./form-sections/ApplicationFormInformation";
+import ApplicationFormNotes from "./form-sections/ApplicationFormNotes";
+import ApplicationFormTags from "./form-sections/ApplicationFormTags";
 
 function getModalClassName(isOpen) {
   let className = "modal";
@@ -723,7 +724,7 @@ function ApplicationDetailsModal({
         </section>
 
         <section className="rounded-2xl bg-base-100 p-4 shadow-sm sm:p-6">
-          <ApplicationModalTags
+          <ApplicationFormTags
             selectedTags={getApplicationTags(application)}
             allowedTagOptions={APPLICATION_ALLOWED_TAG_OPTIONS}
             maxTagsPerApplication={APPLICATION_MAX_TAGS}
@@ -750,198 +751,18 @@ function ApplicationDetailsModal({
   function renderAnnouncementEditForm() {
     return (
       <div className="grid gap-4">
-        <section className="rounded-2xl bg-base-100 p-4 shadow-sm sm:p-6">
-          <div>
-            <h3 className="text-lg font-semibold">
-              Informations principales
-            </h3>
-          </div>
+        <ApplicationFormInformation
+          form={editForm}
+          onFieldChange={handleFieldChange}
+        />
 
-          <div className="mt-4 grid gap-4 md:grid-cols-2">
-            <label className="form-control w-full">
-              <span className="label mb-1">
-                Entreprise *
-              </span>
-
-              <input
-                className="input input-bordered w-full"
-                name="company"
-                type="text"
-                autoComplete="off"
-                value={editForm.company}
-                onChange={handleFieldChange}
-                placeholder="Ex : Wayne Enterprises"
-                required
-              />
-            </label>
-
-            <label className="form-control w-full">
-              <span className="label mb-1">
-                Poste *
-              </span>
-
-              <input
-                className="input input-bordered w-full"
-                name="position"
-                type="text"
-                autoComplete="off"
-                value={editForm.position}
-                onChange={handleFieldChange}
-                placeholder="Ex : Développeur front-end"
-                required
-              />
-            </label>
-
-            <label className="form-control w-full">
-              <span className="label mb-1">
-                Type de contrat
-              </span>
-
-              <select
-                className="select select-bordered w-full"
-                name="contractType"
-                value={editForm.contractType}
-                onChange={handleFieldChange}
-              >
-                {APPLICATION_CONTRACT_TYPE_OPTIONS.map(function (option) {
-                  return (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  );
-                })}
-              </select>
-            </label>
-
-            <label className="form-control w-full">
-              <span className="label mb-1">
-                Statut
-              </span>
-
-              <select
-                className="select select-bordered w-full"
-                name="status"
-                value={editForm.status}
-                onChange={handleFieldChange}
-              >
-                {APPLICATION_STATUS_OPTIONS.map(function (option) {
-                  return (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  );
-                })}
-              </select>
-            </label>
-
-            <label className="form-control w-full">
-              <span className="label mb-1">
-                Ville
-              </span>
-
-              <input
-                className="input input-bordered w-full"
-                name="location"
-                type="text"
-                autoComplete="off"
-                value={editForm.location}
-                onChange={handleFieldChange}
-                placeholder="Ex : Toulouse"
-              />
-            </label>
-
-            <label className="form-control w-full">
-              <span className="label mb-1">
-                Salaire annuel brut
-              </span>
-
-              <input
-                className="input input-bordered w-full"
-                name="salary"
-                type="number"
-                min="0"
-                step="1"
-                value={editForm.salary}
-                onChange={handleFieldChange}
-                placeholder="Ex : 38000"
-              />
-            </label>
-
-            <label className="form-control w-full md:col-span-2">
-              <span className="label mb-1">
-                Lien de l’offre
-              </span>
-
-              <input
-                className="input input-bordered w-full"
-                name="link"
-                type="url"
-                autoComplete="off"
-                value={editForm.link}
-                onChange={handleFieldChange}
-                placeholder="https://..."
-              />
-            </label>
-          </div>
-        </section>
+        <ApplicationFormDates
+          form={editForm}
+          onFieldChange={handleFieldChange}
+        />
 
         <section className="rounded-2xl bg-base-100 p-4 shadow-sm sm:p-6">
-          <div>
-            <h3 className="text-lg font-semibold">
-              Dates
-            </h3>
-          </div>
-
-          <div className="mt-4 grid gap-4 md:grid-cols-3">
-            <label className="form-control w-full">
-              <span className="label mb-1">
-                Date d’envoi *
-              </span>
-
-              <input
-                className="input input-bordered w-full"
-                name="sentAt"
-                type="date"
-                value={editForm.sentAt}
-                onChange={handleFieldChange}
-                required
-              />
-            </label>
-
-            <label className="form-control w-full">
-              <span className="label mb-1">
-                Date de relance
-              </span>
-
-              <input
-                className="input input-bordered w-full"
-                name="followUpAt"
-                type="date"
-                value={editForm.followUpAt}
-                onChange={handleFieldChange}
-                disabled={Boolean(editForm.interviewAt)}
-                max={editForm.interviewAt}
-              />
-            </label>
-
-            <label className="form-control w-full">
-              <span className="label mb-1">
-                Date d’entretien
-              </span>
-
-              <input
-                className="input input-bordered w-full"
-                name="interviewAt"
-                type="date"
-                value={editForm.interviewAt}
-                onChange={handleFieldChange}
-              />
-            </label>
-          </div>
-        </section>
-
-        <section className="rounded-2xl bg-base-100 p-4 shadow-sm sm:p-6">
-          <ApplicationModalTags
+          <ApplicationFormTags
             selectedTags={getApplicationTags(application)}
             allowedTagOptions={APPLICATION_ALLOWED_TAG_OPTIONS}
             maxTagsPerApplication={APPLICATION_MAX_TAGS}
@@ -952,28 +773,11 @@ function ApplicationDetailsModal({
           />
         </section>
 
-        <section className="rounded-2xl bg-base-100 p-4 shadow-sm sm:p-6">
-          <div className="mb-4">
-            <h3 className="text-lg font-semibold">
-              Notes
-            </h3>
-          </div>
-
-          <label className="form-control w-full">
-            <textarea
-              className="textarea textarea-bordered min-h-28 w-full resize-none"
-              name="notes"
-              maxLength={APPLICATION_NOTES_MAX_LENGTH}
-              value={editForm.notes}
-              onChange={handleFieldChange}
-              placeholder="Informations utiles sur la candidature..."
-            />
-
-            <span className="mt-1 text-right text-xs text-base-content/50">
-              {editForm.notes.length} / {APPLICATION_NOTES_MAX_LENGTH}
-            </span>
-          </label>
-        </section>
+        <ApplicationFormNotes
+          form={editForm}
+          applicationNotesMaxLength={APPLICATION_NOTES_MAX_LENGTH}
+          onFieldChange={handleFieldChange}
+        />
       </div>
     );
   }

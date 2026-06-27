@@ -39,12 +39,12 @@ import {
   getTagsFromApiResponse,
 } from "../../utils/applicationRelation.utils";
 import { normalizeValue } from "../../utils/string.utils";
-import ApplicationModalContact from "./ApplicationModalContact";
-import ApplicationModalDates from "./ApplicationModalDates";
-import ApplicationModalDocument from "./ApplicationModalDocument";
-import ApplicationModalInformation from "./ApplicationModalInformation";
-import ApplicationModalNotes from "./ApplicationModalNotes";
-import ApplicationModalTags from "./ApplicationModalTags";
+import ApplicationFormContact from "./form-sections/ApplicationFormContact";
+import ApplicationFormDates from "./form-sections/ApplicationFormDates";
+import ApplicationFormDocument from "./form-sections/ApplicationFormDocument";
+import ApplicationFormInformation from "./form-sections/ApplicationFormInformation";
+import ApplicationFormNotes from "./form-sections/ApplicationFormNotes";
+import ApplicationFormTags from "./form-sections/ApplicationFormTags";
 
 const defaultForm = {
   company: "",
@@ -659,18 +659,18 @@ function ApplicationModal({
 
           <div className="min-h-0 flex-1 overflow-y-auto bg-base-200 p-4 sm:p-6">
             <div className="grid gap-4">
-              <ApplicationModalInformation
+              <ApplicationFormInformation
                 form={form}
                 onFieldChange={handleChange}
               />
 
-              <ApplicationModalDates
+              <ApplicationFormDates
                 form={form}
                 onFieldChange={handleChange}
               />
 
               <section className="rounded-2xl bg-base-100 p-4 shadow-sm sm:p-6">
-                <ApplicationModalTags
+                <ApplicationFormTags
                   selectedTags={selectedTagNames}
                   allowedTagOptions={APPLICATION_ALLOWED_TAG_OPTIONS}
                   maxTagsPerApplication={APPLICATION_MAX_TAGS}
@@ -680,7 +680,7 @@ function ApplicationModal({
                 />
               </section>
 
-              <ApplicationModalContact
+              <ApplicationFormContact
                 contactOptions={contactOptions}
                 contactMode={contactMode}
                 selectedContactId={selectedContactId}
@@ -691,7 +691,7 @@ function ApplicationModal({
                 onContactFormChange={handleContactFormChange}
               />
 
-              <ApplicationModalDocument
+              <ApplicationFormDocument
                 documentOptions={documentOptions}
                 documentMode={documentMode}
                 selectedDocumentId={selectedDocumentId}
@@ -705,7 +705,7 @@ function ApplicationModal({
                 onDocumentFileChange={handleDocumentFileChange}
               />
 
-              <ApplicationModalNotes
+              <ApplicationFormNotes
                 form={form}
                 applicationNotesMaxLength={APPLICATION_NOTES_MAX_LENGTH}
                 onFieldChange={handleChange}

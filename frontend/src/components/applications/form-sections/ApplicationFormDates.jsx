@@ -1,4 +1,4 @@
-function ApplicationModalDates({
+function ApplicationFormDates({
   form,
   onFieldChange,
 }) {
@@ -60,4 +60,4 @@ function ApplicationModalDates({
   );
 }
 
-export default ApplicationModalDates;
+export default ApplicationFormDates;

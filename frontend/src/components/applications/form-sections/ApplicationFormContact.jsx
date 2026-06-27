@@ -1,4 +1,4 @@
-function ApplicationModalContact({
+function ApplicationFormContact({
   contactOptions,
   contactMode,
   selectedContactId,
@@ -169,4 +169,4 @@ function ApplicationModalContact({
   );
 }
 
-export default ApplicationModalContact;
+export default ApplicationFormContact;
