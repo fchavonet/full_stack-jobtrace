@@ -13,7 +13,6 @@ import { createTag, listTags } from "../../api/tags.api";
 import {
   APPLICATION_ALLOWED_TAG_OPTIONS,
   APPLICATION_CONTACT_NOTES_MAX_LENGTH,
-  APPLICATION_FALLBACK_FOLLOW_UP_DELAY_DAYS,
   APPLICATION_MAX_TAGS,
   APPLICATION_NOTES_MAX_LENGTH,
 } from "../../constants/application.constants";
@@ -24,6 +23,12 @@ import {
   getListFromResponse,
   getResponseEntity,
 } from "../../utils/apiResponse.utils";
+import {
+  getFollowUpDelayDays,
+  getFollowUpInputValue,
+  getFormUsesAutomaticFollowUpDate,
+  getTodayInputValue,
+} from "../../utils/applicationDate.utils";
 import { normalizeValue } from "../../utils/string.utils";
 import ApplicationModalContact from "./ApplicationModalContact";
 import ApplicationModalDates from "./ApplicationModalDates";
@@ -59,57 +64,6 @@ const defaultDocumentForm = {
   type: "resume",
   file: null,
 };
-
-function getTodayInputValue() {
-  return new Date().toISOString().slice(0, 10);
-}
-
-function getFollowUpDelayDays(value) {
-  const parsedDelay = Number(value);
-
-  if (Number.isFinite(parsedDelay) && parsedDelay > 0) {
-    return parsedDelay;
-  }
-
-  return APPLICATION_FALLBACK_FOLLOW_UP_DELAY_DAYS;
-}
-
-function getFollowUpInputValue(sentAt, followUpDelayDays) {
-  const date = new Date(sentAt);
-
-  if (Number.isNaN(date.getTime())) {
-    return "";
-  }
-
-  date.setDate(date.getDate() + followUpDelayDays);
-
-  return date.toISOString().slice(0, 10);
-}
-
-function getFormUsesAutomaticFollowUpDate(form, followUpDelayDays) {
-  if (!form.sentAt) {
-    return false;
-  }
-
-  if (form.interviewAt) {
-    return false;
-  }
-
-  const automaticFollowUpAt = getFollowUpInputValue(
-    form.sentAt,
-    followUpDelayDays,
-  );
-
-  if (form.followUpAt === automaticFollowUpAt) {
-    return true;
-  }
-
-  if (!form.followUpAt) {
-    return true;
-  }
-
-  return false;
-}
 
 function getInitialForm(normalizedFollowUpDelayDays) {
   const today = getTodayInputValue();
