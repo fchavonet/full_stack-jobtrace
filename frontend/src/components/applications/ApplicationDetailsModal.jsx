@@ -1,4 +1,4 @@
-import { BriefcaseBusiness, FileText, History, LinkIcon, Users, X } from "lucide-react";
+import { BriefcaseBusiness, FileText, FileX, History, LinkIcon, Users, X } from "lucide-react";
 import { useState } from "react";
 
 import {
@@ -13,7 +13,11 @@ import { listContacts } from "../../api/contacts.api";
 import { listDocuments } from "../../api/documents.api";
 import { createTag, listTags } from "../../api/tags.api";
 import {
+  APPLICATION_ALLOWED_TAG_OPTIONS,
   APPLICATION_CONTRACT_TYPE_OPTIONS,
+  APPLICATION_FALLBACK_FOLLOW_UP_DELAY_DAYS,
+  APPLICATION_MAX_TAGS,
+  APPLICATION_NOTES_MAX_LENGTH,
   APPLICATION_STATUS_OPTIONS,
 } from "../../constants/application.constants";
 import { useToast } from "../../hooks/useToast";
@@ -24,23 +28,6 @@ import {
   getApplicationStatusLabel,
 } from "../../utils/application.utils";
 import ApplicationModalTags from "./ApplicationModalTags";
-
-const maxTagsPerApplication = 3;
-const applicationNotesMaxLength = 500;
-const defaultFollowUpDelayDays = 15;
-
-const allowedTagOptions = [
-  "Prioritaire",
-  "À relancer",
-  "Entretien",
-  "Candidature spontanée",
-  "Réseau",
-  "Entreprise cible",
-  "Remote",
-  "À préparer",
-  "À suivre",
-  "Urgent",
-];
 
 function getModalClassName(isOpen) {
   let className = "modal";
@@ -174,7 +161,7 @@ function getFollowUpDelayDays(value) {
     return parsedDelay;
   }
 
-  return defaultFollowUpDelayDays;
+  return APPLICATION_FALLBACK_FOLLOW_UP_DELAY_DAYS;
 }
 
 function getFollowUpInputValue(sentAt, followUpDelayDays) {
@@ -296,7 +283,7 @@ function getAllowedTagName(value) {
     return "";
   }
 
-  const allowedTag = allowedTagOptions.find(function (tagOption) {
+  const allowedTag = APPLICATION_ALLOWED_TAG_OPTIONS.find(function (tagOption) {
     return normalizeValue(tagOption) === normalizedValue;
   });
 
@@ -831,8 +818,11 @@ function ApplicationDetailsModal({
       return;
     }
 
-    if (tags.length >= maxTagsPerApplication) {
-      showToast("Vous pouvez associer jusqu’à 3 tags par candidature.", "warning");
+    if (tags.length >= APPLICATION_MAX_TAGS) {
+      showToast(
+        "Vous pouvez associer jusqu’à " + APPLICATION_MAX_TAGS + " tags par candidature.",
+        "warning",
+      );
       return;
     }
 
@@ -1117,8 +1107,8 @@ function ApplicationDetailsModal({
         <section className="rounded-2xl bg-base-100 p-4 shadow-sm sm:p-6">
           <ApplicationModalTags
             selectedTags={getApplicationTags(application)}
-            allowedTagOptions={allowedTagOptions}
-            maxTagsPerApplication={maxTagsPerApplication}
+            allowedTagOptions={APPLICATION_ALLOWED_TAG_OPTIONS}
+            maxTagsPerApplication={APPLICATION_MAX_TAGS}
             tagSelectValue={tagSelectValue}
             disabled={tagsUpdating}
             onTagSelectChange={handleTagSelectChange}
@@ -1335,8 +1325,8 @@ function ApplicationDetailsModal({
         <section className="rounded-2xl bg-base-100 p-4 shadow-sm sm:p-6">
           <ApplicationModalTags
             selectedTags={getApplicationTags(application)}
-            allowedTagOptions={allowedTagOptions}
-            maxTagsPerApplication={maxTagsPerApplication}
+            allowedTagOptions={APPLICATION_ALLOWED_TAG_OPTIONS}
+            maxTagsPerApplication={APPLICATION_MAX_TAGS}
             tagSelectValue={tagSelectValue}
             disabled={tagsUpdating}
             onTagSelectChange={handleTagSelectChange}
@@ -1355,14 +1345,14 @@ function ApplicationDetailsModal({
             <textarea
               className="textarea textarea-bordered min-h-28 w-full resize-none"
               name="notes"
-              maxLength={applicationNotesMaxLength}
+              maxLength={APPLICATION_NOTES_MAX_LENGTH}
               value={editForm.notes}
               onChange={handleFieldChange}
               placeholder="Informations utiles sur la candidature..."
             />
 
             <span className="mt-1 text-right text-xs text-base-content/50">
-              {editForm.notes.length} / {applicationNotesMaxLength}
+              {editForm.notes.length} / {APPLICATION_NOTES_MAX_LENGTH}
             </span>
           </label>
         </section>

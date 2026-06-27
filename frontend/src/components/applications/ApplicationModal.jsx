@@ -1,11 +1,22 @@
 import { X } from "lucide-react";
 import { useState } from "react";
 
-import { linkContactToApplication, linkDocumentToApplication, linkTagToApplication } from "../../api/applicationRelations.api";
+import {
+  linkContactToApplication,
+  linkDocumentToApplication,
+  linkTagToApplication,
+} from "../../api/applicationRelations.api";
 import { createApplication } from "../../api/applications.api";
 import { createContact } from "../../api/contacts.api";
 import { listDocuments, uploadDocument } from "../../api/documents.api";
 import { createTag, listTags } from "../../api/tags.api";
+import {
+  APPLICATION_ALLOWED_TAG_OPTIONS,
+  APPLICATION_CONTACT_NOTES_MAX_LENGTH,
+  APPLICATION_FALLBACK_FOLLOW_UP_DELAY_DAYS,
+  APPLICATION_MAX_TAGS,
+  APPLICATION_NOTES_MAX_LENGTH,
+} from "../../constants/application.constants";
 import { useToast } from "../../hooks/useToast";
 import ApplicationModalContact from "./ApplicationModalContact";
 import ApplicationModalDates from "./ApplicationModalDates";
@@ -13,24 +24,6 @@ import ApplicationModalDocument from "./ApplicationModalDocument";
 import ApplicationModalInformation from "./ApplicationModalInformation";
 import ApplicationModalNotes from "./ApplicationModalNotes";
 import ApplicationModalTags from "./ApplicationModalTags";
-
-const defaultFollowUpDelayDays = 15;
-const applicationNotesMaxLength = 500;
-const contactNotesMaxLength = 300;
-const maxTagsPerApplication = 3;
-
-const allowedTagOptions = [
-  "Prioritaire",
-  "À relancer",
-  "Entretien",
-  "Candidature spontanée",
-  "Réseau",
-  "Entreprise cible",
-  "Remote",
-  "À préparer",
-  "À suivre",
-  "Urgent",
-];
 
 const defaultForm = {
   company: "",
@@ -71,7 +64,7 @@ function getFollowUpDelayDays(value) {
     return parsedDelay;
   }
 
-  return defaultFollowUpDelayDays;
+  return APPLICATION_FALLBACK_FOLLOW_UP_DELAY_DAYS;
 }
 
 function getFollowUpInputValue(sentAt, followUpDelayDays) {
@@ -347,7 +340,13 @@ function getTagsFromApiResponse(response) {
   return getListFromResponse(response, "tags");
 }
 
-function ApplicationModal({ contacts = [], followUpDelayDays, isOpen, onClose, onApplicationCreated }) {
+function ApplicationModal({
+  contacts = [],
+  followUpDelayDays,
+  isOpen,
+  onClose,
+  onApplicationCreated,
+}) {
   const { showToast } = useToast();
 
   const normalizedFollowUpDelayDays = getFollowUpDelayDays(followUpDelayDays);
@@ -465,8 +464,11 @@ function ApplicationModal({ contacts = [], followUpDelayDays, isOpen, onClose, o
   }
 
   function addSelectedTag(tagName) {
-    if (selectedTagNames.length >= maxTagsPerApplication) {
-      showToast("Vous pouvez associer jusqu’à 3 tags par candidature.", "warning");
+    if (selectedTagNames.length >= APPLICATION_MAX_TAGS) {
+      showToast(
+        "Vous pouvez associer jusqu’à " + APPLICATION_MAX_TAGS + " tags par candidature.",
+        "warning",
+      );
       return;
     }
 
@@ -796,8 +798,8 @@ function ApplicationModal({ contacts = [], followUpDelayDays, isOpen, onClose, o
               <section className="rounded-2xl bg-base-100 p-4 shadow-sm sm:p-6">
                 <ApplicationModalTags
                   selectedTags={selectedTagNames}
-                  allowedTagOptions={allowedTagOptions}
-                  maxTagsPerApplication={maxTagsPerApplication}
+                  allowedTagOptions={APPLICATION_ALLOWED_TAG_OPTIONS}
+                  maxTagsPerApplication={APPLICATION_MAX_TAGS}
                   tagSelectValue={tagSelectValue}
                   onTagSelectChange={handleTagSelectChange}
                   onRemoveTag={removeSelectedTag}
@@ -809,7 +811,7 @@ function ApplicationModal({ contacts = [], followUpDelayDays, isOpen, onClose, o
                 contactMode={contactMode}
                 selectedContactId={selectedContactId}
                 contactForm={contactForm}
-                contactNotesMaxLength={contactNotesMaxLength}
+                contactNotesMaxLength={APPLICATION_CONTACT_NOTES_MAX_LENGTH}
                 onContactModeChange={handleContactModeChange}
                 onSelectedContactChange={handleSelectedContactChange}
                 onContactFormChange={handleContactFormChange}
@@ -831,7 +833,7 @@ function ApplicationModal({ contacts = [], followUpDelayDays, isOpen, onClose, o
 
               <ApplicationModalNotes
                 form={form}
-                applicationNotesMaxLength={applicationNotesMaxLength}
+                applicationNotesMaxLength={APPLICATION_NOTES_MAX_LENGTH}
                 onFieldChange={handleChange}
               />
             </div>

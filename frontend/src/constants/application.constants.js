@@ -51,3 +51,25 @@ export const APPLICATION_STATUS_OPTIONS = [
     label: "Acceptée",
   },
 ];
+
+export const APPLICATION_FALLBACK_FOLLOW_UP_DELAY_DAYS = 15;
+
+export const APPLICATION_MAX_TAGS = 3;
+
+export const APPLICATION_ALLOWED_TAG_OPTIONS = [
+  "Prioritaire",
+  "À relancer",
+  "Entretien",
+  "Candidature spontanée",
+  "Réseau",
+  "Entreprise cible",
+  "Remote",
+  "À préparer",
+  "À suivre",
+  "Urgent",
+];
+
+export const APPLICATION_CONTACT_NOTES_MAX_LENGTH = 300;
+
+export const APPLICATION_NOTES_MAX_LENGTH = 500;
+
