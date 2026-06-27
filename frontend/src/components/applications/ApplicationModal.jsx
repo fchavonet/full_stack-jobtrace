@@ -29,6 +29,11 @@ import {
   getFormUsesAutomaticFollowUpDate,
   getTodayInputValue,
 } from "../../utils/applicationDate.utils";
+import {
+  getExistingTagId,
+  getTagIsAlreadySelected,
+  getTagsFromApiResponse,
+} from "../../utils/applicationRelation.utils";
 import { normalizeValue } from "../../utils/string.utils";
 import ApplicationModalContact from "./ApplicationModalContact";
 import ApplicationModalDates from "./ApplicationModalDates";
@@ -163,20 +168,6 @@ function buildContactRelationPayload(contactId) {
   };
 }
 
-function getExistingTagId(tags, tagName) {
-  const normalizedTagName = normalizeValue(tagName);
-
-  const existingTag = tags.find(function (tag) {
-    return normalizeValue(tag.name) === normalizedTagName;
-  });
-
-  if (existingTag && existingTag.id) {
-    return existingTag.id;
-  }
-
-  return "";
-}
-
 function isTagAlreadyExistsError(error) {
   const message = getErrorMessage(error, "");
 
@@ -236,16 +227,6 @@ function hasNewContactValue(contactForm) {
     || contactForm.company.trim().length > 0
     || contactForm.notes.trim().length > 0
   );
-}
-
-function getTagIsAlreadySelected(selectedTagNames, tagName) {
-  return selectedTagNames.some(function (selectedTagName) {
-    return normalizeValue(selectedTagName) === normalizeValue(tagName);
-  });
-}
-
-function getTagsFromApiResponse(response) {
-  return getListFromResponse(response, "tags");
 }
 
 function ApplicationModal({
