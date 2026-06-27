@@ -1,3 +1,8 @@
+import {
+  APPLICATION_CONTRACT_TYPE_OPTIONS,
+  APPLICATION_STATUS_OPTIONS,
+} from "../../constants/application.constants";
+
 function ApplicationModalInformation({
   form,
   onFieldChange,
@@ -56,33 +61,13 @@ function ApplicationModalInformation({
             value={form.contractType}
             onChange={onFieldChange}
           >
-            <option value="">
-              Non renseigné
-            </option>
-
-            <option value="permanent">
-              CDI
-            </option>
-
-            <option value="fixed_term">
-              CDD
-            </option>
-
-            <option value="apprenticeship">
-              Alternance
-            </option>
-
-            <option value="internship">
-              Stage
-            </option>
-
-            <option value="freelance">
-              Freelance
-            </option>
-
-            <option value="other">
-              Autre
-            </option>
+            {APPLICATION_CONTRACT_TYPE_OPTIONS.map(function (option) {
+              return (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              );
+            })}
           </select>
         </label>
 
@@ -97,25 +82,13 @@ function ApplicationModalInformation({
             value={form.status}
             onChange={onFieldChange}
           >
-            <option value="sent">
-              Envoyée
-            </option>
-
-            <option value="follow_up">
-              À relancer
-            </option>
-
-            <option value="interview">
-              Entretien
-            </option>
-
-            <option value="rejected">
-              Refusée
-            </option>
-
-            <option value="accepted">
-              Acceptée
-            </option>
+            {APPLICATION_STATUS_OPTIONS.map(function (option) {
+              return (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              );
+            })}
           </select>
         </label>
 
