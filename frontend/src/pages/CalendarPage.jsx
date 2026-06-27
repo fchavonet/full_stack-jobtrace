@@ -12,11 +12,18 @@ import {
   formatCalendarMonth,
   getCalendarEventClassName,
   getCalendarEventLabel,
+  getCalendarEventSortValue,
   getIsoDate,
   getStartOfMonth,
   groupCalendarEventsByDate,
 } from "../utils/calendar/calendar.utils";
 import { getListFromResponse } from "../utils/common/apiResponse.utils";
+
+const AGENDA_DATE_FORMATTER = new Intl.DateTimeFormat("fr-FR", {
+  weekday: "long",
+  day: "numeric",
+  month: "long",
+});
 
 function CalendarEventIcon({ type }) {
   if (type === "sent") {
@@ -46,6 +53,20 @@ function getDayNumberClassName(isToday) {
   }
 
   return "text-sm font-semibold";
+}
+
+function getMonthKey(date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+
+  return year + "-" + month;
+}
+
+function formatAgendaDate(dateValue) {
+  const date = new Date(dateValue + "T00:00:00");
+  const label = AGENDA_DATE_FORMATTER.format(date);
+
+  return label.charAt(0).toUpperCase() + label.slice(1);
 }
 
 function CalendarPage() {
@@ -83,11 +104,23 @@ function CalendarPage() {
     return groupCalendarEventsByDate(events);
   }, [events]);
 
-  const todayIso = getIsoDate(new Date());
+  const currentMonthEvents = useMemo(function () {
+    const monthKey = getMonthKey(currentMonth);
 
-  function goToPreviousYear() {
-    setCurrentMonth(addMonths(currentMonth, -12));
-  }
+    return events
+      .filter(function (event) {
+        return event.date.startsWith(monthKey);
+      })
+      .sort(function (firstEvent, secondEvent) {
+        if (firstEvent.date !== secondEvent.date) {
+          return firstEvent.date.localeCompare(secondEvent.date);
+        }
+
+        return getCalendarEventSortValue(firstEvent.type) - getCalendarEventSortValue(secondEvent.type);
+      });
+  }, [events, currentMonth]);
+
+  const todayIso = getIsoDate(new Date());
 
   function goToPreviousMonth() {
     setCurrentMonth(addMonths(currentMonth, -1));
@@ -99,10 +132,6 @@ function CalendarPage() {
 
   function goToNextMonth() {
     setCurrentMonth(addMonths(currentMonth, 1));
-  }
-
-  function goToNextYear() {
-    setCurrentMonth(addMonths(currentMonth, 12));
   }
 
   function openApplication(applicationId) {
@@ -122,7 +151,7 @@ function CalendarPage() {
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center justify-center gap-2 sm:justify-end">
+        <div className="flex flex-wrap items-center justify-center gap-2 xl:justify-end">
           <button
             className="btn btn-outline btn-sm w-12 sm:w-auto"
             type="button"
@@ -130,7 +159,9 @@ function CalendarPage() {
             onClick={goToPreviousMonth}
           >
             <ChevronLeft className="h-4 w-4" />
-            <span className="hidden sm:inline">Mois précédent</span>
+            <span className="hidden sm:inline">
+              Mois précédent
+            </span>
           </button>
 
           <button
@@ -147,7 +178,9 @@ function CalendarPage() {
             aria-label="Mois suivant"
             onClick={goToNextMonth}
           >
-            <span className="hidden sm:inline">Mois suivant</span>
+            <span className="hidden sm:inline">
+              Mois suivant
+            </span>
             <ChevronRight className="h-4 w-4" />
           </button>
         </div>
@@ -187,60 +220,109 @@ function CalendarPage() {
           )}
         </div>
 
-        <div className="overflow-x-auto">
-          <div className="min-w-[920px] lg:min-w-0">
-            <div className="grid grid-cols-7 border-b border-base-300 bg-base-200 text-xs font-bold uppercase text-base-content/70">
-              {CALENDAR_WEEK_DAYS.map(function (day) {
+        <div className="md:hidden">
+          {currentMonthEvents.length === 0 && !loading && (
+            <div className="p-6 text-center">
+              <h3 className="font-semibold">
+                Aucun événement ce mois-ci
+              </h3>
+
+              <p className="mt-1 text-sm text-base-content/60">
+                Les dates d’envoi, de relance et d’entretien apparaîtront ici.
+              </p>
+            </div>
+          )}
+
+          {currentMonthEvents.length > 0 && (
+            <div className="divide-y divide-base-300">
+              {currentMonthEvents.map(function (event) {
                 return (
-                  <div className="px-2 py-3 text-center" key={day}>
-                    {day}
-                  </div>
+                  <button
+                    className="flex w-full items-start gap-3 p-4 text-left transition hover:bg-base-200"
+                    key={event.id}
+                    type="button"
+                    onClick={function () { openApplication(event.applicationId); }}
+                  >
+                    <div className={"mt-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-full " + getCalendarEventClassName(event.type)}>
+                      <CalendarEventIcon type={event.type} />
+                    </div>
+
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-semibold text-base-content/70">
+                        {formatAgendaDate(event.date)}
+                      </p>
+
+                      <p className="mt-1 font-bold">
+                        {getCalendarEventLabel(event.type)}
+                      </p>
+
+                      <p className="truncate text-sm">
+                        {event.label}
+                      </p>
+
+                      <p className="truncate text-xs text-base-content/60">
+                        {event.subtitle}
+                      </p>
+                    </div>
+                  </button>
                 );
               })}
             </div>
+          )}
+        </div>
 
-            <div className="grid grid-cols-7">
-              {calendarDays.map(function (day) {
-                const dayIso = getIsoDate(day);
-                const dayEvents = eventsByDate[dayIso] || [];
-                const isCurrentMonth = day.getMonth() === currentMonth.getMonth();
-                const isToday = dayIso === todayIso;
+        <div className="hidden md:block">
+          <div className="grid grid-cols-7 border-b border-base-300 bg-base-200 text-xs font-bold uppercase text-base-content/70">
+            {CALENDAR_WEEK_DAYS.map(function (day) {
+              return (
+                <div className="px-2 py-3 text-center" key={day}>
+                  {day}
+                </div>
+              );
+            })}
+          </div>
 
-                return (
-                  <div className={getCalendarDayClassName(isCurrentMonth)} key={dayIso}>
-                    <div className="mb-2 flex justify-center">
-                      <span className={getDayNumberClassName(isToday)}>
-                        {day.getDate()}
-                      </span>
-                    </div>
+          <div className="grid grid-cols-7">
+            {calendarDays.map(function (day) {
+              const dayIso = getIsoDate(day);
+              const dayEvents = eventsByDate[dayIso] || [];
+              const isCurrentMonth = day.getMonth() === currentMonth.getMonth();
+              const isToday = dayIso === todayIso;
 
-                    <div className="space-y-1">
-                      {dayEvents.map(function (event) {
-                        return (
-                          <button
-                            className={"flex w-full items-center gap-1 truncate rounded-md px-2 py-1 text-left text-xs font-medium transition " + getCalendarEventClassName(event.type)}
-                            key={event.id}
-                            type="button"
-                            title={getCalendarEventLabel(event.type) + " - " + event.label + " - " + event.subtitle}
-                            onClick={function () { openApplication(event.applicationId); }}
-                          >
-                            <CalendarEventIcon type={event.type} />
-
-                            <span className="shrink-0">
-                              {getCalendarEventLabel(event.type)}
-                            </span>
-
-                            <span className="truncate opacity-90">
-                              {event.label}
-                            </span>
-                          </button>
-                        );
-                      })}
-                    </div>
+              return (
+                <div className={getCalendarDayClassName(isCurrentMonth)} key={dayIso}>
+                  <div className="mb-2 flex justify-center">
+                    <span className={getDayNumberClassName(isToday)}>
+                      {day.getDate()}
+                    </span>
                   </div>
-                );
-              })}
-            </div>
+
+                  <div className="space-y-1">
+                    {dayEvents.map(function (event) {
+                      return (
+                        <button
+                          className={"flex w-full items-center gap-1 truncate rounded-md px-2 py-1 text-left text-xs font-medium transition " + getCalendarEventClassName(event.type)}
+                          key={event.id}
+                          type="button"
+                          title={getCalendarEventLabel(event.type) + " - " + event.label + " - " + event.subtitle}
+                          onClick={function () { openApplication(event.applicationId); }}
+                        >
+                          <CalendarEventIcon type={event.type} />
+
+                          <span className="shrink-0">
+                            {getCalendarEventLabel(event.type)}
+                          </span>
+
+                          <span className="truncate opacity-90">
+                            {event.label}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>
