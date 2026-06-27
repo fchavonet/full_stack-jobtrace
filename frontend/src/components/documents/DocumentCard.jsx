@@ -3,200 +3,19 @@ import { useEffect, useRef, useState } from "react";
 import { getDocument, GlobalWorkerOptions } from "pdfjs-dist";
 import pdfWorker from "pdfjs-dist/build/pdf.worker.mjs?url";
 
+import {
+  formatDocumentDate,
+  formatDocumentFileSize,
+  getDocumentDate,
+  getDocumentExtensionLabel,
+  getDocumentName,
+  getDocumentSize,
+  getDocumentTypeLabel,
+  isImageDocument,
+  isPdfDocument,
+} from "../../utils/document.utils";
+
 GlobalWorkerOptions.workerSrc = pdfWorker;
-
-function fixDocumentNameEncoding(value) {
-  if (!value || typeof value !== "string") {
-    return "";
-  }
-
-  const hasBrokenEncoding =
-    value.includes("Ã") ||
-    value.includes("Â") ||
-    value.includes("â") ||
-    value.includes("Ì") ||
-    value.includes("�") ||
-    /[\u0080-\u009F]/.test(value);
-
-  if (!hasBrokenEncoding) {
-    return value.normalize("NFC");
-  }
-
-  try {
-    const bytes = Uint8Array.from(value, function (character) {
-      return character.charCodeAt(0);
-    });
-
-    const decodedValue = new TextDecoder("utf-8").decode(bytes);
-
-    if (!decodedValue.includes("�")) {
-      return decodedValue.normalize("NFC");
-    }
-  } catch {
-    return value.normalize("NFC");
-  }
-
-  return value.normalize("NFC");
-}
-
-function removeControlCharacters(value) {
-  let cleanedValue = "";
-
-  for (const character of value) {
-    const characterCode = character.charCodeAt(0);
-    const isControlCharacter =
-      characterCode <= 31 ||
-      (characterCode >= 127 && characterCode <= 159);
-
-    if (!isControlCharacter) {
-      cleanedValue += character;
-    }
-  }
-
-  return cleanedValue;
-}
-
-function cleanDocumentName(value) {
-  const fixedValue = fixDocumentNameEncoding(value);
-  const safeFileName = fixedValue.replace(/[\\/]/g, "-");
-
-  return removeControlCharacters(safeFileName).trim();
-}
-
-function getDocumentName(doc) {
-  if (!doc) {
-    return "Document sans nom";
-  }
-
-  if (doc.originalName) {
-    const name = cleanDocumentName(doc.originalName);
-
-    if (name) {
-      return name;
-    }
-  }
-
-  if (doc.original_name) {
-    const name = cleanDocumentName(doc.original_name);
-
-    if (name) {
-      return name;
-    }
-  }
-
-  if (doc.name) {
-    const name = cleanDocumentName(doc.name);
-
-    if (name) {
-      return name;
-    }
-  }
-
-  return "Document sans nom";
-}
-
-function getDocumentMimeType(doc) {
-  if (doc.mimeType) {
-    return doc.mimeType;
-  }
-
-  if (doc.mime_type) {
-    return doc.mime_type;
-  }
-
-  return "";
-}
-
-function getDocumentSize(doc) {
-  if (typeof doc.size === "number") {
-    return doc.size;
-  }
-
-  return 0;
-}
-
-function getDocumentDate(doc) {
-  if (doc.createdAt) {
-    return doc.createdAt;
-  }
-
-  if (doc.created_at) {
-    return doc.created_at;
-  }
-
-  return "";
-}
-
-function getDocumentType(doc) {
-  if (doc.type) {
-    return doc.type;
-  }
-
-  return "document";
-}
-
-function getDocumentTypeLabel(doc) {
-  const type = getDocumentType(doc);
-
-  if (type === "resume") {
-    return "CV";
-  }
-
-  if (type === "cover_letter") {
-    return "Lettre de motivation";
-  }
-
-  return "Document";
-}
-
-function getDocumentExtension(doc) {
-  const name = getDocumentName(doc);
-  const parts = name.split(".");
-
-  if (parts.length <= 1) {
-    return "FICHIER";
-  }
-
-  return parts[parts.length - 1].toUpperCase();
-}
-
-function isImageDocument(doc) {
-  const mimeType = getDocumentMimeType(doc);
-  const extension = getDocumentExtension(doc).toLowerCase();
-
-  if (mimeType.startsWith("image/")) {
-    return true;
-  }
-
-  if (extension === "png") {
-    return true;
-  }
-
-  if (extension === "jpg") {
-    return true;
-  }
-
-  if (extension === "jpeg") {
-    return true;
-  }
-
-  return false;
-}
-
-function isPdfDocument(doc) {
-  const mimeType = getDocumentMimeType(doc);
-  const extension = getDocumentExtension(doc).toLowerCase();
-
-  if (mimeType === "application/pdf") {
-    return true;
-  }
-
-  if (extension === "pdf") {
-    return true;
-  }
-
-  return false;
-}
 
 function getDocumentIcon(doc) {
   if (isImageDocument(doc)) {
@@ -208,38 +27,6 @@ function getDocumentIcon(doc) {
   }
 
   return <File className="h-4 w-4 shrink-0 text-primary" />;
-}
-
-function formatFileSize(size) {
-  const value = Number(size);
-
-  if (!Number.isFinite(value) || value <= 0) {
-    return "Taille inconnue";
-  }
-
-  if (value < 1024) {
-    return value + " o";
-  }
-
-  if (value < 1024 * 1024) {
-    return Math.round(value / 1024) + " Ko";
-  }
-
-  return (value / 1024 / 1024).toFixed(1) + " Mo";
-}
-
-function formatDate(value) {
-  if (!value) {
-    return "Date inconnue";
-  }
-
-  const date = new Date(value);
-
-  if (Number.isNaN(date.getTime())) {
-    return "Date inconnue";
-  }
-
-  return date.toLocaleDateString("fr-FR");
 }
 
 async function cleanupPdfDocument(pdfDocument) {
@@ -456,7 +243,7 @@ function DocumentCard({
               {getDocumentIcon(doc)}
 
               <span className="truncate">
-                {getDocumentTypeLabel(doc)} · {getDocumentExtension(doc)}
+                {getDocumentTypeLabel(doc)} · {getDocumentExtensionLabel(doc)}
               </span>
             </div>
 
@@ -464,7 +251,7 @@ function DocumentCard({
               <HardDrive className="h-4 w-4 shrink-0 text-primary" />
 
               <span className="truncate">
-                {formatFileSize(getDocumentSize(doc))}
+                {formatDocumentFileSize(getDocumentSize(doc))}
               </span>
             </div>
 
@@ -472,7 +259,7 @@ function DocumentCard({
               <CalendarDays className="h-4 w-4 shrink-0 text-primary" />
 
               <span className="truncate">
-                {formatDate(getDocumentDate(doc))}
+                {formatDocumentDate(getDocumentDate(doc))}
               </span>
             </div>
           </div>
