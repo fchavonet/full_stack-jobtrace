@@ -38,6 +38,7 @@ import {
   formatFileSize,
   formatSalary,
 } from "../../utils/format.utils";
+import { normalizeValue } from "../../utils/string.utils";
 import ApplicationModalTags from "./ApplicationModalTags";
 
 function getModalClassName(isOpen) {
@@ -218,14 +219,6 @@ function getDocumentLabel(applicationDocument) {
   }
 
   return "Document sans nom";
-}
-
-function normalizeValue(value) {
-  return String(value || "")
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase()
-    .trim();
 }
 
 function getAllowedTagName(value) {

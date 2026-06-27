@@ -24,6 +24,7 @@ import {
   getListFromResponse,
   getResponseEntity,
 } from "../../utils/apiResponse.utils";
+import { normalizeValue } from "../../utils/string.utils";
 import ApplicationModalContact from "./ApplicationModalContact";
 import ApplicationModalDates from "./ApplicationModalDates";
 import ApplicationModalDocument from "./ApplicationModalDocument";
@@ -206,14 +207,6 @@ function buildContactRelationPayload(contactId) {
   return {
     contactId,
   };
-}
-
-function normalizeValue(value) {
-  return String(value || "")
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase()
-    .trim();
 }
 
 function getExistingTagId(tags, tagName) {
