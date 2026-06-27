@@ -8,79 +8,41 @@ import {
   Trash2,
 } from "lucide-react";
 
+import {
+  APPLICATION_CONTRACT_TYPE_OPTIONS,
+  APPLICATION_STATUS_OPTIONS,
+} from "../../constants/application.constants";
+
 const statusFilters = [
   {
     value: "all",
     label: "Toutes",
   },
-  {
-    value: "sent",
-    label: "Envoyées",
-  },
-  {
-    value: "follow_up",
-    label: "À relancer",
-  },
-  {
-    value: "interview",
-    label: "Entretien",
-  },
-  {
-    value: "accepted",
-    label: "Acceptées",
-  },
-  {
-    value: "rejected",
-    label: "Refusées",
-  },
+  ...APPLICATION_STATUS_OPTIONS,
 ];
 
-function getStatusLabel(status) {
-  if (status === "sent") {
-    return "Envoyée";
+function getOptionLabel(options, value, fallback) {
+  const option = options.find(function (item) {
+    return item.value === value;
+  });
+
+  if (option) {
+    return option.label;
   }
 
-  if (status === "follow_up") {
-    return "À relancer";
-  }
-
-  if (status === "interview") {
-    return "Entretien";
-  }
-
-  if (status === "rejected") {
-    return "Refusée";
-  }
-
-  if (status === "accepted") {
-    return "Acceptée";
-  }
-
-  return "Inconnu";
+  return fallback;
 }
 
 function getStatusSortValue(status) {
-  if (status === "sent") {
-    return 1;
+  const statusIndex = APPLICATION_STATUS_OPTIONS.findIndex(function (option) {
+    return option.value === status;
+  });
+
+  if (statusIndex === -1) {
+    return 99;
   }
 
-  if (status === "follow_up") {
-    return 2;
-  }
-
-  if (status === "interview") {
-    return 3;
-  }
-
-  if (status === "accepted") {
-    return 4;
-  }
-
-  if (status === "rejected") {
-    return 5;
-  }
-
-  return 99;
+  return statusIndex + 1;
 }
 
 function getStatusBadgeClassName(status) {
@@ -107,34 +69,6 @@ function getStatusBadgeClassName(status) {
   }
 
   return className;
-}
-
-function getContractTypeLabel(contractType) {
-  if (contractType === "permanent") {
-    return "CDI";
-  }
-
-  if (contractType === "fixed_term") {
-    return "CDD";
-  }
-
-  if (contractType === "apprenticeship") {
-    return "Alternance";
-  }
-
-  if (contractType === "internship") {
-    return "Stage";
-  }
-
-  if (contractType === "freelance") {
-    return "Freelance";
-  }
-
-  if (contractType === "other") {
-    return "Autre";
-  }
-
-  return "Non renseigné";
 }
 
 function formatDate(value) {
@@ -283,14 +217,26 @@ function normalizeValue(value) {
     .trim();
 }
 
+function getApplicationStatusLabel(status) {
+  return getOptionLabel(APPLICATION_STATUS_OPTIONS, status, "Inconnu");
+}
+
+function getApplicationContractTypeLabel(contractType) {
+  return getOptionLabel(
+    APPLICATION_CONTRACT_TYPE_OPTIONS,
+    contractType,
+    "Non renseigné",
+  );
+}
+
 function getSearchableValue(application) {
   return normalizeValue(
     [
       application.company,
       application.position,
       application.location,
-      getContractTypeLabel(application.contractType),
-      getStatusLabel(application.status),
+      getApplicationContractTypeLabel(application.contractType),
+      getApplicationStatusLabel(application.status),
       formatDate(application.sentAt),
       formatDate(getApplicationFollowUpAt(application)),
       formatDate(application.interviewAt),
@@ -308,7 +254,7 @@ function getSortableValue(application, sortKey) {
   }
 
   if (sortKey === "contractType") {
-    return normalizeValue(getContractTypeLabel(application.contractType));
+    return normalizeValue(getApplicationContractTypeLabel(application.contractType));
   }
 
   if (sortKey === "status") {
@@ -577,6 +523,7 @@ function ApplicationsTable({
               <col className="w-[11%]" />
               <col className="w-[9%]" />
             </colgroup>
+
             <thead>
               <tr>
                 <SortableHeader
@@ -659,13 +606,13 @@ function ApplicationsTable({
 
                     <td className="text-center align-middle">
                       <span className="block truncate">
-                        {getContractTypeLabel(application.contractType)}
+                        {getApplicationContractTypeLabel(application.contractType)}
                       </span>
                     </td>
 
                     <td className="text-center align-middle">
                       <span className={getStatusBadgeClassName(application.status)}>
-                        {getStatusLabel(application.status)}
+                        {getApplicationStatusLabel(application.status)}
                       </span>
                     </td>
 
