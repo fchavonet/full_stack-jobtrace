@@ -17,6 +17,12 @@ import {
   APPLICATION_STATUS_OPTIONS,
 } from "../../constants/application.constants";
 import { useToast } from "../../hooks/useToast";
+import {
+  getApplicationContractTypeLabel,
+  getApplicationStatusBadgeClassName,
+  getApplicationStatusIsFinal,
+  getApplicationStatusLabel,
+} from "../../utils/application.utils";
 import ApplicationModalTags from "./ApplicationModalTags";
 
 const maxTagsPerApplication = 3;
@@ -51,44 +57,6 @@ function getTabClassName(activeTab, tabName) {
 
   if (activeTab === tabName) {
     className = "tab tab-active min-w-0 flex-1 justify-center border-base-300 !bg-base-200 px-0 font-semibold text-base-content sm:min-w-32 sm:px-6";
-  }
-
-  return className;
-}
-
-function getOptionLabel(options, value, fallback) {
-  const option = options.find(function (item) {
-    return item.value === value;
-  });
-
-  if (option) {
-    return option.label;
-  }
-
-  return fallback;
-}
-
-function getStatusBadgeClassName(status) {
-  let className = "badge badge-outline";
-
-  if (status === "sent") {
-    className = "badge badge-info";
-  }
-
-  if (status === "follow_up") {
-    className = "badge badge-warning";
-  }
-
-  if (status === "interview") {
-    className = "badge badge-primary text-white";
-  }
-
-  if (status === "rejected") {
-    className = "badge badge-error";
-  }
-
-  if (status === "accepted") {
-    className = "badge badge-success";
   }
 
   return className;
@@ -530,18 +498,6 @@ function getNullableDatePayloadValue(value) {
   return null;
 }
 
-function getStatusIsFinal(status) {
-  if (status === "accepted") {
-    return true;
-  }
-
-  if (status === "rejected") {
-    return true;
-  }
-
-  return false;
-}
-
 function buildAnnouncementUpdatePayload(form) {
   let followUpAt = form.followUpAt;
 
@@ -549,7 +505,7 @@ function buildAnnouncementUpdatePayload(form) {
     followUpAt = "";
   }
 
-  if (getStatusIsFinal(form.status)) {
+  if (getApplicationStatusIsFinal(form.status)) {
     followUpAt = "";
   }
 
@@ -697,7 +653,7 @@ function ApplicationDetailsModal({
         }
       }
 
-      if (name === "sentAt" && !nextForm.interviewAt && !getStatusIsFinal(nextForm.status)) {
+      if (name === "sentAt" && !nextForm.interviewAt && !getApplicationStatusIsFinal(nextForm.status)) {
         nextForm.followUpAt = getFollowUpInputValue(
           value,
           normalizedFollowUpDelayDays,
@@ -708,11 +664,11 @@ function ApplicationDetailsModal({
         nextForm.followUpAt = "";
       }
 
-      if (name === "status" && getStatusIsFinal(value)) {
+      if (name === "status" && getApplicationStatusIsFinal(value)) {
         nextForm.followUpAt = "";
       }
 
-      if (name === "status" && !getStatusIsFinal(value) && value !== "interview" && !nextForm.interviewAt) {
+      if (name === "status" && !getApplicationStatusIsFinal(value) && value !== "interview" && !nextForm.interviewAt) {
         nextForm.followUpAt = getFollowUpInputValue(
           nextForm.sentAt,
           normalizedFollowUpDelayDays,
@@ -1094,8 +1050,8 @@ function ApplicationDetailsModal({
           Statut
         </p>
 
-        <span className={getStatusBadgeClassName(application.status)}>
-          {getOptionLabel(APPLICATION_STATUS_OPTIONS, application.status, "Inconnu")}
+        <span className={getApplicationStatusBadgeClassName(application.status)}>
+          {getApplicationStatusLabel(application.status)}
         </span>
       </div>
     );
@@ -1112,14 +1068,7 @@ function ApplicationDetailsModal({
           <div className="mt-5 grid gap-3 md:grid-cols-2">
             <InfoItem label="Entreprise" value={application.company} />
             <InfoItem label="Poste" value={application.position} />
-            <InfoItem
-              label="Contrat"
-              value={getOptionLabel(
-                APPLICATION_CONTRACT_TYPE_OPTIONS,
-                application.contractType,
-                "Non renseigné",
-              )}
-            />
+            <InfoItem label="Contrat" value={getApplicationContractTypeLabel(application.contractType)} />
             {renderStatusInfoItem()}
             <InfoItem label="Ville" value={application.location || "Non renseignée"} />
             <InfoItem label="Salaire" value={formatSalary(application.salary)} />

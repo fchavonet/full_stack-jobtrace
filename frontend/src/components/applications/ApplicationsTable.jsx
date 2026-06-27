@@ -8,10 +8,13 @@ import {
   Trash2,
 } from "lucide-react";
 
+import { APPLICATION_STATUS_OPTIONS } from "../../constants/application.constants";
 import {
-  APPLICATION_CONTRACT_TYPE_OPTIONS,
-  APPLICATION_STATUS_OPTIONS,
-} from "../../constants/application.constants";
+  getApplicationContractTypeLabel,
+  getApplicationStatusBadgeClassName,
+  getApplicationStatusLabel,
+  getApplicationStatusSortValue,
+} from "../../utils/application.utils";
 
 const statusFilters = [
   {
@@ -20,56 +23,6 @@ const statusFilters = [
   },
   ...APPLICATION_STATUS_OPTIONS,
 ];
-
-function getOptionLabel(options, value, fallback) {
-  const option = options.find(function (item) {
-    return item.value === value;
-  });
-
-  if (option) {
-    return option.label;
-  }
-
-  return fallback;
-}
-
-function getStatusSortValue(status) {
-  const statusIndex = APPLICATION_STATUS_OPTIONS.findIndex(function (option) {
-    return option.value === status;
-  });
-
-  if (statusIndex === -1) {
-    return 99;
-  }
-
-  return statusIndex + 1;
-}
-
-function getStatusBadgeClassName(status) {
-  let className = "badge badge-outline";
-
-  if (status === "sent") {
-    className = "badge badge-info";
-  }
-
-  if (status === "follow_up") {
-    className = "badge badge-warning";
-  }
-
-  if (status === "interview") {
-    className = "badge badge-primary text-white";
-  }
-
-  if (status === "rejected") {
-    className = "badge badge-error";
-  }
-
-  if (status === "accepted") {
-    className = "badge badge-success";
-  }
-
-  return className;
-}
 
 function formatDate(value) {
   if (!value) {
@@ -217,18 +170,6 @@ function normalizeValue(value) {
     .trim();
 }
 
-function getApplicationStatusLabel(status) {
-  return getOptionLabel(APPLICATION_STATUS_OPTIONS, status, "Inconnu");
-}
-
-function getApplicationContractTypeLabel(contractType) {
-  return getOptionLabel(
-    APPLICATION_CONTRACT_TYPE_OPTIONS,
-    contractType,
-    "Non renseigné",
-  );
-}
-
 function getSearchableValue(application) {
   return normalizeValue(
     [
@@ -258,7 +199,7 @@ function getSortableValue(application, sortKey) {
   }
 
   if (sortKey === "status") {
-    return getStatusSortValue(application.status);
+    return getApplicationStatusSortValue(application.status);
   }
 
   if (sortKey === "sentAt") {
@@ -611,7 +552,7 @@ function ApplicationsTable({
                     </td>
 
                     <td className="text-center align-middle">
-                      <span className={getStatusBadgeClassName(application.status)}>
+                      <span className={getApplicationStatusBadgeClassName(application.status)}>
                         {getApplicationStatusLabel(application.status)}
                       </span>
                     </td>
