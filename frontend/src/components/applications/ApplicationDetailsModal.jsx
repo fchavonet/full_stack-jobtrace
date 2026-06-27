@@ -12,6 +12,10 @@ import {
 import { listContacts } from "../../api/contacts.api";
 import { listDocuments } from "../../api/documents.api";
 import { createTag, listTags } from "../../api/tags.api";
+import {
+  APPLICATION_CONTRACT_TYPE_OPTIONS,
+  APPLICATION_STATUS_OPTIONS,
+} from "../../constants/application.constants";
 import { useToast } from "../../hooks/useToast";
 import ApplicationModalTags from "./ApplicationModalTags";
 
@@ -52,28 +56,16 @@ function getTabClassName(activeTab, tabName) {
   return className;
 }
 
-function getStatusLabel(status) {
-  if (status === "sent") {
-    return "Envoyée";
+function getOptionLabel(options, value, fallback) {
+  const option = options.find(function (item) {
+    return item.value === value;
+  });
+
+  if (option) {
+    return option.label;
   }
 
-  if (status === "follow_up") {
-    return "À relancer";
-  }
-
-  if (status === "interview") {
-    return "Entretien";
-  }
-
-  if (status === "rejected") {
-    return "Refusée";
-  }
-
-  if (status === "accepted") {
-    return "Acceptée";
-  }
-
-  return "Inconnu";
+  return fallback;
 }
 
 function getStatusBadgeClassName(status) {
@@ -100,34 +92,6 @@ function getStatusBadgeClassName(status) {
   }
 
   return className;
-}
-
-function getContractTypeLabel(contractType) {
-  if (contractType === "permanent") {
-    return "CDI";
-  }
-
-  if (contractType === "fixed_term") {
-    return "CDD";
-  }
-
-  if (contractType === "apprenticeship") {
-    return "Alternance";
-  }
-
-  if (contractType === "internship") {
-    return "Stage";
-  }
-
-  if (contractType === "freelance") {
-    return "Freelance";
-  }
-
-  if (contractType === "other") {
-    return "Autre";
-  }
-
-  return "Non renseigné";
 }
 
 function getDocumentTypeLabel(type) {
@@ -661,12 +625,10 @@ function ApplicationDetailsModal({
   const [contactsLoading, setContactsLoading] = useState(false);
   const [contactsLoaded, setContactsLoaded] = useState(false);
   const [selectedContactId, setSelectedContactId] = useState("");
-
   const [availableDocuments, setAvailableDocuments] = useState([]);
   const [documentsLoading, setDocumentsLoading] = useState(false);
   const [documentsLoaded, setDocumentsLoaded] = useState(false);
   const [selectedDocumentId, setSelectedDocumentId] = useState("");
-
   const [relationsUpdating, setRelationsUpdating] = useState(false);
 
   function showAnnouncementTab() {
@@ -1133,7 +1095,7 @@ function ApplicationDetailsModal({
         </p>
 
         <span className={getStatusBadgeClassName(application.status)}>
-          {getStatusLabel(application.status)}
+          {getOptionLabel(APPLICATION_STATUS_OPTIONS, application.status, "Inconnu")}
         </span>
       </div>
     );
@@ -1150,7 +1112,14 @@ function ApplicationDetailsModal({
           <div className="mt-5 grid gap-3 md:grid-cols-2">
             <InfoItem label="Entreprise" value={application.company} />
             <InfoItem label="Poste" value={application.position} />
-            <InfoItem label="Contrat" value={getContractTypeLabel(application.contractType)} />
+            <InfoItem
+              label="Contrat"
+              value={getOptionLabel(
+                APPLICATION_CONTRACT_TYPE_OPTIONS,
+                application.contractType,
+                "Non renseigné",
+              )}
+            />
             {renderStatusInfoItem()}
             <InfoItem label="Ville" value={application.location || "Non renseignée"} />
             <InfoItem label="Salaire" value={formatSalary(application.salary)} />
@@ -1277,33 +1246,13 @@ function ApplicationDetailsModal({
                 value={editForm.contractType}
                 onChange={handleFieldChange}
               >
-                <option value="">
-                  Non renseigné
-                </option>
-
-                <option value="permanent">
-                  CDI
-                </option>
-
-                <option value="fixed_term">
-                  CDD
-                </option>
-
-                <option value="apprenticeship">
-                  Alternance
-                </option>
-
-                <option value="internship">
-                  Stage
-                </option>
-
-                <option value="freelance">
-                  Freelance
-                </option>
-
-                <option value="other">
-                  Autre
-                </option>
+                {APPLICATION_CONTRACT_TYPE_OPTIONS.map(function (option) {
+                  return (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  );
+                })}
               </select>
             </label>
 
@@ -1318,25 +1267,13 @@ function ApplicationDetailsModal({
                 value={editForm.status}
                 onChange={handleFieldChange}
               >
-                <option value="sent">
-                  Envoyée
-                </option>
-
-                <option value="follow_up">
-                  À relancer
-                </option>
-
-                <option value="interview">
-                  Entretien
-                </option>
-
-                <option value="rejected">
-                  Refusée
-                </option>
-
-                <option value="accepted">
-                  Acceptée
-                </option>
+                {APPLICATION_STATUS_OPTIONS.map(function (option) {
+                  return (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  );
+                })}
               </select>
             </label>
 
@@ -1697,7 +1634,6 @@ function ApplicationDetailsModal({
       </section>
     );
   }
-
 
   function renderHistoryTab() {
     return (
