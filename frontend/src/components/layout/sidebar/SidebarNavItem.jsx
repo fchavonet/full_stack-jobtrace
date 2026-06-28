@@ -1,17 +1,17 @@
 import { NavLink } from "react-router-dom";
 
-const BASE_LINK_CLASS = "w-full px-4 py-2 flex items-center justify-start gap-2 text-sm font-medium rounded-lg";
+const BASE_LINK_CLASS = "w-full px-4 py-2 flex flex-row justify-start items-center gap-2 text-sm font-medium rounded-lg";
 
 function getNavLinkClassName({ isActive }) {
   if (isActive) {
-    return BASE_LINK_CLASS + " text-primary-content bg-primary";
+    return BASE_LINK_CLASS + " text-primary-content bg-primary cursor-pointer";
   }
 
-  return BASE_LINK_CLASS + " text-base-content/80 hover:text-primary-content hover:bg-primary";
+  return BASE_LINK_CLASS + " text-base-content/80 hover:text-primary-content hover:bg-primary cursor-pointer";
 }
 
 function getDisabledClassName() {
-  return BASE_LINK_CLASS + " w-full text-base-content/40 cursor-not-allowed";
+  return BASE_LINK_CLASS + " text-base-content/40 cursor-not-allowed";
 }
 
 function SidebarNavItem({ item, onClick }) {
