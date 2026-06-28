@@ -27,6 +27,8 @@ import {
   getTrackingQualityRows,
 } from "../utils/statistics/statistics.utils";
 
+import ApplicationsLocationMap from "../components/statistics/ApplicationsLocationMap";
+
 function StatCard({ icon, label, value, helper }) {
   return (
     <div className="h-full min-w-0 rounded-2xl bg-base-100 p-5 shadow-sm">
@@ -515,7 +517,7 @@ function StatisticsPage() {
           </div>
 
           <div className="mt-6">
-            <MapFutureCard />
+            <ApplicationsLocationMap applications={applications} />
           </div>
         </>
       )}
