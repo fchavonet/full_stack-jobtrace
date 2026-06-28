@@ -16,6 +16,8 @@ import {
   getContactModalKey,
   getFilteredContacts,
 } from "../utils/contacts/contact.utils";
+import LoadingCard from "../components/ui/LoadingCard";
+import PageHeader from "../components/ui/PageHeader";
 
 function ContactsPage() {
   const { showToast } = useToast();
@@ -155,27 +157,16 @@ function ContactsPage() {
 
   return (
     <section>
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-4xl font-bold">
-            Contacts
-          </h1>
-
-          <p className="text-base-content/70">
-            Retrouvez les contacts liés à vos candidatures.
-          </p>
-        </div>
-
-        <button
-          className="btn btn-primary text-white"
-          type="button"
-          onClick={openCreateModal}
-          disabled={loading}
-        >
-          <Plus className="h-5 w-5" />
-          Nouveau contact
-        </button>
-      </div>
+      <PageHeader
+        title="Contacts"
+        description="Retrouvez les contacts liés à vos candidatures."
+        actions={
+          <button className="btn btn-primary w-full md:w-auto flex flex-row justify-center items-center gap-2 text-primary-content cursor-pointer" type="button" onClick={openCreateModal} disabled={loading}>
+            <Plus className="w-5 h-5" />
+            Nouveau contact
+          </button>
+        }
+      />
 
       <div className="mt-6 rounded-2xl bg-base-100 p-4 shadow-sm sm:p-6">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
@@ -199,9 +190,7 @@ function ContactsPage() {
       </div>
 
       {loading && (
-        <div className="mt-6 rounded-2xl bg-base-100 p-6 shadow-sm">
-          <span className="loading loading-spinner loading-md" />
-        </div>
+        <LoadingCard />
       )}
 
       {!loading && contacts.length === 0 && (

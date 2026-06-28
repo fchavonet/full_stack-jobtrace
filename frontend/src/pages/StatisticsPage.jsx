@@ -26,6 +26,8 @@ import {
   getStatisticsSummary,
   getTrackingQualityRows,
 } from "../utils/statistics/statistics.utils";
+import LoadingCard from "../components/ui/LoadingCard";
+import PageHeader from "../components/ui/PageHeader";
 
 import ApplicationsLocationMap from "../components/statistics/ApplicationsLocationMap";
 
@@ -445,28 +447,19 @@ function StatisticsPage() {
   if (loading) {
     return (
       <section>
-        <h1 className="text-4xl font-bold">
-          Statistiques
-        </h1>
+        <PageHeader title="Statistiques" />
 
-        <div className="mt-6 rounded-2xl bg-base-100 p-6 shadow-sm">
-          <span className="loading loading-spinner loading-md" />
-        </div>
+        <LoadingCard />
       </section>
     );
   }
 
   return (
     <section>
-      <div>
-        <h1 className="text-4xl font-bold">
-          Statistiques
-        </h1>
-
-        <p className="text-base-content/70">
-          Analysez le volume, la progression et la qualité de suivi de vos candidatures.
-        </p>
-      </div>
+      <PageHeader
+        title="Statistiques"
+        description="Analysez le volume, la progression et la qualité de suivi de vos candidatures."
+      />
 
       {applications.length === 0 && (
         <EmptyStatisticsState />

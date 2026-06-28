@@ -12,6 +12,7 @@ import {
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 
+import PageHeader from "../components/ui/PageHeader";
 import { listApplications } from "../api/applications.api";
 import { getUserProfile } from "../api/profile.api";
 import { useAuth } from "../hooks/useAuth";
@@ -46,23 +47,19 @@ import {
 } from "../utils/statistics/statistics.utils";
 
 function DashboardHeader() {
+  const actions = (
+    <Link className="btn btn-primary w-full md:w-auto flex flex-row justify-center items-center gap-2 text-primary-content cursor-pointer" to="/dashboard/applications?new=1">
+      <PlusCircle className="w-5 h-5" />
+      Nouvelle candidature
+    </Link>
+  );
+
   return (
-    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-      <div>
-        <h1 className="text-4xl font-bold">
-          Tableau de bord
-        </h1>
-
-        <p className="text-base-content/70">
-          Retrouvez vos candidatures, vos prochaines échéances et vos indicateurs principaux.
-        </p>
-      </div>
-
-      <Link className="btn btn-primary text-white" to="/dashboard/applications?new=1">
-        <PlusCircle className="h-5 w-5" />
-        Nouvelle candidature
-      </Link>
-    </div>
+    <PageHeader
+      title="Tableau de bord"
+      description="Retrouvez vos candidatures, vos prochaines échéances et vos indicateurs principaux."
+      actions={actions}
+    />
   );
 }
 

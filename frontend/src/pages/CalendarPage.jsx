@@ -18,6 +18,7 @@ import {
   groupCalendarEventsByDate,
 } from "../utils/calendar/calendar.utils";
 import { getListFromResponse } from "../utils/common/apiResponse.utils";
+import PageHeader from "../components/ui/PageHeader";
 
 const AGENDA_DATE_FORMATTER = new Intl.DateTimeFormat("fr-FR", {
   weekday: "long",
@@ -140,51 +141,26 @@ function CalendarPage() {
 
   return (
     <section>
-      <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
-        <div>
-          <h1 className="text-4xl font-bold">
-            Calendrier
-          </h1>
+      <PageHeader
+        title="Calendrier"
+        description="Visualisez les dates d’envoi, de relance et d’entretien de vos candidatures."
+        actionsClassName="w-full md:w-auto flex flex-row justify-center md:justify-end items-center gap-2"
+        actions={
+          <>
+            <button className="btn btn-square btn-outline flex flex-row justify-center items-center cursor-pointer" type="button" aria-label="Mois précédent" onClick={goToPreviousMonth}>
+              <ChevronLeft className="w-5 h-5" />
+            </button>
 
-          <p className="text-base-content/70">
-            Visualisez les dates d’envoi, de relance et d’entretien de vos candidatures.
-          </p>
-        </div>
+            <button className="btn btn-primary w-full md:w-auto flex flex-row justify-center items-center gap-2 text-primary-content cursor-pointer" type="button" onClick={goToCurrentMonth}>
+              Aujourd’hui
+            </button>
 
-        <div className="flex flex-wrap items-center justify-center gap-2 xl:justify-end">
-          <button
-            className="btn btn-outline btn-sm w-12 sm:w-auto"
-            type="button"
-            aria-label="Mois précédent"
-            onClick={goToPreviousMonth}
-          >
-            <ChevronLeft className="h-4 w-4" />
-            <span className="hidden sm:inline">
-              Mois précédent
-            </span>
-          </button>
-
-          <button
-            className="btn btn-primary btn-sm text-white"
-            type="button"
-            onClick={goToCurrentMonth}
-          >
-            Aujourd’hui
-          </button>
-
-          <button
-            className="btn btn-outline btn-sm w-12 sm:w-auto"
-            type="button"
-            aria-label="Mois suivant"
-            onClick={goToNextMonth}
-          >
-            <span className="hidden sm:inline">
-              Mois suivant
-            </span>
-            <ChevronRight className="h-4 w-4" />
-          </button>
-        </div>
-      </div>
+            <button className="btn btn-square btn-outline flex flex-row justify-center items-center cursor-pointer" type="button" aria-label="Mois suivant" onClick={goToNextMonth}>
+              <ChevronRight className="w-5 h-5" />
+            </button>
+          </>
+        }
+      />
 
       <div className="mt-6 grid gap-3 sm:grid-cols-3">
         <div className="rounded-2xl border border-base-300 bg-base-100 p-4 shadow-sm">

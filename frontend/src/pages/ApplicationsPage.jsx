@@ -21,6 +21,8 @@ import {
   getResponseEntity,
 } from "../utils/common/apiResponse.utils";
 import { getProfileFromResponse } from "../utils/profile/profile.utils";
+import LoadingCard from "../components/ui/LoadingCard";
+import PageHeader from "../components/ui/PageHeader";
 
 function getDetailsModalKey(application) {
   if (application && application.id) {
@@ -261,51 +263,33 @@ function ApplicationsPage() {
 
   return (
     <section>
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-4xl font-bold">
-            Candidatures
-          </h1>
+      <PageHeader
+        title="Candidatures"
+        description="Enregistrez et suivez vos candidatures."
+        actions={
+          <>
+            <button className="btn btn-outline w-full md:w-auto flex flex-row justify-center items-center gap-2 cursor-pointer" type="button" onClick={reloadApplications} disabled={loading || refreshingApplications}>
+              {refreshingApplications && (
+                <span className="loading loading-spinner loading-sm" />
+              )}
 
-          <p className="text-base-content/70">
-            Enregistrez et suivez vos candidatures.
-          </p>
-        </div>
+              {!refreshingApplications && (
+                <RefreshCw className="w-5 h-5" />
+              )}
 
-        <div className="flex flex-col gap-2 sm:flex-row">
-          <button
-            className="btn btn-outline"
-            type="button"
-            onClick={reloadApplications}
-            disabled={loading || refreshingApplications}
-          >
-            {refreshingApplications && (
-              <span className="loading loading-spinner loading-sm" />
-            )}
+              Recharger
+            </button>
 
-            {!refreshingApplications && (
-              <RefreshCw className="h-5 w-5" />
-            )}
-
-            Recharger
-          </button>
-
-          <button
-            className="btn btn-primary text-white"
-            type="button"
-            onClick={openModal}
-            disabled={loading}
-          >
-            <Plus className="h-5 w-5" />
-            Nouvelle candidature
-          </button>
-        </div>
-      </div>
+            <button className="btn btn-primary w-full md:w-auto flex flex-row justify-center items-center gap-2 text-primary-content cursor-pointer" type="button" onClick={openModal} disabled={loading}>
+              <Plus className="w-5 h-5" />
+              Nouvelle candidature
+            </button>
+          </>
+        }
+      />
 
       {loading && (
-        <div className="mt-6 rounded-2xl bg-base-100 p-6 shadow-sm">
-          <span className="loading loading-spinner loading-md" />
-        </div>
+        <LoadingCard />
       )}
 
       {applicationFilterId && (

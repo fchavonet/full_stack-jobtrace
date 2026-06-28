@@ -28,6 +28,8 @@ import {
 import { getListFromResponse } from "../utils/common/apiResponse.utils";
 import { formatDate } from "../utils/common/format.utils";
 import { getProfileFromResponse } from "../utils/profile/profile.utils";
+import LoadingCard from "../components/ui/LoadingCard";
+import PageHeader from "../components/ui/PageHeader";
 
 function getActivityBarClassName(day) {
   let className = "w-full rounded-t-md bg-primary/40";
@@ -228,28 +230,19 @@ function AchievementsPage() {
   if (loading) {
     return (
       <section>
-        <h1 className="text-4xl font-bold">
-          Objectifs
-        </h1>
+        <PageHeader title="Objectifs" />
 
-        <div className="mt-6 rounded-2xl bg-base-100 p-6 shadow-sm">
-          <span className="loading loading-spinner loading-md" />
-        </div>
+        <LoadingCard />
       </section>
     );
   }
 
   return (
     <section>
-      <div>
-        <h1 className="text-4xl font-bold">
-          Objectifs
-        </h1>
-
-        <p className="text-base-content/70">
-          Suivez votre rythme de candidature et vos badges de progression.
-        </p>
-      </div>
+      <PageHeader
+        title="Objectifs"
+        description="Suivez votre rythme de candidature et vos badges de progression."
+      />
 
       <div className="mt-6 rounded-2xl bg-base-100 p-6 shadow-sm">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">

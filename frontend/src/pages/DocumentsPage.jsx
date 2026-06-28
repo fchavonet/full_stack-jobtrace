@@ -22,6 +22,8 @@ import {
   revokeUrl,
   validateDocumentFile,
 } from "../utils/documents/document.utils";
+import LoadingCard from "../components/ui/LoadingCard";
+import PageHeader from "../components/ui/PageHeader";
 
 function DocumentsPage() {
   const { showToast } = useToast();
@@ -313,26 +315,16 @@ function DocumentsPage() {
 
   return (
     <section className="w-full min-w-0">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-4xl font-bold">
-            Documents
-          </h1>
-
-          <p className="text-base-content/70">
-            Retrouvez vos CV, lettres de motivation et fichiers associés.
-          </p>
-        </div>
-
-        <button
-          className="btn btn-primary text-white"
-          type="button"
-          onClick={openDocumentModal}
-        >
-          <Plus className="h-5 w-5" />
-          Nouveau document
-        </button>
-      </div>
+      <PageHeader
+        title="Documents"
+        description="Retrouvez vos CV, lettres de motivation et fichiers associés."
+        actions={
+          <button className="btn btn-primary w-full md:w-auto flex flex-row justify-center items-center gap-2 text-primary-content cursor-pointer" type="button" onClick={openDocumentModal}>
+            <Plus className="w-5 h-5" />
+            Nouveau document
+          </button>
+        }
+      />
 
       <div className="mt-6 rounded-2xl bg-base-100 p-4 shadow-sm sm:p-6">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
@@ -355,9 +347,7 @@ function DocumentsPage() {
       </div>
 
       {loading && (
-        <div className="mt-6 rounded-2xl bg-base-100 p-6 shadow-sm">
-          <span className="loading loading-spinner loading-md" />
-        </div>
+        <LoadingCard />
       )}
 
       {!loading && documents.length === 0 && (

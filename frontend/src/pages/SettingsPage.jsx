@@ -20,6 +20,8 @@ import {
   getProfileInitials,
   getTextValue,
 } from "../utils/profile/profile.utils";
+import LoadingCard from "../components/ui/LoadingCard";
+import PageHeader from "../components/ui/PageHeader";
 
 const AUTH_TOKEN_STORAGE_KEY = "jobtrace_token";
 
@@ -352,28 +354,19 @@ function SettingsPage() {
   if (loading) {
     return (
       <section>
-        <h1 className="text-3xl font-bold">
-          Paramètres
-        </h1>
+        <PageHeader title="Paramètres" />
 
-        <div className="mt-6 rounded-2xl bg-base-100 p-6 shadow-sm">
-          <span className="loading loading-spinner loading-md" />
-        </div>
+        <LoadingCard />
       </section>
     );
   }
 
   return (
     <section>
-      <div>
-        <h1 className="text-4xl font-bold">
-          Paramètres
-        </h1>
-
-        <p className="text-base-content/70">
-          Gérez votre profil, vos préférences et vos données.
-        </p>
-      </div>
+      <PageHeader
+        title="Paramètres"
+        description="Gérez votre profil, vos préférences et vos données."
+      />
 
       <div className="mt-4 flex flex-col gap-6">
         {/* Profile settings */}
