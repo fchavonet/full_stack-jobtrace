@@ -37,14 +37,14 @@ function FollowUpCell({ application }) {
 
   if (!followUpDisplay) {
     return (
-      <span className="block truncate text-base-content/40">
+      <span className="block text-base-content/40 truncate">
         -
       </span>
     );
   }
 
   return (
-    <div className="flex flex-col items-center gap-1">
+    <div className="flex flex-col justify-center items-center gap-1">
       <span className="block truncate">
         {formatDate(followUpAt)}
       </span>
@@ -57,10 +57,10 @@ function FollowUpCell({ application }) {
 }
 
 function getStatusFilterButtonClassName(currentStatusFilter, statusFilterValue) {
-  let className = "btn btn-sm";
+  let className = "btn btn-sm cursor-pointer";
 
   if (currentStatusFilter === statusFilterValue) {
-    className = "btn btn-sm btn-primary text-white";
+    className = "btn btn-sm btn-primary text-primary-content cursor-pointer";
   }
 
   return className;
@@ -68,14 +68,14 @@ function getStatusFilterButtonClassName(currentStatusFilter, statusFilterValue) 
 
 function SortIcon({ sortConfig, sortKey }) {
   if (sortConfig.key !== sortKey) {
-    return <ChevronsUpDown className="h-4 w-4 text-base-content/40" />;
+    return <ChevronsUpDown className="w-4 h-4 text-base-content/40" />;
   }
 
   if (sortConfig.direction === "desc") {
-    return <ChevronDown className="h-4 w-4" />;
+    return <ChevronDown className="w-4 h-4" />;
   }
 
-  return <ChevronUp className="h-4 w-4" />;
+  return <ChevronUp className="w-4 h-4" />;
 }
 
 function SortableHeader({
@@ -87,7 +87,7 @@ function SortableHeader({
   return (
     <th className="text-center">
       <button
-        className="btn btn-ghost btn-xs mx-auto w-full justify-center gap-1 px-1 font-semibold"
+        className="btn btn-ghost btn-xs w-full mx-auto px-1 flex flex-row justify-center items-center gap-1 font-semibold cursor-pointer"
         type="button"
         onClick={function () { onSort(sortKey); }}
       >
@@ -142,8 +142,8 @@ function ApplicationsTable({
 
   if (applications.length === 0) {
     return (
-      <div className="mt-6 rounded-2xl bg-base-100 p-6 text-center shadow-sm">
-        <h2 className="text-lg font-semibold">
+      <div className="w-full min-w-0 mt-6 p-4 md:p-6 text-center rounded-2xl bg-base-100 shadow-sm">
+        <h2 className="text-lg font-semibold text-base-content">
           Aucune candidature pour le moment
         </h2>
 
@@ -155,57 +155,55 @@ function ApplicationsTable({
   }
 
   return (
-    <div className="mt-6 rounded-2xl bg-base-100 shadow-sm">
-      <div className="border-b border-base-300 p-4 sm:p-6">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-          <div>
-            <h2 className="text-lg font-semibold">
-              Candidatures enregistrées
-            </h2>
+    <div className="w-full min-w-0 mt-6 p-4 md:p-6 rounded-2xl bg-base-100 shadow-sm">
+      <div className="w-full flex flex-col md:flex-row justify-between items-start gap-4">
+        <div className="min-w-0">
+          <h2 className="text-lg font-semibold text-base-content">
+            Candidatures enregistrées
+          </h2>
 
-            <p className="text-sm text-base-content/60">
-              Ouvrez une candidature pour consulter ou modifier ses détails.
-            </p>
-          </div>
-
-          <p className="text-sm text-base-content/60">
-            {displayedApplications.length} candidature(s) affichée(s) sur {applications.length}
+          <p className="mt-1 text-sm text-base-content/60">
+            Ouvrez une candidature pour consulter ou modifier ses détails.
           </p>
         </div>
 
-        <div className="mt-5 grid gap-4">
-          <label className="input input-bordered flex w-full items-center gap-2">
-            <Search className="h-4 w-4 text-base-content/40" />
+        <p className="shrink-0 text-sm text-base-content/60">
+          {displayedApplications.length} / {applications.length}
+        </p>
+      </div>
 
-            <input
-              className="grow"
-              type="search"
-              value={searchValue}
-              onChange={handleSearchChange}
-              placeholder="Rechercher une entreprise, un poste, une ville..."
-            />
-          </label>
+      <div className="w-full mt-6 grid grid-cols-1 gap-4">
+        <label className="input input-bordered w-full flex flex-row justify-start items-center gap-2">
+          <Search className="w-4 h-4 text-base-content/40" />
 
-          <div className="flex flex-wrap gap-2">
-            {statusFilters.map(function (statusFilterOption) {
-              return (
-                <button
-                  className={getStatusFilterButtonClassName(statusFilter, statusFilterOption.value)}
-                  type="button"
-                  key={statusFilterOption.value}
-                  onClick={function () { handleStatusFilterChange(statusFilterOption.value); }}
-                >
-                  {statusFilterOption.label}
-                </button>
-              );
-            })}
-          </div>
+          <input
+            className="grow"
+            type="search"
+            value={searchValue}
+            onChange={handleSearchChange}
+            placeholder="Rechercher une entreprise, un poste, une ville..."
+          />
+        </label>
+
+        <div className="flex flex-row flex-wrap justify-start items-center gap-2">
+          {statusFilters.map(function (statusFilterOption) {
+            return (
+              <button
+                className={getStatusFilterButtonClassName(statusFilter, statusFilterOption.value)}
+                type="button"
+                key={statusFilterOption.value}
+                onClick={function () { handleStatusFilterChange(statusFilterOption.value); }}
+              >
+                {statusFilterOption.label}
+              </button>
+            );
+          })}
         </div>
       </div>
 
       {displayedApplications.length === 0 && (
-        <div className="p-6 text-center">
-          <h3 className="font-semibold">
+        <div className="w-full mt-6 p-4 text-center rounded-xl bg-base-200">
+          <h3 className="font-semibold text-base-content">
             Aucun résultat
           </h3>
 
@@ -216,7 +214,7 @@ function ApplicationsTable({
       )}
 
       {displayedApplications.length > 0 && (
-        <div className="overflow-x-auto">
+        <div className="w-full mt-6 overflow-x-auto">
           <table className="table table-fixed min-w-[1180px]">
             <colgroup>
               <col className="w-[15%]" />
@@ -295,7 +293,7 @@ function ApplicationsTable({
                   >
                     <td className="text-center align-middle">
                       <button
-                        className="link link-hover block w-full truncate font-semibold"
+                        className="link link-hover w-full block font-semibold truncate cursor-pointer"
                         type="button"
                         onClick={function () { onOpenApplication(application); }}
                       >
@@ -338,23 +336,23 @@ function ApplicationsTable({
                     </td>
 
                     <td className="text-center align-middle">
-                      <div className="flex justify-center gap-2">
+                      <div className="flex flex-row justify-center items-center gap-2">
                         <button
-                          className="btn btn-ghost btn-sm btn-square"
+                          className="btn btn-ghost btn-sm btn-square cursor-pointer"
                           type="button"
                           onClick={function () { onOpenApplication(application); }}
                           aria-label="Voir la candidature"
                         >
-                          <Eye className="h-4 w-4" />
+                          <Eye className="w-4 h-4" />
                         </button>
 
                         <button
-                          className="btn btn-ghost btn-sm btn-square text-error"
+                          className="btn btn-ghost btn-sm btn-square text-error cursor-pointer"
                           type="button"
                           onClick={function () { onDeleteApplication(application); }}
                           aria-label="Supprimer la candidature"
                         >
-                          <Trash2 className="h-4 w-4" />
+                          <Trash2 className="w-4 h-4" />
                         </button>
                       </div>
                     </td>

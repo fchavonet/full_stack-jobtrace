@@ -1,20 +1,14 @@
 import {
-  Award,
-  BriefcaseBusiness,
-  CalendarClock,
-  CheckCircle2,
   ExternalLink,
-  Flag,
-  ListTodo,
   PlusCircle,
-  Target,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 
-import PageHeader from "../components/ui/PageHeader";
 import { listApplications } from "../api/applications.api";
 import { getUserProfile } from "../api/profile.api";
+import LoadingCard from "../components/ui/LoadingCard";
+import PageHeader from "../components/ui/PageHeader";
 import { useAuth } from "../hooks/useAuth";
 import { useToast } from "../hooks/useToast";
 import {
@@ -63,27 +57,23 @@ function DashboardHeader() {
   );
 }
 
-function DashboardStatCard({ icon, label, value, helper }) {
+function DashboardStatCard({ label, value, helper }) {
   return (
-    <div className="min-w-0 rounded-2xl bg-base-100 p-5 shadow-sm">
-      <div className="flex items-start justify-between gap-4">
+    <div className="w-full min-w-0 p-4 md:p-6 rounded-2xl bg-base-100 shadow-sm">
+      <div className="w-full flex flex-row justify-between items-start gap-4">
         <div className="min-w-0">
-          <p className="text-sm text-base-content/60">
+          <h2 className="text-sm font-semibold text-base-content">
             {label}
-          </p>
+          </h2>
 
-          <p className="mt-2 text-3xl font-black">
-            {value}
-          </p>
-
-          <p className="mt-1 text-xs text-base-content/50">
+          <p className="mt-1 text-xs text-base-content/60">
             {helper}
           </p>
         </div>
 
-        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-          {icon}
-        </div>
+        <p className="shrink-0 text-3xl font-black text-base-content">
+          {value}
+        </p>
       </div>
     </div>
   );
@@ -91,17 +81,17 @@ function DashboardStatCard({ icon, label, value, helper }) {
 
 function WelcomeCard({ displayName }) {
   return (
-    <div className="min-w-0 rounded-2xl bg-base-100 p-6 shadow-sm">
-      <p className="text-sm font-medium text-primary">
+    <div className="w-full min-w-0 p-4 md:p-6 rounded-2xl bg-base-100 shadow-sm">
+      <h2 className="text-xl font-bold text-base-content">
         Bienvenue
-      </p>
-
-      <h2 className="mt-2 break-words text-3xl font-black lg:text-4xl">
-        {displayName}
       </h2>
 
-      <p className="mt-3 max-w-3xl text-sm leading-6 text-base-content/60">
+      <p className="mt-1 text-sm text-base-content/60">
         Suivez votre recherche d’emploi en un coup d’œil depuis votre espace personnel.
+      </p>
+
+      <p className="mt-6 text-3xl md:text-4xl font-black text-base-content break-words">
+        {displayName}
       </p>
     </div>
   );
@@ -109,36 +99,38 @@ function WelcomeCard({ displayName }) {
 
 function ObjectiveCompactCard({ objective }) {
   return (
-    <div className="min-w-0 rounded-2xl bg-base-100 p-6 shadow-sm">
-      <div className="flex items-start justify-between gap-4">
+    <div className="w-full min-w-0 p-4 md:p-6 rounded-2xl bg-base-100 shadow-sm">
+      <div className="w-full flex flex-row justify-between items-start gap-4">
         <div className="min-w-0">
-          <div className="flex items-center gap-2">
-            <Target className="h-6 w-6 text-primary" />
-
-            <h2 className="text-xl font-bold">
-              Objectif du jour
-            </h2>
-          </div>
-
-          <p className="mt-4 text-4xl font-black">
-            {objective.completedToday} / {objective.dailyGoal}
-          </p>
+          <h2 className="text-xl font-bold text-base-content">
+            Objectif du jour
+          </h2>
 
           <p className="mt-1 text-sm text-base-content/60">
-            {objective.remaining} candidature(s) restante(s)
+            Suivez votre rythme de candidature quotidien.
           </p>
         </div>
 
-        <Link className="btn btn-sm btn-outline" to="/dashboard/achievements">
+        <Link className="btn btn-outline btn-sm shrink-0 cursor-pointer" to="/dashboard/achievements">
           Voir
         </Link>
       </div>
 
-      <div className="mt-6 h-4 overflow-hidden rounded-full bg-base-200">
-        <div
-          className="h-full rounded-full bg-primary"
-          style={{ width: getProgressWidth(objective.completedToday, objective.dailyGoal) }}
-        />
+      <div className="w-full mt-6">
+        <p className="text-4xl font-black text-base-content">
+          {objective.completedToday} / {objective.dailyGoal}
+        </p>
+
+        <p className="mt-1 text-sm text-base-content/60">
+          {objective.remaining} candidature(s) restante(s)
+        </p>
+
+        <div className="w-full h-4 mt-4 rounded-full bg-base-200 overflow-hidden">
+          <div
+            className="h-full rounded-full bg-primary"
+            style={{ width: getProgressWidth(objective.completedToday, objective.dailyGoal) }}
+          />
+        </div>
       </div>
     </div>
   );
@@ -146,7 +138,7 @@ function ObjectiveCompactCard({ objective }) {
 
 function EmptyListMessage({ label }) {
   return (
-    <div className="rounded-2xl bg-base-200 p-4">
+    <div className="w-full min-w-0 p-4 rounded-xl bg-base-200">
       <p className="text-sm text-base-content/60">
         {label}
       </p>
@@ -159,20 +151,20 @@ function TodoEntry({ entry, dateGetter }) {
 
   return (
     <Link
-      className="flex min-w-0 items-center justify-between gap-4 rounded-2xl bg-base-200 p-4 hover:bg-base-300"
+      className="w-full min-w-0 p-4 flex flex-row justify-between items-center gap-4 rounded-xl bg-base-200 hover:bg-base-300 cursor-pointer"
       to={getApplicationDashboardLink(application)}
     >
       <div className="min-w-0">
-        <p className="truncate font-semibold">
+        <h4 className="font-semibold text-base-content truncate">
           {getApplicationCompany(application)}
-        </p>
+        </h4>
 
-        <p className="mt-1 truncate text-sm text-base-content/50">
+        <p className="mt-1 text-sm text-base-content/60 truncate">
           {getApplicationPosition(application)}
         </p>
       </div>
 
-      <span className="shrink-0 rounded-full bg-primary/10 px-3 py-1 text-sm font-bold text-primary">
+      <span className="shrink-0 px-4 py-2 text-sm font-bold text-primary rounded-full bg-primary/10">
         {formatDashboardDate(dateGetter(application))}
       </span>
     </Link>
@@ -181,12 +173,12 @@ function TodoEntry({ entry, dateGetter }) {
 
 function TodoColumn({ title, entries, emptyLabel, dateGetter }) {
   return (
-    <div className="min-w-0">
-      <h3 className="font-bold">
+    <div className="w-full min-w-0">
+      <h3 className="text-base font-bold text-base-content">
         {title}
       </h3>
 
-      <div className="mt-4 space-y-3">
+      <div className="w-full mt-4 flex flex-col justify-start items-stretch gap-2">
         {entries.length === 0 && (
           <EmptyListMessage label={emptyLabel} />
         )}
@@ -207,20 +199,16 @@ function TodoColumn({ title, entries, emptyLabel, dateGetter }) {
 
 function TodoCard({ followUps, interviews }) {
   return (
-    <div className="min-w-0 rounded-2xl bg-base-100 p-6 shadow-sm">
-      <div className="flex items-center gap-2">
-        <ListTodo className="h-6 w-6 text-primary" />
+    <div className="w-full min-w-0 p-4 md:p-6 rounded-2xl bg-base-100 shadow-sm">
+      <h2 className="text-xl font-bold text-base-content">
+        À faire
+      </h2>
 
-        <h2 className="text-xl font-bold">
-          À faire
-        </h2>
-      </div>
-
-      <p className="mt-2 text-sm text-base-content/60">
+      <p className="mt-1 text-sm text-base-content/60">
         Les prochaines actions à traiter sur vos candidatures.
       </p>
 
-      <div className="mt-6 grid gap-6 lg:grid-cols-2">
+      <div className="w-full mt-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
         <TodoColumn
           dateGetter={getApplicationFollowUpAt}
           emptyLabel="Aucune relance prévue."
@@ -244,15 +232,15 @@ function LatestApplicationRow({ application }) {
 
   return (
     <Link
-      className="flex min-w-0 items-center justify-between gap-4 rounded-2xl bg-base-200 p-4 hover:bg-base-300"
+      className="w-full min-w-0 p-4 flex flex-row justify-between items-center gap-4 rounded-xl bg-base-200 hover:bg-base-300 cursor-pointer"
       to={getApplicationDashboardLink(application)}
     >
       <div className="min-w-0">
-        <p className="truncate font-semibold">
+        <h4 className="font-semibold text-base-content truncate">
           {getApplicationTitle(application)}
-        </p>
+        </h4>
 
-        <p className="mt-1 truncate text-sm text-base-content/50">
+        <p className="mt-1 text-sm text-base-content/60 truncate">
           Envoyée le {formatDashboardDate(getApplicationSentAt(application))}
         </p>
       </div>
@@ -266,20 +254,16 @@ function LatestApplicationRow({ application }) {
 
 function LatestApplicationsCard({ applications }) {
   return (
-    <div className="min-w-0 rounded-2xl bg-base-100 p-6 shadow-sm">
-      <div className="flex items-center gap-2">
-        <CalendarClock className="h-6 w-6 text-primary" />
+    <div className="w-full min-w-0 p-4 md:p-6 rounded-2xl bg-base-100 shadow-sm">
+      <h2 className="text-xl font-bold text-base-content">
+        Dernières candidatures
+      </h2>
 
-        <h2 className="text-xl font-bold">
-          Dernières candidatures
-        </h2>
-      </div>
-
-      <p className="mt-2 text-sm text-base-content/60">
+      <p className="mt-1 text-sm text-base-content/60">
         Les cinq candidatures les plus récemment ajoutées.
       </p>
 
-      <div className="mt-6 space-y-3">
+      <div className="w-full mt-6 flex flex-col justify-start items-stretch gap-2">
         {applications.length === 0 && (
           <EmptyListMessage label="Aucune candidature récente." />
         )}
@@ -299,40 +283,36 @@ function LatestApplicationsCard({ applications }) {
 
 function JobLinksCard() {
   return (
-    <div className="rounded-2xl bg-base-100 p-6 shadow-sm">
-      <div className="flex items-center gap-2">
-        <BriefcaseBusiness className="h-6 w-6 text-primary" />
+    <div className="w-full min-w-0 p-4 md:p-6 rounded-2xl bg-base-100 shadow-sm">
+      <h2 className="text-xl font-bold text-base-content">
+        Sites emploi utiles
+      </h2>
 
-        <h2 className="text-xl font-bold">
-          Sites emploi utiles
-        </h2>
-      </div>
-
-      <p className="mt-2 text-sm text-base-content/60">
+      <p className="mt-1 text-sm text-base-content/60">
         Accès rapide aux principales plateformes de recherche d’emploi en France.
       </p>
 
-      <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6">
+      <div className="w-full mt-6 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6 gap-4">
         {JOB_SEARCH_LINKS.map(function (link) {
           return (
             <a
-              className="flex min-w-0 items-center justify-between gap-3 rounded-2xl bg-base-200 p-4 hover:bg-base-300"
+              className="w-full min-w-0 p-4 flex flex-row justify-between items-center gap-4 rounded-xl bg-base-200 hover:bg-base-300 cursor-pointer"
               href={link.url}
               key={link.key}
               rel="noreferrer"
               target="_blank"
             >
               <div className="min-w-0">
-                <p className="truncate font-bold">
+                <h3 className="font-bold text-base-content truncate">
                   {link.label}
-                </p>
+                </h3>
 
-                <p className="mt-1 truncate text-xs text-base-content/50">
+                <p className="mt-1 text-xs text-base-content/60 truncate">
                   {link.description}
                 </p>
               </div>
 
-              <ExternalLink className="h-4 w-4 shrink-0 text-primary" />
+              <ExternalLink className="w-4 h-4 shrink-0 text-primary" />
             </a>
           );
         })}
@@ -400,54 +380,48 @@ function DashboardPage() {
       <section>
         <DashboardHeader />
 
-        <div className="mt-6 rounded-2xl bg-base-100 p-6 shadow-sm">
-          <span className="loading loading-spinner loading-md" />
-        </div>
+        <LoadingCard />
       </section>
     );
   }
 
   return (
-    <section className="space-y-6">
+    <section className="w-full min-w-0 flex flex-col justify-start items-stretch gap-6">
       <DashboardHeader />
 
-      <div className="grid gap-6 xl:grid-cols-[1.6fr_0.9fr]">
+      <div className="w-full grid grid-cols-1 xl:grid-cols-[1.6fr_0.9fr] gap-6">
         <WelcomeCard displayName={displayName} />
 
         <ObjectiveCompactCard objective={objective} />
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="w-full grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
         <DashboardStatCard
           helper={summary.active + " candidature(s) active(s)"}
-          icon={<BriefcaseBusiness className="h-6 w-6" />}
           label="Total candidatures"
           value={summary.total}
         />
 
         <DashboardStatCard
           helper={summary.interviewRate + " % du total"}
-          icon={<Award className="h-6 w-6" />}
           label="Total entretiens"
           value={summary.interviews}
         />
 
         <DashboardStatCard
           helper={getPercentLabel(summary.rejected, summary.total) + " du total"}
-          icon={<Flag className="h-6 w-6" />}
           label="Total refusées"
           value={summary.rejected}
         />
 
         <DashboardStatCard
           helper={summary.successRate + " % de réussite"}
-          icon={<CheckCircle2 className="h-6 w-6" />}
           label="Total acceptées"
           value={summary.accepted}
         />
       </div>
 
-      <div className="grid gap-6 xl:grid-cols-[1.25fr_0.75fr]">
+      <div className="w-full grid grid-cols-1 xl:grid-cols-[1.25fr_0.75fr] gap-6">
         <TodoCard
           followUps={followUps}
           interviews={interviews}

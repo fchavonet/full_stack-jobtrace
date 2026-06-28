@@ -9,6 +9,8 @@ import {
 } from "../api/contacts.api";
 import ContactCard from "../components/contacts/ContactCard";
 import ContactModal from "../components/contacts/ContactModal";
+import LoadingCard from "../components/ui/LoadingCard";
+import PageHeader from "../components/ui/PageHeader";
 import { useToast } from "../hooks/useToast";
 import { getListFromResponse } from "../utils/common/apiResponse.utils";
 import {
@@ -16,8 +18,6 @@ import {
   getContactModalKey,
   getFilteredContacts,
 } from "../utils/contacts/contact.utils";
-import LoadingCard from "../components/ui/LoadingCard";
-import PageHeader from "../components/ui/PageHeader";
 
 function ContactsPage() {
   const { showToast } = useToast();
@@ -156,7 +156,7 @@ function ContactsPage() {
   }
 
   return (
-    <section>
+    <section className="w-full min-w-0 flex flex-col justify-start items-stretch gap-6">
       <PageHeader
         title="Contacts"
         description="Retrouvez les contacts liés à vos candidatures."
@@ -168,25 +168,34 @@ function ContactsPage() {
         }
       />
 
-      <div className="mt-6 rounded-2xl bg-base-100 p-4 shadow-sm sm:p-6">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-          <label className="input input-bordered flex w-full items-center gap-2 lg:max-w-xl">
-            <Search className="h-4 w-4 text-base-content/40" />
+      <div className="w-full min-w-0 p-4 md:p-6 rounded-2xl bg-base-100 shadow-sm">
+        <div className="w-full flex flex-col md:flex-row justify-between items-start gap-4">
+          <div className="min-w-0">
+            <h2 className="text-lg font-semibold text-base-content">
+              Contacts enregistrés
+            </h2>
 
-            <input
-              className="grow"
-              type="search"
-              value={searchValue}
-              onChange={handleSearchChange}
-              placeholder="Rechercher un contact, une entreprise, un email..."
-            />
-          </label>
+            <p className="mt-1 text-sm text-base-content/60">
+              Recherchez un contact, une entreprise ou une adresse email.
+            </p>
+          </div>
 
-          <p className="text-sm text-base-content/60">
-            {displayedContacts.length} contact(s) affiché(s) sur{" "}
-            {contacts.length}
+          <p className="shrink-0 text-sm text-base-content/60">
+            {displayedContacts.length} / {contacts.length}
           </p>
         </div>
+
+        <label className="input input-bordered w-full mt-6 flex flex-row justify-start items-center gap-2">
+          <Search className="w-4 h-4 text-base-content/40" />
+
+          <input
+            className="grow"
+            type="search"
+            value={searchValue}
+            onChange={handleSearchChange}
+            placeholder="Rechercher un contact, une entreprise, un email..."
+          />
+        </label>
       </div>
 
       {loading && (
@@ -194,21 +203,20 @@ function ContactsPage() {
       )}
 
       {!loading && contacts.length === 0 && (
-        <div className="mt-6 rounded-2xl bg-base-100 p-6 text-center shadow-sm">
-          <h2 className="text-lg font-semibold">
+        <div className="w-full min-w-0 p-4 md:p-6 text-center rounded-2xl bg-base-100 shadow-sm">
+          <h2 className="text-lg font-semibold text-base-content">
             Aucun contact pour le moment
           </h2>
 
           <p className="mt-1 text-sm text-base-content/60">
-            Créez votre premier contact pour garder les informations utiles à
-            portée de main.
+            Créez votre premier contact pour garder les informations utiles à portée de main.
           </p>
         </div>
       )}
 
       {!loading && contacts.length > 0 && displayedContacts.length === 0 && (
-        <div className="mt-6 rounded-2xl bg-base-100 p-6 text-center shadow-sm">
-          <h2 className="text-lg font-semibold">
+        <div className="w-full min-w-0 p-4 md:p-6 text-center rounded-2xl bg-base-100 shadow-sm">
+          <h2 className="text-lg font-semibold text-base-content">
             Aucun résultat
           </h2>
 
@@ -219,7 +227,7 @@ function ContactsPage() {
       )}
 
       {!loading && displayedContacts.length > 0 && (
-        <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        <div className="w-full grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           {displayedContacts.map(function (contact) {
             return (
               <ContactCard

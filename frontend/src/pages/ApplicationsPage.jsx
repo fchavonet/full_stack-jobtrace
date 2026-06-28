@@ -1,4 +1,4 @@
-import { CalendarDays, Plus, RefreshCw, X } from "lucide-react";
+import { Plus, RefreshCw } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 
@@ -293,29 +293,26 @@ function ApplicationsPage() {
       )}
 
       {applicationFilterId && (
-        <div className="alert mt-6 border border-base-300 bg-base-100">
-          <CalendarDays className="h-5 w-5" />
-
-          <div className="flex-1">
-            <h2 className="font-semibold">
+        <div className="w-full min-w-0 mt-6 p-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 rounded-2xl bg-base-100 shadow-sm">
+          <div className="min-w-0">
+            <h2 className="text-base font-semibold text-base-content">
               Filtre calendrier actif
             </h2>
 
-            <p className="text-sm text-base-content/70">
+            <p className="mt-1 text-sm text-base-content/60 truncate">
               {getCalendarFilterLabel()}
             </p>
           </div>
 
-          <button className="btn btn-ghost btn-sm" type="button" onClick={clearApplicationFilter}>
-            <X className="h-4 w-4" />
+          <button className="btn btn-ghost btn-sm shrink-0 cursor-pointer" type="button" onClick={clearApplicationFilter}>
             Afficher toutes
           </button>
         </div>
       )}
 
       {!loading && applicationFilterId && filteredApplications.length === 0 && (
-        <div className="mt-6 rounded-2xl bg-base-100 p-6 text-center shadow-sm">
-          <h2 className="text-lg font-semibold">
+        <div className="w-full min-w-0 mt-6 p-4 md:p-6 text-center rounded-2xl bg-base-100 shadow-sm">
+          <h2 className="text-lg font-semibold text-base-content">
             Aucune candidature trouvée
           </h2>
 
