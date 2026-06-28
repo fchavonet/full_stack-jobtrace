@@ -13,7 +13,7 @@ function PageHeader({ title, description, actions, actionsClassName = "" }) {
         </h1>
 
         {description && (
-          <p className="mt-1 text-base text-base-content/70">
+          <p className="text-base text-base-content/70">
             {description}
           </p>
         )}

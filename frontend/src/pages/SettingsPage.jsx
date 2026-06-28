@@ -1,6 +1,6 @@
 import { Eye, EyeOff } from "lucide-react";
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 
 import { deleteCurrentUser, exportCurrentUserData } from "../api/auth.api";
 import {
@@ -9,19 +9,22 @@ import {
   updateUserProfile,
 } from "../api/profile.api";
 import { updateUserSettings } from "../api/settings.api";
+
 import PasswordRequirements from "../components/auth/PasswordRequirements";
 import LegalModal from "../components/legal/LegalModal";
+import LoadingCard from "../components/ui/LoadingCard";
+import PageHeader from "../components/ui/PageHeader";
+
 import { useAuth } from "../hooks/useAuth";
 import { useTheme } from "../hooks/useTheme";
 import { useToast } from "../hooks/useToast";
+
 import {
   getNumberValue,
   getProfileFromResponse,
   getProfileInitials,
   getTextValue,
 } from "../utils/profile/profile.utils";
-import LoadingCard from "../components/ui/LoadingCard";
-import PageHeader from "../components/ui/PageHeader";
 
 const AUTH_TOKEN_STORAGE_KEY = "jobtrace_token";
 
@@ -57,6 +60,14 @@ function arePasswordsMatching(passwordForm) {
     passwordForm.newPassword === passwordForm.confirmPassword
     && passwordForm.confirmPassword.length > 0
   );
+}
+
+function getPasswordInputType(showPassword) {
+  if (showPassword) {
+    return "text";
+  }
+
+  return "password";
 }
 
 function getNewPasswordInputClassName(password) {
@@ -106,8 +117,25 @@ function downloadJsonFile(data) {
   URL.revokeObjectURL(url);
 }
 
+function getSettingsFieldRef(field, refs) {
+  if (field === "theme") {
+    return refs.themeInputRef;
+  }
+
+  if (field === "dailyGoal") {
+    return refs.dailyGoalInputRef;
+  }
+
+  if (field === "followUpDelayDays") {
+    return refs.followUpDelayInputRef;
+  }
+
+  return null;
+}
+
 function SettingsPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { logout } = useAuth();
   const { showToast } = useToast();
   const { setTheme } = useTheme();
@@ -127,6 +155,11 @@ function SettingsPage() {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [deleteConfirmation, setDeleteConfirmation] = useState("");
   const [legalModalType, setLegalModalType] = useState(null);
+
+  const preferencesSectionRef = useRef(null);
+  const themeInputRef = useRef(null);
+  const dailyGoalInputRef = useRef(null);
+  const followUpDelayInputRef = useRef(null);
 
   useEffect(function () {
     async function loadUserProfile() {
@@ -157,6 +190,39 @@ function SettingsPage() {
 
     loadUserProfile();
   }, [showToast, setTheme]);
+
+  useEffect(function () {
+    if (loading) {
+      return;
+    }
+
+    const searchParams = new URLSearchParams(location.search);
+    const section = searchParams.get("section");
+    const field = searchParams.get("field");
+
+    if (section !== "preferences") {
+      return;
+    }
+
+    if (preferencesSectionRef.current) {
+      preferencesSectionRef.current.scrollIntoView({
+        block: "start",
+        behavior: "auto",
+      });
+    }
+
+    const fieldRef = getSettingsFieldRef(field, {
+      themeInputRef,
+      dailyGoalInputRef,
+      followUpDelayInputRef,
+    });
+
+    if (fieldRef && fieldRef.current) {
+      fieldRef.current.focus({
+        preventScroll: true,
+      });
+    }
+  }, [loading, location.search]);
 
   function handleProfileChange(event) {
     const { name, value } = event.target;
@@ -369,7 +435,6 @@ function SettingsPage() {
       />
 
       <div className="mt-4 flex flex-col gap-6">
-        {/* Profile settings */}
         <form
           className="rounded-2xl bg-base-100 p-6 shadow-sm"
           onSubmit={handleProfileSubmit}
@@ -465,8 +530,8 @@ function SettingsPage() {
           </div>
         </form>
 
-        {/* Preferences settings */}
         <form
+          ref={preferencesSectionRef}
           className="w-full min-w-0 rounded-2xl bg-base-100 p-4 shadow-sm sm:p-6"
           onSubmit={handleSettingsSubmit}
         >
@@ -487,6 +552,7 @@ function SettingsPage() {
               </span>
 
               <select
+                ref={themeInputRef}
                 className="select select-bordered w-full min-w-0"
                 name="theme"
                 value={settingsForm.theme}
@@ -508,6 +574,7 @@ function SettingsPage() {
               </span>
 
               <input
+                ref={dailyGoalInputRef}
                 className="input input-bordered w-full"
                 name="dailyGoal"
                 type="number"
@@ -524,6 +591,7 @@ function SettingsPage() {
               </span>
 
               <input
+                ref={followUpDelayInputRef}
                 className="input input-bordered w-full"
                 name="followUpDelayDays"
                 type="number"
@@ -548,7 +616,6 @@ function SettingsPage() {
           </button>
         </form>
 
-        {/* Password settings */}
         <form
           className="rounded-2xl bg-base-100 p-6 shadow-sm"
           onSubmit={handlePasswordSubmit}
@@ -561,6 +628,7 @@ function SettingsPage() {
             value=""
             readOnly
           />
+
           <div>
             <h2 className="text-xl font-semibold">
               Sécurité
@@ -583,7 +651,7 @@ function SettingsPage() {
                 <input
                   className={getNewPasswordInputClassName(passwordForm.newPassword)}
                   name="newPassword"
-                  type={showNewPassword ? "text" : "password"}
+                  type={getPasswordInputType(showNewPassword)}
                   value={passwordForm.newPassword}
                   onChange={handlePasswordChange}
                   placeholder="Entrer votre nouveau mot de passe"
@@ -621,7 +689,7 @@ function SettingsPage() {
               <input
                 className={getConfirmPasswordInputClassName(passwordForm)}
                 name="confirmPassword"
-                type={showNewPassword ? "text" : "password"}
+                type={getPasswordInputType(showNewPassword)}
                 value={passwordForm.confirmPassword}
                 onChange={handlePasswordChange}
                 placeholder="Confirmer votre nouveau mot de passe"
@@ -642,7 +710,7 @@ function SettingsPage() {
               <input
                 className="input input-bordered w-full pr-10"
                 name="currentPassword"
-                type={showCurrentPassword ? "text" : "password"}
+                type={getPasswordInputType(showCurrentPassword)}
                 value={passwordForm.currentPassword}
                 onChange={handlePasswordChange}
                 placeholder="Entrer votre mot de passe actuel"
@@ -680,7 +748,6 @@ function SettingsPage() {
           </button>
         </form>
 
-        {/* Account settings */}
         <div className="rounded-2xl bg-base-100 p-6 shadow-sm">
           <div>
             <h2 className="text-xl font-semibold">

@@ -53,7 +53,7 @@ function DashboardLayout() {
   }, []);
 
   return (
-    <div className="h-screen flex  flex-col text-base-content bg-base-200 overflow-hidden">
+    <div className="h-screen flex flex-col text-base-content bg-base-200 overflow-hidden">
       <Header authenticatedLinkIcon="home" authenticatedLinkLabel="Accueil" authenticatedLinkTo="/" pageTitle="Espace candidat" />
 
       <main className="relative h-[calc(100vh-65px)] flex overflow-hidden">
@@ -66,7 +66,7 @@ function DashboardLayout() {
         </aside>
 
         <section className="h-full flex-1 overflow-y-auto">
-          <div className="w-full mx-auto p-4">
+          <div className="w-full mx-auto p-6">
             <Outlet />
           </div>
         </section>

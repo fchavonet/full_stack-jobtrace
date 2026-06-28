@@ -64,13 +64,13 @@ export function SectionCard({
         <div className="w-full flex flex-row justify-between items-start gap-4">
           <div className="min-w-0">
             {title && (
-              <h2 className="text-xl font-bold text-base-content">
+              <h2 className="text-lg font-semibold text-base-content">
                 {title}
               </h2>
             )}
 
             {description && (
-              <p className="mt-1 text-sm text-base-content/60">
+              <p className="text-sm text-base-content/60">
                 {description}
               </p>
             )}
@@ -103,18 +103,18 @@ export function MetricCard({
     <div className={getMetricCardClassName(className)}>
       <div className="w-full flex flex-row justify-between items-start gap-4">
         <div className="min-w-0">
-          <h2 className="text-sm font-semibold text-base-content">
+          <h2 className="text-sm font-semibold text-base-content truncate">
             {label}
           </h2>
 
           {helper && (
-            <p className="mt-1 text-xs text-base-content/60">
+            <p className="mt-1 text-xs text-base-content/60 truncate">
               {helper}
             </p>
           )}
         </div>
 
-        <p className="shrink-0 text-3xl font-black text-base-content">
+        <p className="shrink-0 text-2xl md:text-4xl font-black text-base-content">
           {value}
         </p>
       </div>
@@ -144,13 +144,13 @@ export function ItemCard({
         <div className="w-full min-w-0 flex flex-row justify-between items-center gap-4">
           <div className="min-w-0">
             {title && (
-              <h3 className="font-semibold text-base-content truncate">
+              <h3 className="text-sm font-semibold text-base-content truncate">
                 {title}
               </h3>
             )}
 
             {subtitle && (
-              <p className="mt-1 text-sm text-base-content/60 truncate">
+              <p className="mt-1 text-xs text-base-content/60 truncate">
                 {subtitle}
               </p>
             )}
