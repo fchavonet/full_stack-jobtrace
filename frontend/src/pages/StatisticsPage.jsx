@@ -354,11 +354,11 @@ function MonthlyActivityCard({ rows }) {
         </span>
       </div>
 
-      <div className="mt-8 flex min-h-72 flex-1 items-stretch gap-4 overflow-x-auto pb-2">
+      <div className="mt-6 grid flex-1 grid-cols-3 gap-3 sm:grid-cols-6">
         {rows.map(function (row) {
           return (
-            <div className="flex min-w-24 flex-1 flex-col justify-end gap-3" key={row.key}>
-              <div className="flex flex-1 items-end rounded-2xl bg-base-200 p-1">
+            <div className="flex min-w-0 flex-col gap-3" key={row.key}>
+              <div className="flex h-40 items-end overflow-hidden rounded-2xl bg-base-200 p-1 sm:h-52 xl:h-60">
                 <div
                   className="w-full rounded-xl bg-primary"
                   style={{ height: getBarHeight(row.count, maxCount) }}
@@ -366,11 +366,11 @@ function MonthlyActivityCard({ rows }) {
               </div>
 
               <div className="text-center">
-                <p className="text-lg font-black">
+                <p className="text-base font-black sm:text-lg">
                   {row.count}
                 </p>
 
-                <p className="text-xs text-base-content/50">
+                <p className="truncate text-xs text-base-content/50">
                   {row.label}
                 </p>
               </div>
