@@ -162,7 +162,7 @@ function TodoEntry({ entry, dateGetter }) {
 
   return (
     <Link
-      className="flex min-w-0 items-center justify-between gap-4 rounded-2xl bg-base-200 p-4 transition hover:bg-base-300"
+      className="flex min-w-0 items-center justify-between gap-4 rounded-2xl bg-base-200 p-4 hover:bg-base-300"
       to={getApplicationDashboardLink(application)}
     >
       <div className="min-w-0">
@@ -247,7 +247,7 @@ function LatestApplicationRow({ application }) {
 
   return (
     <Link
-      className="flex min-w-0 items-center justify-between gap-4 rounded-2xl bg-base-200 p-4 transition hover:bg-base-300"
+      className="flex min-w-0 items-center justify-between gap-4 rounded-2xl bg-base-200 p-4 hover:bg-base-300"
       to={getApplicationDashboardLink(application)}
     >
       <div className="min-w-0">
@@ -319,7 +319,7 @@ function JobLinksCard() {
         {JOB_SEARCH_LINKS.map(function (link) {
           return (
             <a
-              className="flex min-w-0 items-center justify-between gap-3 rounded-2xl bg-base-200 p-4 transition hover:bg-base-300"
+              className="flex min-w-0 items-center justify-between gap-3 rounded-2xl bg-base-200 p-4 hover:bg-base-300"
               href={link.url}
               key={link.key}
               rel="noreferrer"

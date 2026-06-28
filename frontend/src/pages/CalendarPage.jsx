@@ -238,7 +238,7 @@ function CalendarPage() {
               {currentMonthEvents.map(function (event) {
                 return (
                   <button
-                    className="flex w-full items-start gap-3 p-4 text-left transition hover:bg-base-200"
+                    className="flex w-full items-start gap-3 p-4 text-left hover:bg-base-200"
                     key={event.id}
                     type="button"
                     onClick={function () { openApplication(event.applicationId); }}
@@ -301,7 +301,7 @@ function CalendarPage() {
                     {dayEvents.map(function (event) {
                       return (
                         <button
-                          className={"flex w-full items-center gap-1 truncate rounded-md px-2 py-1 text-left text-xs font-medium transition " + getCalendarEventClassName(event.type)}
+                          className={"flex w-full items-center gap-1 truncate rounded-md px-2 py-1 text-left text-xs font-medium " + getCalendarEventClassName(event.type)}
                           key={event.id}
                           type="button"
                           title={getCalendarEventLabel(event.type) + " - " + event.label + " - " + event.subtitle}

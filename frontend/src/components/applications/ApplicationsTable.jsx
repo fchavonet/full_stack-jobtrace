@@ -38,7 +38,7 @@ function FollowUpCell({ application }) {
   if (!followUpDisplay) {
     return (
       <span className="block truncate text-base-content/40">
-        —
+        -
       </span>
     );
   }

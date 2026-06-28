@@ -1,12 +1,12 @@
 export function formatDate(value) {
   if (!value) {
-    return "—";
+    return "-";
   }
 
   const date = new Date(value);
 
   if (Number.isNaN(date.getTime())) {
-    return "—";
+    return "-";
   }
 
   return new Intl.DateTimeFormat("fr-FR").format(date);
@@ -14,13 +14,13 @@ export function formatDate(value) {
 
 export function formatDateTime(value) {
   if (!value) {
-    return "—";
+    return "-";
   }
 
   const date = new Date(value);
 
   if (Number.isNaN(date.getTime())) {
-    return "—";
+    return "-";
   }
 
   return new Intl.DateTimeFormat("fr-FR", {

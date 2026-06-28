@@ -942,7 +942,7 @@ function ApplicationDetailsModal({
 
   return (
     <div className={getModalClassName(isOpen)}>
-      <div className="modal-box w -full max-w-5xl max-h-none sm:max-h-[92vh] h-full sm:h-[92vh] p-0 flex  flex-col rounded-none sm:rounded-2xl bg-base-100 shadow-sm  overflow-hidden">
+      <div className="modal-box w -full max-w-5xl max-h-none sm:max-h-[92vh] h-full sm:h-[92vh] p-0 flex flex-col rounded-none sm:rounded-2xl bg-base-100 shadow-sm  overflow-hidden">
         <div className="flex min-h-0 flex-1 flex-col">
           <div className="px-4 sm:px-6 pt-4 sm:pt-6 shrink-0 bg-base-100 ">
             <div className="flex items-start justify-between gap-4">

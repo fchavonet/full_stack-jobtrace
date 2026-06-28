@@ -213,7 +213,7 @@ function ApplicationsLocationMap({ applications }) {
               {topMappedLocations.map(function (location) {
                 return (
                   <button
-                    className="flex w-full items-center justify-between gap-3 rounded-2xl bg-base-200 p-4 text-left transition hover:bg-base-300"
+                    className="flex w-full items-center justify-between gap-3 rounded-2xl bg-base-200 p-4 text-left hover:bg-base-300"
                     key={location.city}
                     type="button"
                     onClick={function () { focusLocation(location); }}

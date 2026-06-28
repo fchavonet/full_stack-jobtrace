@@ -86,7 +86,7 @@ export function buildAnnouncementUpdatePayload(form) {
 
 export function getApplicationFollowUpDateLabel(application) {
   if (application && application.interviewAt) {
-    return "—";
+    return "-";
   }
 
   return formatDate(application.followUpAt);

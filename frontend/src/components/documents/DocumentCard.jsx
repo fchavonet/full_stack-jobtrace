@@ -140,7 +140,7 @@ function PdfThumbnail({ previewUrl }) {
 function DocumentPreview({ doc, previewUrl, previewFailed, onPreviewDocument }) {
   return (
     <button
-      className="mx-auto flex h-40 w-28 items-center justify-center overflow-hidden rounded-xl border border-base-300 bg-base-100 p-0 transition hover:border-primary focus:outline-none focus:ring-2 focus:ring-primary sm:h-full sm:min-h-36 sm:w-full"
+      className="mx-auto flex h-40 w-28 items-center justify-center overflow-hidden rounded-xl border border-base-300 bg-base-100 p-0 hover:border-primary focus:outline-none focus:ring-2 focus:ring-primary sm:h-full sm:min-h-36 sm:w-full"
       type="button"
       onClick={function () {
         onPreviewDocument(doc);

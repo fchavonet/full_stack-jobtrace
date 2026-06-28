@@ -162,7 +162,7 @@ function ApplicationsPage() {
       return "Candidature introuvable.";
     }
 
-    return calendarFilteredApplication.company + " — " + calendarFilteredApplication.position;
+    return calendarFilteredApplication.company + " - " + calendarFilteredApplication.position;
   }
 
   function openModal() {

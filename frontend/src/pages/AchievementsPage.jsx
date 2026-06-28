@@ -30,14 +30,14 @@ import { formatDate } from "../utils/common/format.utils";
 import { getProfileFromResponse } from "../utils/profile/profile.utils";
 
 function getActivityBarClassName(day) {
-  let className = "w-full rounded-t-md bg-primary/40 transition-all";
+  let className = "w-full rounded-t-md bg-primary/40";
 
   if (day.reached) {
-    className = "w-full rounded-t-md bg-success transition-all";
+    className = "w-full rounded-t-md bg-success";
   }
 
   if (day.count === 0) {
-    className = "w-full rounded-t-md bg-base-300 transition-all";
+    className = "w-full rounded-t-md bg-base-300";
   }
 
   return className;
