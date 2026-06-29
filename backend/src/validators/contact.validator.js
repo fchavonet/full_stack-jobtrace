@@ -18,13 +18,29 @@ function isValidEmail(value) {
   return emailRegex.test(value);
 }
 
+function isValidUrl(value) {
+  try {
+    const url = new URL(value);
+
+    if (url.protocol === "http:" || url.protocol === "https:") {
+      return true;
+    }
+
+    return false;
+  } catch {
+    return false;
+  }
+}
+
 function buildContactData(request) {
   return {
     firstName: sanitizeOptionalString(request.body.firstName),
     lastName: sanitizeOptionalString(request.body.lastName),
+    position: sanitizeOptionalString(request.body.position),
     email: sanitizeOptionalString(request.body.email),
     phoneNumber: sanitizeOptionalString(request.body.phoneNumber),
     company: sanitizeOptionalString(request.body.company),
+    linkedinUrl: sanitizeOptionalString(request.body.linkedinUrl),
     notes: sanitizeOptionalString(request.body.notes)
   };
 }
@@ -38,6 +54,10 @@ function hasAtLeastOneContactField(contactData) {
     return true;
   }
 
+  if (contactData.position) {
+    return true;
+  }
+
   if (contactData.email) {
     return true;
   }
@@ -47,6 +67,10 @@ function hasAtLeastOneContactField(contactData) {
   }
 
   if (contactData.company) {
+    return true;
+  }
+
+  if (contactData.linkedinUrl) {
     return true;
   }
 
@@ -76,6 +100,14 @@ function validateContactPayload(request, response, next) {
     });
   }
 
+  if (contactData.linkedinUrl && !isValidUrl(contactData.linkedinUrl)) {
+    return response.status(400).json({
+      success: false,
+      message: "LinkedIn URL must be a valid URL.",
+      errors: []
+    });
+  }
+
   request.body.contactData = contactData;
 
   next();
@@ -92,6 +124,10 @@ function validateContactUpdatePayload(request, response, next) {
     contactData.lastName = sanitizeOptionalString(request.body.lastName);
   }
 
+  if (request.body.position !== undefined) {
+    contactData.position = sanitizeOptionalString(request.body.position);
+  }
+
   if (request.body.email !== undefined) {
     contactData.email = sanitizeOptionalString(request.body.email);
   }
@@ -102,6 +138,10 @@ function validateContactUpdatePayload(request, response, next) {
 
   if (request.body.company !== undefined) {
     contactData.company = sanitizeOptionalString(request.body.company);
+  }
+
+  if (request.body.linkedinUrl !== undefined) {
+    contactData.linkedinUrl = sanitizeOptionalString(request.body.linkedinUrl);
   }
 
   if (request.body.notes !== undefined) {
@@ -120,6 +160,14 @@ function validateContactUpdatePayload(request, response, next) {
     return response.status(400).json({
       success: false,
       message: "Email must be valid.",
+      errors: []
+    });
+  }
+
+  if (contactData.linkedinUrl && !isValidUrl(contactData.linkedinUrl)) {
+    return response.status(400).json({
+      success: false,
+      message: "LinkedIn URL must be a valid URL.",
       errors: []
     });
   }

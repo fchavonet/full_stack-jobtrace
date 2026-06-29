@@ -15,14 +15,18 @@ import {
 const CONTACT_PAYLOAD = {
   firstName: "Bruce",
   lastName: "Wayne",
+  position: "CEO",
   email: "bruce.wayne@wayne-enterprises.example",
   phoneNumber: "0600000000",
   company: "Wayne Enterprises",
+  linkedinUrl: "https://www.linkedin.com/in/bruce-wayne",
   notes: "Contact used for automated validation."
 };
 
 const UPDATED_CONTACT_PAYLOAD = {
-  company: "Wayne Industries"
+  position: "Chairman",
+  company: "Wayne Industries",
+  linkedinUrl: "https://www.linkedin.com/company/wayne-industries"
 };
 
 const UNKNOWN_ID = "00000000-0000-0000-0000-000000000000";
@@ -42,9 +46,11 @@ function expectContactFields(contact, expected = {}) {
   expect(contact).toMatchObject({
     firstName: CONTACT_PAYLOAD.firstName,
     lastName: CONTACT_PAYLOAD.lastName,
+    position: CONTACT_PAYLOAD.position,
     email: CONTACT_PAYLOAD.email,
     phoneNumber: CONTACT_PAYLOAD.phoneNumber,
     company: CONTACT_PAYLOAD.company,
+    linkedinUrl: CONTACT_PAYLOAD.linkedinUrl,
     notes: CONTACT_PAYLOAD.notes,
     ...expected
   });
@@ -165,6 +171,23 @@ describe("Contact routes", function () {
     });
   });
 
+  test("POST /api/contacts - Should reject invalid contact email", async function () {
+    const { token } = await createAuthenticatedTestUser();
+
+    const response = await createTestContact(token, {
+      ...CONTACT_PAYLOAD,
+      email: "invalid-email"
+    });
+
+    expect(response.status).toBe(400);
+
+    expect(response.body).toEqual({
+      success: false,
+      message: "Email must be valid.",
+      errors: []
+    });
+  });
+
   test("PATCH /api/contacts/:id - Should reject invalid contact email", async function () {
     const { token } = await createAuthenticatedTestUser();
 
@@ -187,19 +210,41 @@ describe("Contact routes", function () {
     });
   });
 
-  test("POST /api/contacts - Should reject invalid contact email", async function () {
+  test("POST /api/contacts - Should reject invalid contact LinkedIn URL", async function () {
     const { token } = await createAuthenticatedTestUser();
 
     const response = await createTestContact(token, {
       ...CONTACT_PAYLOAD,
-      email: "invalid-email"
+      linkedinUrl: "invalid-url"
     });
 
     expect(response.status).toBe(400);
 
     expect(response.body).toEqual({
       success: false,
-      message: "Email must be valid.",
+      message: "LinkedIn URL must be a valid URL.",
+      errors: []
+    });
+  });
+
+  test("PATCH /api/contacts/:id - Should reject invalid contact LinkedIn URL", async function () {
+    const { token } = await createAuthenticatedTestUser();
+
+    const createResponse = await createTestContact(token);
+    const contactId = createResponse.body.data.contact.id;
+
+    const response = await request(app)
+      .patch(`/api/contacts/${contactId}`)
+      .set("Authorization", `Bearer ${token}`)
+      .send({
+        linkedinUrl: "invalid-url"
+      });
+
+    expect(response.status).toBe(400);
+
+    expect(response.body).toEqual({
+      success: false,
+      message: "LinkedIn URL must be a valid URL.",
       errors: []
     });
   });
