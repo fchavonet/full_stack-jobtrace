@@ -66,9 +66,11 @@ model Contact {
   userId       String               @map("user_id") @db.Uuid
   firstName    String?              @map("first_name")
   lastName     String?              @map("last_name")
+  position     String?
   email        String?
   phoneNumber  String?              @map("phone_number")
   company      String?
+  linkedinUrl  String?              @map("linkedin_url")
   notes        String?
   createdAt    DateTime             @default(now()) @map("created_at")
   updatedAt    DateTime             @updatedAt @map("updated_at")
