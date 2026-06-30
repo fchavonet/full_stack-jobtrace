@@ -48,9 +48,11 @@ const defaultForm = {
 const defaultContactForm = {
   firstName: "",
   lastName: "",
+  position: "",
   email: "",
   phoneNumber: "",
   company: "",
+  linkedinUrl: "",
   notes: "",
 };
 

@@ -11,6 +11,10 @@ function getContactFieldAutocomplete(name, browserAutocomplete) {
     return "family-name";
   }
 
+  if (name === "position") {
+    return "organization-title";
+  }
+
   if (name === "email") {
     return "email";
   }
@@ -21,6 +25,10 @@ function getContactFieldAutocomplete(name, browserAutocomplete) {
 
   if (name === "company") {
     return "organization";
+  }
+
+  if (name === "linkedinUrl") {
+    return "url";
   }
 
   return "off";
@@ -85,6 +93,22 @@ export function ContactFormFields({
         />
       </label>
 
+      <label className="form-control w-full md:col-span-2">
+        <span className="label mb-1">
+          Poste
+        </span>
+
+        <input
+          className="input input-bordered w-full"
+          name="position"
+          type="text"
+          autoComplete={getContactFieldAutocomplete("position", browserAutocomplete)}
+          value={form.position}
+          onChange={onFieldChange}
+          placeholder={getFieldPlaceholder(placeholders, "position")}
+        />
+      </label>
+
       <label className="form-control w-full">
         <span className="label mb-1">
           Email
@@ -117,7 +141,7 @@ export function ContactFormFields({
         />
       </label>
 
-      <label className="form-control w-full md:col-span-2">
+      <label className="form-control w-full">
         <span className="label mb-1">
           Entreprise
         </span>
@@ -130,6 +154,22 @@ export function ContactFormFields({
           value={form.company}
           onChange={onFieldChange}
           placeholder={getFieldPlaceholder(placeholders, "company")}
+        />
+      </label>
+
+      <label className="form-control w-full">
+        <span className="label mb-1">
+          LinkedIn
+        </span>
+
+        <input
+          className="input input-bordered w-full"
+          name="linkedinUrl"
+          type="url"
+          autoComplete={getContactFieldAutocomplete("linkedinUrl", browserAutocomplete)}
+          value={form.linkedinUrl}
+          onChange={onFieldChange}
+          placeholder={getFieldPlaceholder(placeholders, "linkedinUrl")}
         />
       </label>
     </div>

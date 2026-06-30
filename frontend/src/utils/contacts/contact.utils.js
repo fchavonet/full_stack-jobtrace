@@ -50,13 +50,22 @@ export function getContactName(contact) {
 export function getContactLabel(contact, includeCompany = false) {
   let label = getContactName(contact);
   const email = getContactValue(contact, "email");
+  const position = getContactValue(contact, "position");
   const company = getContactValue(contact, "company");
 
   if (label === "Contact sans nom" && email) {
     label = email;
   }
 
-  if (includeCompany && company) {
+  if (includeCompany && position && company) {
+    label = label + " - " + position + " chez " + company;
+  }
+
+  if (includeCompany && position && !company) {
+    label = label + " - " + position;
+  }
+
+  if (includeCompany && !position && company) {
     label = label + " - " + company;
   }
 
@@ -68,9 +77,11 @@ function getContactSearchValue(contact) {
     [
       getContactValue(contact, "firstName"),
       getContactValue(contact, "lastName"),
+      getContactValue(contact, "position"),
       getContactValue(contact, "email"),
       getContactValue(contact, "phoneNumber"),
       getContactValue(contact, "company"),
+      getContactValue(contact, "linkedinUrl"),
       getContactValue(contact, "notes"),
     ].join(" "),
   );

@@ -11,18 +11,22 @@ const contactNotesMaxLength = 300;
 const emptyContactForm = {
   firstName: "",
   lastName: "",
+  position: "",
   email: "",
   phoneNumber: "",
   company: "",
+  linkedinUrl: "",
   notes: "",
 };
 
 const contactFieldPlaceholders = {
   firstName: "Ex : Bruce",
   lastName: "Ex : Wayne",
+  position: "Ex : CEO",
   email: "bruce.wayne@example.com",
   phoneNumber: "06 00 00 00 00",
   company: "Ex : Wayne Enterprises",
+  linkedinUrl: "https://www.linkedin.com/in/bruce-wayne",
 };
 
 function getModalClassName(isOpen) {
@@ -43,9 +47,11 @@ function getContactForm(contact) {
   return {
     firstName: contact.firstName || "",
     lastName: contact.lastName || "",
+    position: contact.position || "",
     email: contact.email || "",
     phoneNumber: contact.phoneNumber || "",
     company: contact.company || "",
+    linkedinUrl: contact.linkedinUrl || "",
     notes: contact.notes || "",
   };
 }
@@ -54,9 +60,11 @@ function getContactPayload(form) {
   return {
     firstName: form.firstName.trim(),
     lastName: form.lastName.trim(),
+    position: form.position.trim(),
     email: form.email.trim(),
     phoneNumber: form.phoneNumber.trim(),
     company: form.company.trim(),
+    linkedinUrl: form.linkedinUrl.trim(),
     notes: form.notes.trim(),
   };
 }
@@ -101,9 +109,9 @@ function ContactModal({
 
   return (
     <div className={getModalClassName(isOpen)}>
-      <div className="modal-box flex h-full max-h-none w-full max-w-3xl flex-col rounded-none bg-base-100 p-0 shadow-sm sm:h-auto sm:max-h-[92vh] sm:rounded-2xl">
-        <form className="flex min-h-0 flex-1 flex-col" onSubmit={handleSubmit}>
-          <div className="flex items-start justify-between gap-4 border-b border-base-300 p-4 sm:p-6">
+      <div className="modal-box w-full h-full max-h-none p-0 flex flex-col rounded-none bg-base-100 shadow-sm sm:h-auto sm:max-h-[92vh] sm:rounded-2xl sm:max-w-3xl">
+        <form className="min-h-0 flex-1 flex flex-col" onSubmit={handleSubmit}>
+          <div className="p-4 sm:p-6 flex flex-row justify-between items-start gap-4 border-b border-base-300">
             <div>
               <h2 className="text-xl font-semibold">
                 {isEditing && "Modifier le contact"}
@@ -116,12 +124,12 @@ function ContactModal({
             </div>
 
             <button
-              className="btn btn-ghost btn-sm btn-circle"
+              className="btn btn-ghost btn-sm btn-circle cursor-pointer"
               type="button"
               onClick={handleClose}
               aria-label="Fermer le formulaire"
             >
-              <X className="h-5 w-5" />
+              <X className="w-5 h-5" />
             </button>
           </div>
 
@@ -159,9 +167,9 @@ function ContactModal({
             </section>
           </div>
 
-          <div className="flex flex-col-reverse gap-3 border-t border-base-300 bg-base-100 p-4 sm:flex-row sm:justify-end sm:p-6">
+          <div className="p-4 sm:p-6 flex flex-col-reverse gap-3 border-t border-base-300 bg-base-100 sm:flex-row sm:justify-end">
             <button
-              className="btn btn-ghost"
+              className="btn btn-ghost cursor-pointer"
               type="button"
               onClick={handleClose}
               disabled={submitting}
@@ -170,7 +178,7 @@ function ContactModal({
             </button>
 
             <button
-              className="btn btn-primary text-white"
+              className="btn btn-primary text-white cursor-pointer"
               type="submit"
               disabled={submitting}
             >
