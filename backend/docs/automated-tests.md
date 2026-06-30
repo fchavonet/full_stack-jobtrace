@@ -122,6 +122,7 @@ The automated test suite covers the main backend features.
 - Contact update.
 - Contact deletion.
 - Invalid contact email rejection.
+- Invalid contact LinkedIn URL rejection.
 - Empty update payload rejection.
 - Unknown contact handling.
 - Protected contact routes without token.
@@ -176,16 +177,16 @@ The latest complete automated validation passed successfully:
 
 ```bash
 Test Files  10 passed (10)
-Tests       138 passed (138)
+Tests       140 passed (140)
 ```
 
 The latest coverage result was:
 
 ```bash
-Statements  81.67%
-Branches    72.84%
-Functions   95.23%
-Lines        81.67%
+Statements  81.65%
+Branches    73.27%
+Functions   95.26%
+Lines       81.65%
 ```
 
 ## Notes
