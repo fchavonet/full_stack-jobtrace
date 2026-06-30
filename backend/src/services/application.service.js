@@ -22,9 +22,11 @@ function sanitizeApplicationContact(applicationContact) {
     id: applicationContact.contact.id,
     firstName: applicationContact.contact.firstName,
     lastName: applicationContact.contact.lastName,
+    position: applicationContact.contact.position,
     email: applicationContact.contact.email,
     phoneNumber: applicationContact.contact.phoneNumber,
     company: applicationContact.contact.company,
+    linkedinUrl: applicationContact.contact.linkedinUrl,
     notes: applicationContact.contact.notes,
     role: applicationContact.role,
     linkedAt: applicationContact.createdAt

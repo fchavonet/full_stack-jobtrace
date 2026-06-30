@@ -7,9 +7,11 @@ function sanitizeContact(contact) {
     id: contact.id,
     firstName: contact.firstName,
     lastName: contact.lastName,
+    position: contact.position,
     email: contact.email,
     phoneNumber: contact.phoneNumber,
     company: contact.company,
+    linkedinUrl: contact.linkedinUrl,
     notes: contact.notes,
     createdAt: contact.createdAt,
     updatedAt: contact.updatedAt
@@ -54,9 +56,11 @@ async function createUserContact(userId, contactData) {
       userId,
       firstName: contactData.firstName,
       lastName: contactData.lastName,
+      position: contactData.position,
       email: contactData.email,
       phoneNumber: contactData.phoneNumber,
       company: contactData.company,
+      linkedinUrl: contactData.linkedinUrl,
       notes: contactData.notes
     }
   });
