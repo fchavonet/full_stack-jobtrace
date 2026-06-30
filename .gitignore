@@ -24,6 +24,9 @@ backend/coverage/
 dist/
 build/
 
+# Cache
+.vite/
+
 # Logs
 logs/
 *.log
