@@ -1058,13 +1058,13 @@ curl -s -X POST http://localhost:4000/api/applications \
 ```json
 {
   "success": true,
-  "message": "Application updated successfully.",
+  "message": "Application created successfully.",
   "data": {
     "application": {
       "id": "*",
       "company": "Wayne Enterprises",
       "position": "Robin",
-      "status": "interview",
+      "status": "sent",
       "contractType": "permanent",
       "location": "Gotham City",
       "salary": 50000,
@@ -1118,7 +1118,7 @@ curl -s http://localhost:4000/api/applications \
         "id": "*",
         "company": "Wayne Enterprises",
         "position": "Robin",
-        "status": "interview",
+        "status": "sent",
         "contractType": "permanent",
         "location": "Gotham City",
         "salary": 50000,
@@ -1126,7 +1126,7 @@ curl -s http://localhost:4000/api/applications \
         "notes": "Application used for manual validation.",
         "sentAt": "2026-06-21T00:00:00.000Z",
         "followUpAt": "2026-07-06T00:00:00.000Z",
-        "interviewAt": "2026-07-12T00:00:00.000Z",
+        "interviewAt": null,
         "createdAt": "*",
         "updatedAt": "*",
         "tags": [],
@@ -1164,7 +1164,7 @@ curl -s http://localhost:4000/api/applications/$APPLICATION_ID \
       "id": "*",
       "company": "Wayne Enterprises",
       "position": "Robin",
-      "status": "interview",
+      "status": "sent",
       "contractType": "permanent",
       "location": "Gotham City",
       "salary": 50000,
@@ -1172,7 +1172,7 @@ curl -s http://localhost:4000/api/applications/$APPLICATION_ID \
       "notes": "Application used for manual validation.",
       "sentAt": "2026-06-21T00:00:00.000Z",
       "followUpAt": "2026-07-06T00:00:00.000Z",
-      "interviewAt": "2026-07-12T00:00:00.000Z",
+      "interviewAt": null,
       "createdAt": "*",
       "updatedAt": "*",
       "tags": [],
@@ -1612,9 +1612,11 @@ curl -s -X POST http://localhost:4000/api/contacts \
   -d '{
     "firstName": "Bruce",
     "lastName": "Wayne",
+    "position": "CEO",
     "email": "bruce.wayne@wayne-enterprises.example",
     "phoneNumber": "0600000000",
     "company": "Wayne Enterprises",
+    "linkedinUrl": "https://www.linkedin.com/in/bruce-wayne",
     "notes": "Contact used for manual validation."
   }' | jq
 ```
@@ -1630,9 +1632,11 @@ curl -s -X POST http://localhost:4000/api/contacts \
       "id": "*",
       "firstName": "Bruce",
       "lastName": "Wayne",
+      "position": "CEO",
       "email": "bruce.wayne@wayne-enterprises.example",
       "phoneNumber": "0600000000",
       "company": "Wayne Enterprises",
+      "linkedinUrl": "https://www.linkedin.com/in/bruce-wayne",
       "notes": "Contact used for manual validation.",
       "createdAt": "*",
       "updatedAt": "*"
@@ -1676,9 +1680,11 @@ curl -s http://localhost:4000/api/contacts \
         "id": "*",
         "firstName": "Bruce",
         "lastName": "Wayne",
+        "position": "CEO",
         "email": "bruce.wayne@wayne-enterprises.example",
         "phoneNumber": "0600000000",
         "company": "Wayne Enterprises",
+        "linkedinUrl": "https://www.linkedin.com/in/bruce-wayne",
         "notes": "Contact used for manual validation.",
         "createdAt": "*",
         "updatedAt": "*"
@@ -1714,9 +1720,11 @@ curl -s http://localhost:4000/api/contacts/$CONTACT_ID \
       "id": "*",
       "firstName": "Bruce",
       "lastName": "Wayne",
+      "position": "CEO",
       "email": "bruce.wayne@wayne-enterprises.example",
       "phoneNumber": "0600000000",
       "company": "Wayne Enterprises",
+      "linkedinUrl": "https://www.linkedin.com/in/bruce-wayne",
       "notes": "Contact used for manual validation.",
       "createdAt": "*",
       "updatedAt": "*"
@@ -1740,7 +1748,9 @@ curl -s -X PATCH http://localhost:4000/api/contacts/$CONTACT_ID \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $TOKEN" \
   -d '{
-    "company": "Wayne Industries"
+    "position": "Chairman",
+    "company": "Wayne Industries",
+    "linkedinUrl": "https://www.linkedin.com/company/wayne-industries"
   }' | jq
 ```
 
@@ -1755,9 +1765,11 @@ curl -s -X PATCH http://localhost:4000/api/contacts/$CONTACT_ID \
       "id": "*",
       "firstName": "Bruce",
       "lastName": "Wayne",
+      "position": "Chairman",
       "email": "bruce.wayne@wayne-enterprises.example",
       "phoneNumber": "0600000000",
       "company": "Wayne Industries",
+      "linkedinUrl": "https://www.linkedin.com/company/wayne-industries",
       "notes": "Contact used for manual validation.",
       "createdAt": "*",
       "updatedAt": "*"
@@ -1791,6 +1803,35 @@ curl -s -X PATCH http://localhost:4000/api/contacts/$CONTACT_ID \
 {
   "success": false,
   "message": "Email must be valid.",
+  "errors": []
+}
+```
+
+Status:
+
+### PATCH `/api/contacts/:id` with invalid LinkedIn URL
+
+#### Goal
+
+Verify that invalid contact LinkedIn URL values are rejected.
+
+#### Command to run
+
+```bash
+curl -s -X PATCH http://localhost:4000/api/contacts/$CONTACT_ID \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TOKEN" \
+  -d '{
+    "linkedinUrl": "invalid-url"
+  }' | jq
+```
+
+#### Expected result
+
+```json
+{
+  "success": false,
+  "message": "LinkedIn URL must be a valid URL.",
   "errors": []
 }
 ```
@@ -1851,9 +1892,11 @@ curl -s -X POST http://localhost:4000/api/applications/$APPLICATION_ID/contacts 
           "id": "*",
           "firstName": "Bruce",
           "lastName": "Wayne",
+          "position": "Chairman",
           "email": "bruce.wayne@wayne-enterprises.example",
           "phoneNumber": "0600000000",
           "company": "Wayne Industries",
+          "linkedinUrl": "https://www.linkedin.com/company/wayne-industries",
           "notes": "Contact used for manual validation.",
           "role": "Mentor",
           "linkedAt": "*"
@@ -2194,9 +2237,11 @@ curl -s -X POST http://localhost:4000/api/applications/$APPLICATION_ID/documents
           "id": "*",
           "firstName": "Bruce",
           "lastName": "Wayne",
+          "position": "Chairman",
           "email": "bruce.wayne@wayne-enterprises.example",
           "phoneNumber": "0600000000",
           "company": "Wayne Industries",
+          "linkedinUrl": "https://www.linkedin.com/company/wayne-industries",
           "notes": "Contact used for manual validation.",
           "role": "Mentor",
           "linkedAt": "*"
@@ -2363,9 +2408,11 @@ curl -s -X DELETE http://localhost:4000/api/applications/$APPLICATION_ID/tags/$T
           "id": "*",
           "firstName": "Bruce",
           "lastName": "Wayne",
+          "position": "Chairman",
           "email": "bruce.wayne@wayne-enterprises.example",
           "phoneNumber": "0600000000",
           "company": "Wayne Industries",
+          "linkedinUrl": "https://www.linkedin.com/company/wayne-industries",
           "notes": "Contact used for manual validation.",
           "role": "Mentor",
           "linkedAt": "*"
@@ -2889,9 +2936,11 @@ curl -s -X DELETE http://localhost:4000/api/contacts/$CONTACT_ID \
       "id": "*",
       "firstName": "Bruce",
       "lastName": "Wayne",
+      "position": "Chairman",
       "email": "bruce.wayne@wayne-enterprises.example",
       "phoneNumber": "0600000000",
       "company": "Wayne Industries",
+      "linkedinUrl": "https://www.linkedin.com/company/wayne-industries",
       "notes": "Contact used for manual validation.",
       "createdAt": "*",
       "updatedAt": "*"
@@ -3085,6 +3134,7 @@ The following backend features have been manually validated:
 
 - Contacts CRUD.
 - Contact validation errors.
+- Contact professional details.
 - Contact and application linking.
 
 <br>
