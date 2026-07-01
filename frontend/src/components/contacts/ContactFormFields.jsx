@@ -11,6 +11,10 @@ function getContactFieldAutocomplete(name, browserAutocomplete) {
     return "family-name";
   }
 
+  if (name === "company") {
+    return "organization";
+  }
+
   if (name === "position") {
     return "organization-title";
   }
@@ -21,10 +25,6 @@ function getContactFieldAutocomplete(name, browserAutocomplete) {
 
   if (name === "phoneNumber") {
     return "tel";
-  }
-
-  if (name === "company") {
-    return "organization";
   }
 
   if (name === "linkedinUrl") {
@@ -93,7 +93,23 @@ export function ContactFormFields({
         />
       </label>
 
-      <label className="form-control w-full md:col-span-2">
+      <label className="form-control w-full">
+        <span className="label mb-1">
+          Entreprise
+        </span>
+
+        <input
+          className="input input-bordered w-full"
+          name="company"
+          type="text"
+          autoComplete={getContactFieldAutocomplete("company", browserAutocomplete)}
+          value={form.company}
+          onChange={onFieldChange}
+          placeholder={getFieldPlaceholder(placeholders, "company")}
+        />
+      </label>
+
+      <label className="form-control w-full">
         <span className="label mb-1">
           Poste
         </span>
@@ -141,23 +157,7 @@ export function ContactFormFields({
         />
       </label>
 
-      <label className="form-control w-full">
-        <span className="label mb-1">
-          Entreprise
-        </span>
-
-        <input
-          className="input input-bordered w-full"
-          name="company"
-          type="text"
-          autoComplete={getContactFieldAutocomplete("company", browserAutocomplete)}
-          value={form.company}
-          onChange={onFieldChange}
-          placeholder={getFieldPlaceholder(placeholders, "company")}
-        />
-      </label>
-
-      <label className="form-control w-full">
+      <label className="form-control w-full md:col-span-2">
         <span className="label mb-1">
           LinkedIn
         </span>

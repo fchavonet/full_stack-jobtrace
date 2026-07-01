@@ -1,4 +1,4 @@
-import { Plus, Search } from "lucide-react";
+import { CirclePlus } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
 import {
@@ -7,17 +7,31 @@ import {
   listContacts,
   updateContact,
 } from "../api/contacts.api";
+
 import ContactCard from "../components/contacts/ContactCard";
 import ContactModal from "../components/contacts/ContactModal";
 import LoadingCard from "../components/ui/LoadingCard";
 import PageHeader from "../components/ui/PageHeader";
+import Search from "../components/ui/Search";
+import { SectionCard } from "../components/ui/Cards";
+
 import { useToast } from "../hooks/useToast";
+
 import { getListFromResponse } from "../utils/common/apiResponse.utils";
-import {
-  getContactFromResponse,
-  getContactModalKey,
-  getFilteredContacts,
-} from "../utils/contacts/contact.utils";
+import { getContactFromResponse, getContactModalKey, getFilteredContacts, } from "../utils/contacts/contact.utils";
+
+function ContactsEmptyCard({ title, description }) {
+  return (
+    <SectionCard
+      className="text-center"
+      contentClassName="hidden"
+      title={title}
+      description={description}
+    >
+      <div />
+    </SectionCard>
+  );
+}
 
 function ContactsPage() {
   const { showToast } = useToast();
@@ -161,69 +175,42 @@ function ContactsPage() {
         title="Contacts"
         description="Retrouvez les contacts liés à vos candidatures."
         actions={
-          <button className="btn btn-primary w-full md:w-auto flex flex-row justify-center items-center gap-2 text-primary-content cursor-pointer" type="button" onClick={openCreateModal} disabled={loading}>
-            <Plus className="w-5 h-5" />
+          <button
+            className="btn btn-primary w-full md:w-auto flex flex-row justify-center items-center gap-2 text-primary-content cursor-pointer"
+            type="button"
+            onClick={openCreateModal}
+          >
+            <CirclePlus className="w-5 h-5" />
             Nouveau contact
           </button>
         }
       />
 
-      <div className="w-full min-w-0 p-4 md:p-6 rounded-2xl bg-base-100 shadow-sm">
-        <div className="w-full flex flex-col md:flex-row justify-between items-start gap-4">
-          <div className="min-w-0">
-            <h2 className="text-lg font-semibold text-base-content">
-              Contacts enregistrés
-            </h2>
-
-            <p className="mt-1 text-sm text-base-content/60">
-              Recherchez un contact, une entreprise ou une adresse email.
-            </p>
-          </div>
-
-          <p className="shrink-0 text-sm text-base-content/60">
-            {displayedContacts.length} / {contacts.length}
-          </p>
-        </div>
-
-        <label className="input input-bordered w-full mt-6 flex flex-row justify-start items-center gap-2">
-          <Search className="w-4 h-4 text-base-content/40" />
-
-          <input
-            className="grow"
-            type="search"
-            value={searchValue}
-            onChange={handleSearchChange}
-            placeholder="Rechercher un contact, une entreprise, un email..."
-          />
-        </label>
-      </div>
+      <Search
+        title="Contacts enregistrés"
+        description="Recherchez un contact, une entreprise, un poste ou une adresse email."
+        resultLabel={displayedContacts.length + " / " + contacts.length}
+        value={searchValue}
+        onChange={handleSearchChange}
+        placeholder="Rechercher un contact, une entreprise, un poste, un email..."
+      />
 
       {loading && (
         <LoadingCard />
       )}
 
       {!loading && contacts.length === 0 && (
-        <div className="w-full min-w-0 p-4 md:p-6 text-center rounded-2xl bg-base-100 shadow-sm">
-          <h2 className="text-lg font-semibold text-base-content">
-            Aucun contact pour le moment
-          </h2>
-
-          <p className="mt-1 text-sm text-base-content/60">
-            Créez votre premier contact pour garder les informations utiles à portée de main.
-          </p>
-        </div>
+        <ContactsEmptyCard
+          title="Aucun contact pour le moment"
+          description="Créez votre premier contact pour garder les informations utiles à portée de main."
+        />
       )}
 
       {!loading && contacts.length > 0 && displayedContacts.length === 0 && (
-        <div className="w-full min-w-0 p-4 md:p-6 text-center rounded-2xl bg-base-100 shadow-sm">
-          <h2 className="text-lg font-semibold text-base-content">
-            Aucun résultat
-          </h2>
-
-          <p className="mt-1 text-sm text-base-content/60">
-            Modifiez votre recherche pour afficher des contacts.
-          </p>
-        </div>
+        <ContactsEmptyCard
+          title="Aucun résultat"
+          description="Modifiez votre recherche pour afficher des contacts."
+        />
       )}
 
       {!loading && displayedContacts.length > 0 && (
