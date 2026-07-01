@@ -8,6 +8,30 @@ function getSectionCardClassName(className) {
   return finalClassName;
 }
 
+function getSectionCardHeaderClassName(centered) {
+  if (centered) {
+    return "w-full flex flex-col justify-center items-center gap-1 text-center";
+  }
+
+  return "w-full flex flex-row justify-between items-start gap-4";
+}
+
+function getSectionCardTitleBlockClassName(centered) {
+  if (centered) {
+    return "w-full min-w-0";
+  }
+
+  return "w-full min-w-0 flex-1";
+}
+
+function getSectionCardRightElementClassName(centered) {
+  if (centered) {
+    return "shrink-0 mt-2";
+  }
+
+  return "shrink-0";
+}
+
 function getSectionCardContentClassName(hasHeader, className) {
   let finalClassName = "w-full";
 
@@ -54,6 +78,7 @@ export function SectionCard({
   children,
   className = "",
   contentClassName = "",
+  centered = false,
   ...props
 }) {
   const hasHeader = Boolean(title || description || rightElement);
@@ -61,23 +86,23 @@ export function SectionCard({
   return (
     <Component className={getSectionCardClassName(className)} {...props}>
       {hasHeader && (
-        <div className="w-full flex flex-row justify-between items-start gap-4">
-          <div className="min-w-0">
+        <div className={getSectionCardHeaderClassName(centered)}>
+          <div className={getSectionCardTitleBlockClassName(centered)}>
             {title && (
-              <h2 className="text-lg font-semibold text-base-content">
-                {title}
-              </h2>
+              <h2 className="text-lg font-semibold text-base-content truncate">
+  {title}
+</h2>
             )}
 
             {description && (
-              <p className="text-sm text-base-content/60">
-                {description}
-              </p>
+<p className="text-sm text-base-content/60 truncate">
+  {description}
+</p>
             )}
           </div>
 
           {rightElement && (
-            <div className="shrink-0">
+            <div className={getSectionCardRightElementClassName(centered)}>
               {rightElement}
             </div>
           )}
@@ -142,7 +167,7 @@ export function ItemCard({
 
       {!children && (
         <div className="w-full min-w-0 flex flex-row justify-between items-center gap-4">
-          <div className="min-w-0">
+          <div className="w-full min-w-0 flex-1">
             {title && (
               <h3 className="text-sm font-semibold text-base-content truncate">
                 {title}

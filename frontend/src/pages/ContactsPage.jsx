@@ -24,6 +24,7 @@ function ContactsEmptyCard({ title, description }) {
   return (
     <SectionCard
       className="text-center"
+      centered={true}
       contentClassName="hidden"
       title={title}
       description={description}
@@ -202,7 +203,7 @@ function ContactsPage() {
       {!loading && contacts.length === 0 && (
         <ContactsEmptyCard
           title="Aucun contact pour le moment"
-          description="Créez votre premier contact pour garder les informations utiles à portée de main."
+          description="Ajoutez votre premier contact."
         />
       )}
 

@@ -1,4 +1,4 @@
-import { Plus, Search } from "lucide-react";
+import { CirclePlus } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import {
@@ -8,12 +8,17 @@ import {
   listDocuments,
   uploadDocument,
 } from "../api/documents.api";
+
 import DocumentCard from "../components/documents/DocumentCard";
 import DocumentModal from "../components/documents/DocumentModal";
 import DocumentPreviewModal from "../components/documents/DocumentPreviewModal";
 import LoadingCard from "../components/ui/LoadingCard";
 import PageHeader from "../components/ui/PageHeader";
+import Search from "../components/ui/Search";
+import { SectionCard } from "../components/ui/Cards";
+
 import { useToast } from "../hooks/useToast";
+
 import { getListFromResponse } from "../utils/common/apiResponse.utils";
 import {
   canPreviewDocument,
@@ -24,6 +29,20 @@ import {
   revokeUrl,
   validateDocumentFile,
 } from "../utils/documents/document.utils";
+
+function DocumentsEmptyCard({ title, description }) {
+  return (
+    <SectionCard
+      className="text-center"
+      centered={true}
+      contentClassName="hidden"
+      title={title}
+      description={description}
+    >
+      <div />
+    </SectionCard>
+  );
+}
 
 function DocumentsPage() {
   const { showToast } = useToast();
@@ -317,71 +336,44 @@ function DocumentsPage() {
     <section className="w-full min-w-0 flex flex-col justify-start items-stretch gap-6">
       <PageHeader
         title="Documents"
-        description="Retrouvez vos CV, lettres de motivation et fichiers associés."
+        description="Retrouvez vos CV, lettres de motivation et fichiers liés à vos candidatures."
         actions={
-          <button className="btn btn-primary w-full md:w-auto flex flex-row justify-center items-center gap-2 text-primary-content cursor-pointer" type="button" onClick={openDocumentModal}>
-            <Plus className="w-5 h-5" />
+          <button
+            className="btn btn-primary w-full md:w-auto flex flex-row justify-center items-center gap-2 text-primary-content cursor-pointer"
+            type="button"
+            onClick={openDocumentModal}
+          >
+            <CirclePlus className="w-5 h-5" />
             Nouveau document
           </button>
         }
       />
 
-      <div className="w-full min-w-0 p-4 md:p-6 rounded-2xl bg-base-100 shadow-sm">
-        <div className="w-full flex flex-col md:flex-row justify-between items-start gap-4">
-          <div className="min-w-0">
-            <h2 className="text-lg font-semibold text-base-content">
-              Documents enregistrés
-            </h2>
-
-            <p className="mt-1 text-sm text-base-content/60">
-              Recherchez un CV, une lettre ou un fichier associé à vos candidatures.
-            </p>
-          </div>
-
-          <p className="shrink-0 text-sm text-base-content/60">
-            {displayedDocuments.length} / {documents.length}
-          </p>
-        </div>
-
-        <label className="input input-bordered w-full mt-6 flex flex-row justify-start items-center gap-2">
-          <Search className="w-4 h-4 text-base-content/40" />
-
-          <input
-            className="grow"
-            type="search"
-            value={searchValue}
-            onChange={handleSearchChange}
-            placeholder="Rechercher un document..."
-          />
-        </label>
-      </div>
+      <Search
+        title="Documents enregistrés"
+        description="Recherchez un CV, une lettre de motivation ou un fichier associé à vos candidatures."
+        resultLabel={displayedDocuments.length + " / " + documents.length}
+        value={searchValue}
+        onChange={handleSearchChange}
+        placeholder="Rechercher un document..."
+      />
 
       {loading && (
         <LoadingCard />
       )}
 
       {!loading && documents.length === 0 && (
-        <div className="w-full min-w-0 p-4 md:p-6 text-center rounded-2xl bg-base-100 shadow-sm">
-          <h2 className="text-lg font-semibold text-base-content">
-            Aucun document pour le moment
-          </h2>
-
-          <p className="mt-1 text-sm text-base-content/60">
-            Ajoutez votre premier document.
-          </p>
-        </div>
+        <DocumentsEmptyCard
+          title="Aucun document pour le moment"
+          description="Ajoutez votre premier document."
+        />
       )}
 
       {!loading && documents.length > 0 && displayedDocuments.length === 0 && (
-        <div className="w-full min-w-0 p-4 md:p-6 text-center rounded-2xl bg-base-100 shadow-sm">
-          <h2 className="text-lg font-semibold text-base-content">
-            Aucun résultat
-          </h2>
-
-          <p className="mt-1 text-sm text-base-content/60">
-            Modifiez votre recherche pour afficher des documents.
-          </p>
-        </div>
+        <DocumentsEmptyCard
+          title="Aucun résultat"
+          description="Modifiez votre recherche pour afficher des documents."
+        />
       )}
 
       {!loading && displayedDocuments.length > 0 && (

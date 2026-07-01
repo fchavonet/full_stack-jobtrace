@@ -95,11 +95,11 @@ function ContactInfoRow({
 }) {
   return (
     <div className="w-full min-w-0 flex flex-row justify-start items-center gap-2">
-      <Icon className="w-4 h-4 shrink-0 text-base-content/40" />
+      <Icon className="w-4 h-4 shrink-0 text-primary" />
 
       {href && external && (
         <a
-          className="min-w-0 text-sm text-primary hover:underline truncate cursor-pointer"
+          className="min-w-0 text-sm text-base-content/70 hover:underline truncate cursor-pointer"
           href={href}
           target="_blank"
           rel="noreferrer"
@@ -110,7 +110,7 @@ function ContactInfoRow({
 
       {href && !external && (
         <a
-          className="min-w-0 text-sm text-primary hover:underline truncate cursor-pointer"
+          className="min-w-0 text-sm text-base-content/70 hover:underline truncate cursor-pointer"
           href={href}
         >
           {value}
@@ -128,7 +128,7 @@ function ContactInfoRow({
 
 function ContactInformationsBlock({ contact }) {
   return (
-    <ItemCard className="shrink-0">
+    <ItemCard>
       <h3 className="text-sm font-semibold text-base-content">
         Informations
       </h3>
@@ -164,7 +164,7 @@ function ContactNotesBlock({ notes }) {
   const notesPreview = getContactNotesPreview(notes);
 
   return (
-    <ItemCard className="flex-1 min-h-36 overflow-y-auto">
+    <ItemCard className="min-h-36">
       <h3 className="text-sm font-semibold text-base-content">
         Notes
       </h3>
@@ -220,8 +220,8 @@ function ContactCard({
   return (
     <SectionCard
       as="article"
-      className="h-full min-h-80 flex flex-col justify-start items-stretch"
-      contentClassName="flex flex-col flex-1 justify-start items-stretch gap-4"
+      className="h-full min-h-80"
+      contentClassName="flex flex-col justify-start items-stretch gap-4"
       title={getContactName(contact)}
       description={getContactSubtitle(contact)}
       rightElement={
