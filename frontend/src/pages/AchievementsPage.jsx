@@ -1,9 +1,26 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
+import {
+  Award,
+  Bell,
+  Briefcase,
+  CalendarCheck,
+  CalendarDays,
+  FileText,
+  Goal,
+  Link as LinkIcon,
+  LockKeyhole,
+  Tag,
+  Target,
+  Trophy,
+  User,
+} from "lucide-react";
 
 import { listAchievements } from "../api/achievements.api";
 import { listApplications } from "../api/applications.api";
 import { getUserProfile } from "../api/profile.api";
+import Badge from "../components/ui/Badge";
+import { ItemCard, MetricCard, SectionCard } from "../components/ui/Cards";
 import LoadingCard from "../components/ui/LoadingCard";
 import PageHeader from "../components/ui/PageHeader";
 import { useToast } from "../hooks/useToast";
@@ -16,21 +33,20 @@ import {
   getObjectiveProgressLabel,
   getReachedDaysCount,
   getSafeDailyGoal,
-  normalizeAchievements,
 } from "../utils/achievements/objective.utils";
 import { getListFromResponse } from "../utils/common/apiResponse.utils";
 import { formatDate } from "../utils/common/format.utils";
 import { getProfileFromResponse } from "../utils/profile/profile.utils";
 
 function getActivityBarClassName(day) {
-  let className = "w-full rounded-t-md bg-primary/40";
+  let className = "w-full rounded-t-lg bg-primary/40";
 
   if (day.reached) {
-    className = "w-full rounded-t-md bg-success";
+    className = "w-full rounded-t-lg bg-success";
   }
 
   if (day.count === 0) {
-    className = "w-full rounded-t-md bg-base-300";
+    className = "w-full rounded-t-lg bg-base-300";
   }
 
   return className;
@@ -44,14 +60,182 @@ function getActivityBarHeight(day) {
   return Math.max(day.progress, 12) + "%";
 }
 
-function getAchievementCardClassName(achievement) {
-  let className = "w-full min-w-0 p-4 rounded-xl bg-base-200";
-
-  if (!achievement.unlocked) {
-    className = className + " opacity-70";
+function getAchievementId(achievement) {
+  if (achievement.id) {
+    return achievement.id;
   }
 
-  return className;
+  if (achievement.slug) {
+    return achievement.slug;
+  }
+
+  if (achievement.key) {
+    return achievement.key;
+  }
+
+  return achievement.name;
+}
+
+function getAchievementSlug(achievement) {
+  if (achievement.slug) {
+    return achievement.slug;
+  }
+
+  if (achievement.key) {
+    return achievement.key;
+  }
+
+  return "";
+}
+
+function getAchievementName(achievement) {
+  if (achievement.name) {
+    return achievement.name;
+  }
+
+  if (achievement.title) {
+    return achievement.title;
+  }
+
+  return "Badge";
+}
+
+function getAchievementDescription(achievement) {
+  if (achievement.description) {
+    return achievement.description;
+  }
+
+  return "Badge lié à votre activité.";
+}
+
+function getAchievementUnlocked(achievement) {
+  if (achievement.unlocked === true) {
+    return true;
+  }
+
+  if (achievement.isUnlocked === true) {
+    return true;
+  }
+
+  if (achievement.unlockedAt) {
+    return true;
+  }
+
+  if (achievement.unlocked_at) {
+    return true;
+  }
+
+  return false;
+}
+
+function getAchievementUnlockedAt(achievement) {
+  if (achievement.unlockedAt) {
+    return achievement.unlockedAt;
+  }
+
+  if (achievement.unlocked_at) {
+    return achievement.unlocked_at;
+  }
+
+  return "";
+}
+
+function getAchievementIconKey(achievement) {
+  if (achievement.icon) {
+    return achievement.icon;
+  }
+
+  const slug = getAchievementSlug(achievement);
+
+  if (slug === "first-application") {
+    return "briefcase";
+  }
+
+  if (slug === "first-follow-up") {
+    return "bell";
+  }
+
+  if (slug === "first-tag") {
+    return "tag";
+  }
+
+  if (slug === "first-contact") {
+    return "user";
+  }
+
+  if (slug === "first-document") {
+    return "file";
+  }
+
+  if (slug === "first-interview") {
+    return "calendar-check";
+  }
+
+  if (slug === "first-daily-goal") {
+    return "goal";
+  }
+
+  if (slug === "first-monthly-goal") {
+    return "calendar";
+  }
+
+  if (slug === "ten-applications") {
+    return "target";
+  }
+
+  if (slug === "fifty-applications") {
+    return "trophy";
+  }
+
+  return "award";
+}
+
+function getAchievementIconElement(icon) {
+  if (icon === "briefcase") {
+    return <Briefcase className="w-6 h-6" />;
+  }
+
+  if (icon === "bell") {
+    return <Bell className="w-6 h-6" />;
+  }
+
+  if (icon === "tag") {
+    return <Tag className="w-6 h-6" />;
+  }
+
+  if (icon === "user") {
+    return <User className="w-6 h-6" />;
+  }
+
+  if (icon === "file") {
+    return <FileText className="w-6 h-6" />;
+  }
+
+  if (icon === "link") {
+    return <LinkIcon className="w-6 h-6" />;
+  }
+
+  if (icon === "calendar-check") {
+    return <CalendarCheck className="w-6 h-6" />;
+  }
+
+  if (icon === "goal") {
+    return <Goal className="w-6 h-6" />;
+  }
+
+  if (icon === "calendar") {
+    return <CalendarDays className="w-6 h-6" />;
+  }
+
+  if (icon === "target") {
+    return <Target className="w-6 h-6" />;
+  }
+
+  if (icon === "trophy") {
+    return <Trophy className="w-6 h-6" />;
+  }
+
+  return <Award className="w-6 h-6" />;
 }
 
 function getAchievementStatusLabel(achievement) {
@@ -62,61 +246,94 @@ function getAchievementStatusLabel(achievement) {
   return "À débloquer";
 }
 
-function getAchievementStatusClassName(achievement) {
+function getAchievementStatusColor(achievement) {
   if (achievement.unlocked) {
-    return "badge badge-success text-success-content";
+    return "success";
   }
 
-  return "badge badge-ghost";
+  return "warning";
 }
 
-function SummaryCard({ label, value, helper }) {
-  return (
-    <div className="w-full min-w-0 p-4 md:p-6 rounded-2xl bg-base-100 shadow-sm">
-      <div className="w-full flex flex-row justify-between items-start gap-4">
-        <div className="min-w-0">
-          <h2 className="text-sm font-semibold text-base-content">
-            {label}
-          </h2>
+function getAchievementStatusIcon(achievement) {
+  if (achievement.unlocked) {
+    return Award;
+  }
 
-          <p className="mt-1 text-xs text-base-content/60">
-            {helper}
-          </p>
-        </div>
-
-        <p className="shrink-0 text-2xl font-black text-base-content">
-          {value}
-        </p>
-      </div>
-    </div>
-  );
+  return LockKeyhole;
 }
 
-function AchievementCard({ achievement }) {
+function getAchievementDateLabel(achievement) {
+  if (achievement.unlockedAt) {
+    return "Débloqué le " + formatDate(achievement.unlockedAt);
+  }
+
+  return "Continuez votre suivi pour le débloquer.";
+}
+
+function getDisplayedAchievements(achievements) {
+  if (!Array.isArray(achievements)) {
+    return [];
+  }
+
+  return achievements.map(function (achievement) {
+    const unlockedAt = getAchievementUnlockedAt(achievement);
+
+    return {
+      id: getAchievementId(achievement),
+      slug: getAchievementSlug(achievement),
+      name: getAchievementName(achievement),
+      description: getAchievementDescription(achievement),
+      icon: getAchievementIconKey(achievement),
+      unlocked: getAchievementUnlocked(achievement),
+      unlockedAt,
+    };
+  });
+}
+
+function DailyObjectiveContent({
+  todayApplicationsCount,
+  dailyGoal,
+  todayProgress,
+}) {
   return (
-    <div className={getAchievementCardClassName(achievement)}>
-      <div className="w-full flex flex-row justify-between items-start gap-4">
-        <div className="min-w-0">
-          <h3 className="font-bold text-base-content">
-            {achievement.name}
-          </h3>
+    <ItemCard>
+      <div className="w-full min-w-0 flex flex-col justify-start items-stretch gap-6">
+        <div className="w-full min-w-0 flex flex-col md:flex-row justify-between items-stretch gap-6">
+          <div className="min-w-0 pt-1 flex-1 self-stretch flex flex-row justify-start items-center">
+            <div className="flex flex-row justify-center items-center gap-2">
+              <Goal className="w-6 h-6 shrink-0 text-primary" />
 
-          <p className="mt-1 text-sm text-base-content/60">
-            {achievement.description}
-          </p>
+              <p className="min-w-0 text-sm text-base-content/60">
+                L’objectif quotidien se règle dans les{" "}
+                <Link
+                  className="link link-primary cursor-pointer"
+                  to="/dashboard/settings?section=preferences&field=dailyGoal"
+                >
+                  paramètres
+                </Link>
+                .
+              </p>
+            </div>
+          </div>
 
-          {achievement.unlockedAt && (
-            <p className="mt-4 text-xs text-base-content/50">
-              Débloqué le {formatDate(achievement.unlockedAt)}
+          <div className="w-full md:w-96 shrink-0 self-stretch flex flex-col justify-center items-start md:items-end text-start md:text-right">
+            <p className="text-5xl font-black text-primary">
+              {todayProgress}%
             </p>
-          )}
+
+            <p className="mt-2 text-sm text-base-content/60 md:whitespace-nowrap">
+              {getObjectiveProgressLabel(todayApplicationsCount, dailyGoal)}
+            </p>
+          </div>
         </div>
 
-        <span className={getAchievementStatusClassName(achievement)}>
-          {getAchievementStatusLabel(achievement)}
-        </span>
+        <progress
+          className="progress progress-primary w-full h-4"
+          value={todayProgress}
+          max="100"
+        />
       </div>
-    </div>
+    </ItemCard>
   );
 }
 
@@ -126,102 +343,101 @@ function DailyObjectiveCard({
   todayProgress,
 }) {
   return (
-    <div className="w-full min-w-0 p-4 md:p-6 rounded-2xl bg-base-100 shadow-sm">
-      <div className="w-full flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div className="min-w-0">
-          <h2 className="text-xl font-bold text-base-content">
-            Objectif du jour
-          </h2>
-
-          <p className="mt-1 text-sm text-base-content/60">
-            {todayApplicationsCount} candidature(s) créée(s) sur {dailyGoal} attendue(s).
-          </p>
-
-          <p className="mt-4 text-sm text-base-content/60">
-            L’objectif quotidien se règle dans les{" "}
-            <Link className="link link-primary cursor-pointer" to="/dashboard/settings">
-              paramètres
-            </Link>
-            .
-          </p>
-        </div>
-
-        <div className="w-full md:w-auto text-left md:text-right">
-          <p className="text-5xl font-black text-primary">
-            {todayProgress}%
-          </p>
-
-          <p className="mt-1 text-sm text-base-content/60">
-            {getObjectiveProgressLabel(todayApplicationsCount, dailyGoal)}
-          </p>
-        </div>
-      </div>
-
-      <progress
-        className="progress progress-primary w-full h-4 mt-6"
-        value={todayProgress}
-        max="100"
+    <SectionCard
+      title="Objectif du jour"
+      description={todayApplicationsCount + " candidature(s) créée(s) sur " + dailyGoal + " attendue(s)."}
+    >
+      <DailyObjectiveContent
+        dailyGoal={dailyGoal}
+        todayApplicationsCount={todayApplicationsCount}
+        todayProgress={todayProgress}
       />
-    </div>
+    </SectionCard>
   );
 }
 
 function ActivityCard({ activity }) {
   return (
-    <div className="w-full min-w-0 p-4 md:p-6 rounded-2xl bg-base-100 shadow-sm">
-      <h2 className="text-xl font-bold text-base-content">
-        Activité des 30 derniers jours
-      </h2>
+    <SectionCard
+      title="Activité des 30 derniers jours"
+      description="Chaque barre représente les candidatures créées sur une journée."
+    >
+      <div className="w-full overflow-x-auto">
+        <div className="w-max min-w-full md:w-full h-44 pb-2 grid grid-cols-[repeat(30,2rem)] md:grid-cols-[repeat(30,minmax(0,1fr))] gap-2">
+          {activity.map(function (day) {
+            return (
+              <div
+                className="h-full min-w-0 flex flex-col justify-end items-center gap-2"
+                key={day.date}
+                title={formatDate(day.date) + " - " + day.count + " candidature(s)"}
+              >
+                <div className="w-full h-full flex flex-row justify-center items-end rounded-t-lg bg-base-200">
+                  <div
+                    className={getActivityBarClassName(day)}
+                    style={{ height: getActivityBarHeight(day) }}
+                  />
+                </div>
 
-      <p className="mt-1 text-sm text-base-content/60">
-        Chaque barre représente les candidatures créées sur une journée.
-      </p>
-
-      <div className="w-full h-44 mt-6 pb-2 flex flex-row justify-start items-end gap-1 overflow-x-auto">
-        {activity.map(function (day) {
-          return (
-            <div
-              className="h-full min-w-8 flex flex-col justify-end items-center gap-2"
-              key={day.date}
-              title={formatDate(day.date) + " - " + day.count + " candidature(s)"}
-            >
-              <div className="w-full h-full flex flex-row justify-center items-end rounded-t-md bg-base-200">
-                <div
-                  className={getActivityBarClassName(day)}
-                  style={{ height: getActivityBarHeight(day) }}
-                />
+                <span className="text-xs text-base-content/50 whitespace-nowrap">
+                  {day.day}
+                </span>
               </div>
-
-              <span className="text-xs text-base-content/50">
-                {day.day}
-              </span>
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
       </div>
-    </div>
+    </SectionCard>
+  );
+}
+
+function AchievementCard({ achievement }) {
+  return (
+    <ItemCard>
+      <div className="w-full min-w-0 flex flex-col sm:flex-row justify-between items-start gap-4">
+        <div className="min-w-0 flex-1 flex flex-row justify-start items-start gap-4">
+          <div className="w-12 h-12 shrink-0 flex flex-row justify-center items-center rounded-xl bg-base-100 text-primary">
+            {getAchievementIconElement(achievement.icon)}
+          </div>
+
+          <div className="min-w-0 flex-1">
+            <h3 className="font-bold text-base-content">
+              {achievement.name}
+            </h3>
+
+            <p className="mt-1 text-sm text-base-content/60">
+              {achievement.description}
+            </p>
+
+            <p className="mt-4 text-xs text-base-content/50">
+              {getAchievementDateLabel(achievement)}
+            </p>
+          </div>
+        </div>
+
+        <Badge
+          color={getAchievementStatusColor(achievement)}
+          icon={getAchievementStatusIcon(achievement)}
+          label={getAchievementStatusLabel(achievement)}
+        />
+      </div>
+    </ItemCard>
   );
 }
 
 function AchievementsCard({ achievements }) {
   return (
-    <div className="w-full min-w-0 p-4 md:p-6 rounded-2xl bg-base-100 shadow-sm">
-      <h2 className="text-xl font-bold text-base-content">
-        Badges de progression
-      </h2>
-
-      <p className="mt-1 text-sm text-base-content/60">
-        Les badges indiquent les étapes importantes atteintes dans votre suivi de candidatures.
-      </p>
-
-      <div className="w-full mt-6 grid grid-cols-1 lg:grid-cols-2 gap-4">
+    <SectionCard
+      title="Badges de progression"
+      description="Les badges indiquent les étapes importantes atteintes dans votre suivi de candidatures."
+    >
+      <div className="w-full grid grid-cols-1 lg:grid-cols-2 gap-4">
         {achievements.map(function (achievement) {
           return (
             <AchievementCard achievement={achievement} key={achievement.id} />
           );
         })}
       </div>
-    </div>
+    </SectionCard>
   );
 }
 
@@ -288,17 +504,16 @@ function AchievementsPage() {
   }, [activity]);
 
   const displayedAchievements = useMemo(function () {
-    return normalizeAchievements(
-      achievements,
-      applications.length,
-      reachedDaysCount,
-    );
-  }, [achievements, applications.length, reachedDaysCount]);
+    return getDisplayedAchievements(achievements);
+  }, [achievements]);
 
   if (loading) {
     return (
-      <section>
-        <PageHeader title="Objectifs" />
+      <section className="w-full min-w-0 flex flex-col justify-start items-stretch gap-6">
+        <PageHeader
+          title="Objectifs"
+          description="Suivez votre rythme de candidature et vos badges de progression."
+        />
 
         <LoadingCard />
       </section>
@@ -319,19 +534,19 @@ function AchievementsPage() {
       />
 
       <div className="w-full grid grid-cols-1 md:grid-cols-3 gap-4">
-        <SummaryCard
+        <MetricCard
           label="Objectif atteint"
-          value={reachedDaysCount + " jours"}
-          helper="Sur les 30 derniers jours."
+          value={reachedDaysCount}
+          helper="Jour(s) réussis sur les 30 derniers jours."
         />
 
-        <SummaryCard
+        <MetricCard
           label="Candidatures sur 30 jours"
           value={monthlyApplicationsCount}
           helper="Total des créations récentes."
         />
 
-        <SummaryCard
+        <MetricCard
           label="Meilleur jour"
           value={bestDayCount}
           helper="Meilleur volume quotidien récent."
