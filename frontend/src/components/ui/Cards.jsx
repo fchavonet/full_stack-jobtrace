@@ -24,12 +24,18 @@ function getSectionCardTitleBlockClassName(centered) {
   return "w-full min-w-0 flex-1";
 }
 
-function getSectionCardRightElementClassName(centered) {
+function getSectionCardRightElementClassName(centered, className) {
+  let finalClassName = "shrink-0";
+
   if (centered) {
-    return "shrink-0 mt-2";
+    finalClassName = finalClassName + " mt-2";
   }
 
-  return "shrink-0";
+  if (className) {
+    finalClassName = finalClassName + " " + className;
+  }
+
+  return finalClassName;
 }
 
 function getSectionCardContentClassName(hasHeader, className) {
@@ -78,6 +84,7 @@ export function SectionCard({
   children,
   className = "",
   contentClassName = "",
+  rightElementClassName = "",
   centered = false,
   ...props
 }) {
@@ -102,7 +109,7 @@ export function SectionCard({
           </div>
 
           {rightElement && (
-            <div className={getSectionCardRightElementClassName(centered)}>
+            <div className={getSectionCardRightElementClassName(centered, rightElementClassName)}>
               {rightElement}
             </div>
           )}

@@ -1,8 +1,16 @@
-import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import {
+  BellRing,
+  CalendarCheck,
+  ChevronLeft,
+  ChevronRight,
+  Send,
+} from "lucide-react";
 
 import { listApplications } from "../api/applications.api";
+import Badge from "../components/ui/Badge";
+import { ItemCard, SectionCard } from "../components/ui/Cards";
 import PageHeader from "../components/ui/PageHeader";
 import { useToast } from "../hooks/useToast";
 import {
@@ -11,7 +19,6 @@ import {
   buildCalendarEvents,
   CALENDAR_WEEK_DAYS,
   formatCalendarMonth,
-  getCalendarEventClassName,
   getCalendarEventLabel,
   getCalendarEventSortValue,
   getIsoDate,
@@ -53,7 +60,7 @@ function getMonthKey(date) {
 
 function getEventDotClassName(type) {
   if (type === "sent") {
-    return "w-3 h-3 shrink-0 rounded-full bg-info";
+    return "w-3 h-3 shrink-0 rounded-full bg-primary";
   }
 
   if (type === "follow_up") {
@@ -61,10 +68,42 @@ function getEventDotClassName(type) {
   }
 
   if (type === "interview") {
-    return "w-3 h-3 shrink-0 rounded-full bg-primary";
+    return "w-3 h-3 shrink-0 rounded-full bg-success";
   }
 
   return "w-3 h-3 shrink-0 rounded-full bg-base-300";
+}
+
+function getCalendarEventBadgeColor(type) {
+  if (type === "sent") {
+    return "primary";
+  }
+
+  if (type === "follow_up") {
+    return "warning";
+  }
+
+  if (type === "interview") {
+    return "success";
+  }
+
+  return "base";
+}
+
+function getCalendarEventBadgeIcon(type) {
+  if (type === "sent") {
+    return Send;
+  }
+
+  if (type === "follow_up") {
+    return BellRing;
+  }
+
+  if (type === "interview") {
+    return CalendarCheck;
+  }
+
+  return null;
 }
 
 function formatAgendaDate(dateValue) {
@@ -74,21 +113,194 @@ function formatAgendaDate(dateValue) {
   return label.charAt(0).toUpperCase() + label.slice(1);
 }
 
-function CalendarLegendCard({ label, helper, type }) {
+function CalendarLegendItem({ label, type }) {
   return (
-    <div className="w-full min-w-0 p-4 flex flex-row justify-between items-start gap-4 rounded-2xl bg-base-100 shadow-sm">
-      <div className="min-w-0">
-        <h2 className="text-sm font-semibold text-base-content">
-          {label}
-        </h2>
+    <div className="flex flex-row justify-start items-center gap-2">
+      <span className={getEventDotClassName(type)} />
 
-        <p className="mt-1 text-xs text-base-content/60">
-          {helper}
+      <span className="text-xs font-medium text-base-content/60 whitespace-nowrap">
+        {label}
+      </span>
+    </div>
+  );
+}
+
+function CalendarHeaderRightElement({ loading }) {
+  return (
+    <div className="hidden sm:flex flex-col sm:flex-row flex-wrap justify-center items-end sm:items-center gap-x-4 gap-y-2">
+      {loading && (
+        <span className="loading loading-spinner loading-sm shrink-0" />
+      )}
+
+      <CalendarLegendItem
+        label="Envoi"
+        type="sent"
+      />
+
+      <CalendarLegendItem
+        label="Relance"
+        type="follow_up"
+      />
+
+      <CalendarLegendItem
+        label="Entretien"
+        type="interview"
+      />
+    </div>
+  );
+}
+
+function CalendarEmptyAgenda() {
+  return (
+    <ItemCard className="text-center">
+      <h3 className="font-semibold text-base-content">
+        Aucun événement ce mois-ci
+      </h3>
+
+      <p className="mt-1 text-sm text-base-content/60">
+        Les dates d’envoi, de relance et d’entretien apparaîtront ici.
+      </p>
+    </ItemCard>
+  );
+}
+
+function CalendarMobileEventCard({ event, onOpenApplication }) {
+  return (
+    <ItemCard
+      as="button"
+      className="flex flex-row justify-between items-center gap-4 text-left"
+      interactive={true}
+      type="button"
+      onClick={function () {
+        onOpenApplication(event.applicationId);
+      }}
+    >
+      <div className="min-w-0 flex-1">
+        <p className="text-sm font-semibold text-base-content/60">
+          {formatAgendaDate(event.date)}
+        </p>
+
+        <h3 className="mt-1 font-bold text-base-content truncate">
+          {event.label}
+        </h3>
+
+        <p className="mt-1 text-sm text-base-content/60 truncate">
+          {event.subtitle}
         </p>
       </div>
 
-      <span className={getEventDotClassName(type)} />
+      <Badge
+        color={getCalendarEventBadgeColor(event.type)}
+        icon={getCalendarEventBadgeIcon(event.type)}
+        label={getCalendarEventLabel(event.type)}
+      />
+    </ItemCard>
+  );
+}
+
+function CalendarMobileAgenda({
+  currentMonthEvents,
+  loading,
+  onOpenApplication,
+}) {
+  return (
+    <div className="md:hidden">
+      {currentMonthEvents.length === 0 && !loading && (
+        <CalendarEmptyAgenda />
+      )}
+
+      {currentMonthEvents.length > 0 && (
+        <div className="w-full flex flex-col justify-start items-stretch gap-2">
+          {currentMonthEvents.map(function (event) {
+            return (
+              <CalendarMobileEventCard
+                event={event}
+                key={event.id}
+                onOpenApplication={onOpenApplication}
+              />
+            );
+          })}
+        </div>
+      )}
     </div>
+  );
+}
+
+function CalendarDesktopEventBadge({ event, onOpenApplication }) {
+  return (
+    <Badge
+      className="w-full justify-start text-left"
+      color={getCalendarEventBadgeColor(event.type)}
+      icon={getCalendarEventBadgeIcon(event.type)}
+      label={getCalendarEventLabel(event.type) + " " + event.label}
+      title={getCalendarEventLabel(event.type) + " - " + event.label + " - " + event.subtitle}
+      onClick={function () {
+        onOpenApplication(event.applicationId);
+      }}
+    />
+  );
+}
+
+function CalendarDesktopGrid({
+  calendarDays,
+  currentMonth,
+  eventsByDate,
+  todayIso,
+  onOpenApplication,
+}) {
+  return (
+    <div className="hidden md:block overflow-hidden rounded-xl border border-base-300">
+      <div className="grid grid-cols-7 text-xs font-bold uppercase text-base-content/70 bg-base-200">
+        {CALENDAR_WEEK_DAYS.map(function (day) {
+          return (
+            <div className="px-2 py-3 text-center" key={day}>
+              {day}
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="grid grid-cols-7">
+        {calendarDays.map(function (day) {
+          const dayIso = getIsoDate(day);
+          const dayEvents = eventsByDate[dayIso] || [];
+          const isCurrentMonth = day.getMonth() === currentMonth.getMonth();
+          const isToday = dayIso === todayIso;
+
+          return (
+            <div className={getCalendarDayClassName(isCurrentMonth)} key={dayIso}>
+              <div className="mb-2 flex flex-row justify-center items-center">
+                <span className={getDayNumberClassName(isToday)}>
+                  {day.getDate()}
+                </span>
+              </div>
+
+              <div className="w-full flex flex-col justify-start items-stretch gap-1">
+                {dayEvents.map(function (event) {
+                  return (
+                    <CalendarDesktopEventBadge
+                      event={event}
+                      key={event.id}
+                      onOpenApplication={onOpenApplication}
+                    />
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function CalendarInfoCard() {
+  return (
+    <SectionCard>
+      <p className="text-sm text-base-content/60">
+        Un clic sur un événement ouvre la table des candidatures avec uniquement la candidature concernée.
+      </p>
+    </SectionCard>
   );
 }
 
@@ -139,7 +351,8 @@ function CalendarPage() {
           return firstEvent.date.localeCompare(secondEvent.date);
         }
 
-        return getCalendarEventSortValue(firstEvent.type) - getCalendarEventSortValue(secondEvent.type);
+        return getCalendarEventSortValue(firstEvent.type)
+          - getCalendarEventSortValue(secondEvent.type);
       });
   }, [events, currentMonth]);
 
@@ -166,167 +379,62 @@ function CalendarPage() {
       <PageHeader
         title="Calendrier"
         description="Visualisez les dates d’envoi, de relance et d’entretien de vos candidatures."
-        actionsClassName="w-full md:w-auto flex flex-row justify-center md:justify-end items-center gap-2"
+        actionsClassName="w-full md:w-auto grid grid-cols-[auto_minmax(0,1fr)_auto] md:flex md:flex-row justify-center md:justify-end items-center gap-2"
         actions={
           <>
-            <button className="btn btn-square btn-outline flex flex-row justify-center items-center cursor-pointer" type="button" aria-label="Mois précédent" onClick={goToPreviousMonth}>
+            <button
+              className="btn btn-square btn-outline shrink-0 flex flex-row justify-center items-center cursor-pointer"
+              type="button"
+              aria-label="Mois précédent"
+              onClick={goToPreviousMonth}
+            >
               <ChevronLeft className="w-5 h-5" />
             </button>
 
-            <button className="btn btn-primary w-full md:w-auto flex flex-row justify-center items-center gap-2 text-primary-content cursor-pointer" type="button" onClick={goToCurrentMonth}>
+            <button
+              className="btn btn-primary w-full md:w-auto min-w-0 flex flex-row justify-center items-center gap-2 text-primary-content cursor-pointer"
+              type="button"
+              onClick={goToCurrentMonth}
+            >
               Aujourd’hui
             </button>
 
-            <button className="btn btn-square btn-outline flex flex-row justify-center items-center cursor-pointer" type="button" aria-label="Mois suivant" onClick={goToNextMonth}>
+            <button
+              className="btn btn-square btn-outline shrink-0 flex flex-row justify-center items-center cursor-pointer"
+              type="button"
+              aria-label="Mois suivant"
+              onClick={goToNextMonth}
+            >
               <ChevronRight className="w-5 h-5" />
             </button>
           </>
         }
       />
 
-      <div className="w-full grid grid-cols-1 md:grid-cols-3 gap-4">
-        <CalendarLegendCard
-          helper="Date d’envoi enregistrée."
-          label="Candidature envoyée"
-          type="sent"
+      <SectionCard
+        title={formatCalendarMonth(currentMonth)}
+        description={currentMonthEvents.length + " événement(s) ce mois-ci."}
+        rightElementClassName="self-center"
+        rightElement={
+          <CalendarHeaderRightElement loading={loading} />
+        }
+      >
+        <CalendarMobileAgenda
+          currentMonthEvents={currentMonthEvents}
+          loading={loading}
+          onOpenApplication={openApplication}
         />
 
-        <CalendarLegendCard
-          helper="Date de relance prévue."
-          label="Relance prévue"
-          type="follow_up"
+        <CalendarDesktopGrid
+          calendarDays={calendarDays}
+          currentMonth={currentMonth}
+          eventsByDate={eventsByDate}
+          todayIso={todayIso}
+          onOpenApplication={openApplication}
         />
+      </SectionCard>
 
-        <CalendarLegendCard
-          helper="Date d’entretien prévue."
-          label="Entretien prévu"
-          type="interview"
-        />
-      </div>
-
-      <div className="w-full min-w-0 p-4 md:p-6 rounded-2xl bg-base-100 shadow-sm">
-        <div className="w-full flex flex-row justify-between items-start gap-4">
-          <div className="min-w-0">
-            <h2 className="text-xl font-bold text-base-content">
-              {formatCalendarMonth(currentMonth)}
-            </h2>
-
-            <p className="mt-1 text-sm text-base-content/60">
-              {currentMonthEvents.length} événement(s) ce mois-ci.
-            </p>
-          </div>
-
-          {loading && (
-            <span className="loading loading-spinner loading-sm shrink-0" />
-          )}
-        </div>
-
-        <div className="mt-6 md:hidden">
-          {currentMonthEvents.length === 0 && !loading && (
-            <div className="w-full p-4 text-center rounded-xl bg-base-200">
-              <h3 className="font-semibold text-base-content">
-                Aucun événement ce mois-ci
-              </h3>
-
-              <p className="mt-1 text-sm text-base-content/60">
-                Les dates d’envoi, de relance et d’entretien apparaîtront ici.
-              </p>
-            </div>
-          )}
-
-          {currentMonthEvents.length > 0 && (
-            <div className="w-full flex flex-col justify-start items-stretch gap-2">
-              {currentMonthEvents.map(function (event) {
-                return (
-                  <button
-                    className="w-full min-w-0 p-4 flex flex-row justify-between items-center gap-4 text-left rounded-xl bg-base-200 hover:bg-base-300 cursor-pointer"
-                    key={event.id}
-                    type="button"
-                    onClick={function () { openApplication(event.applicationId); }}
-                  >
-                    <div className="min-w-0">
-                      <p className="text-sm font-semibold text-base-content/60">
-                        {formatAgendaDate(event.date)}
-                      </p>
-
-                      <h3 className="mt-1 font-bold text-base-content truncate">
-                        {event.label}
-                      </h3>
-
-                      <p className="mt-1 text-sm text-base-content/60 truncate">
-                        {event.subtitle}
-                      </p>
-                    </div>
-
-                    <span className={getCalendarEventClassName(event.type)}>
-                      {getCalendarEventLabel(event.type)}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-          )}
-        </div>
-
-        <div className="hidden md:block mt-6 overflow-hidden rounded-xl border border-base-300">
-          <div className="grid grid-cols-7 text-xs font-bold uppercase text-base-content/70 bg-base-200">
-            {CALENDAR_WEEK_DAYS.map(function (day) {
-              return (
-                <div className="px-2 py-3 text-center" key={day}>
-                  {day}
-                </div>
-              );
-            })}
-          </div>
-
-          <div className="grid grid-cols-7">
-            {calendarDays.map(function (day) {
-              const dayIso = getIsoDate(day);
-              const dayEvents = eventsByDate[dayIso] || [];
-              const isCurrentMonth = day.getMonth() === currentMonth.getMonth();
-              const isToday = dayIso === todayIso;
-
-              return (
-                <div className={getCalendarDayClassName(isCurrentMonth)} key={dayIso}>
-                  <div className="mb-2 flex flex-row justify-center items-center">
-                    <span className={getDayNumberClassName(isToday)}>
-                      {day.getDate()}
-                    </span>
-                  </div>
-
-                  <div className="w-full flex flex-col justify-start items-stretch gap-1">
-                    {dayEvents.map(function (event) {
-                      return (
-                        <button
-                          className={"w-full min-w-0 px-2 py-1 flex flex-row justify-start items-center gap-1 text-left text-xs font-medium rounded-md truncate cursor-pointer " + getCalendarEventClassName(event.type)}
-                          key={event.id}
-                          type="button"
-                          title={getCalendarEventLabel(event.type) + " - " + event.label + " - " + event.subtitle}
-                          onClick={function () { openApplication(event.applicationId); }}
-                        >
-                          <span className="shrink-0">
-                            {getCalendarEventLabel(event.type)}
-                          </span>
-
-                          <span className="truncate opacity-90">
-                            {event.label}
-                          </span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </div>
-
-      <div className="w-full min-w-0 p-4 rounded-2xl bg-base-100 shadow-sm">
-        <p className="text-sm text-base-content/60">
-          Un clic sur un événement ouvre la table des candidatures avec uniquement la candidature concernée.
-        </p>
-      </div>
+      <CalendarInfoCard />
     </section>
   );
 }

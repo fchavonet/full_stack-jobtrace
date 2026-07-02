@@ -1,7 +1,7 @@
 import { X } from "lucide-react";
 
 function getModalBoxClassName(maxWidthClassName, className) {
-  let finalClassName = "modal-box w-full h-full max-h-none p-0 flex flex-col rounded-none bg-base-100 shadow-sm lg:h-auto lg:max-h-[92vh] lg:rounded-2xl";
+  let finalClassName = "modal-box w-full max-w-5xl h-full max-h-none p-0 flex flex-col rounded-none bg-base-100 shadow-sm lg:h-auto lg:max-h-[92vh] lg:rounded-2xl";
 
   if (maxWidthClassName) {
     finalClassName = finalClassName + " lg:" + maxWidthClassName;
