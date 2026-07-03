@@ -4,6 +4,7 @@ import L from "leaflet";
 import { RotateCcw } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef } from "react";
 
+import { ItemCard, SectionCard } from "../ui/Cards";
 import { buildApplicationsLocationMapData } from "../../utils/statistics/locationMap.utils";
 
 const FRANCE_CENTER = [46.2276, 2.2137];
@@ -30,13 +31,19 @@ function getPopupHtml(location) {
   let extraText = "";
 
   if (location.applications.length > 5) {
-    extraText = "<p style=\"margin-top: 8px; font-size: 12px; opacity: 0.7;\">+" + String(location.applications.length - 5) + " autre(s) candidature(s)</p>";
+    extraText = "<p style=\"margin-top: 8px; font-size: 12px; opacity: 0.7;\">+"
+      + String(location.applications.length - 5)
+      + " autre(s) candidature(s)</p>";
   }
 
   return [
     "<div style=\"max-width: 260px;\">",
-    "<p style=\"font-weight: 700; margin: 0;\">" + escapeHtml(location.city) + "</p>",
-    "<p style=\"font-size: 13px; margin: 4px 0 0;\">" + String(location.count) + " candidature(s)</p>",
+    "<p style=\"font-weight: 700; margin: 0;\">",
+    escapeHtml(location.city),
+    "</p>",
+    "<p style=\"font-size: 12px; margin: 4px 0 0;\">",
+    String(location.count),
+    " candidature(s)</p>",
     "<ul style=\"margin: 8px 0 0; padding-left: 18px; font-size: 12px;\">",
     applicationItems,
     "</ul>",
@@ -48,7 +55,9 @@ function getPopupHtml(location) {
 function createLocationIcon(location) {
   return L.divIcon({
     className: "",
-    html: "<div class=\"w-10 h-10 flex flex-row justify-center items-center text-sm font-black text-primary-content rounded-full bg-primary shadow-sm\">" + String(location.count) + "</div>",
+    html: "<div class=\"w-10 h-10 flex flex-row justify-center items-center text-sm font-black text-primary-content rounded-full bg-primary shadow-sm\">"
+      + String(location.count)
+      + "</div>",
     iconSize: [40, 40],
     iconAnchor: [20, 20],
     popupAnchor: [0, -20],
@@ -67,7 +76,7 @@ function getMapBounds(locations) {
 
 function EmptyLocationsCard() {
   return (
-    <div className="w-full min-w-0 p-4 text-center rounded-xl bg-base-200">
+    <ItemCard className="text-center">
       <h3 className="font-semibold text-base-content">
         Aucune ville reconnue
       </h3>
@@ -75,31 +84,43 @@ function EmptyLocationsCard() {
       <p className="mt-1 text-sm text-base-content/60">
         Les localisations reconnues apparaîtront ici.
       </p>
-    </div>
+    </ItemCard>
+  );
+}
+
+function LocationCounter({ count }) {
+  return (
+    <span className="w-10 h-10 shrink-0 flex flex-row justify-center items-center text-sm font-black text-primary-content rounded-full bg-primary">
+      {count}
+    </span>
   );
 }
 
 function LocationItem({ location, onFocusLocation }) {
   return (
-    <button
-      className="w-full min-w-0 p-4 flex flex-row justify-between items-center gap-4 text-left rounded-xl bg-base-200 hover:bg-base-300 cursor-pointer"
+    <ItemCard
+      as="button"
+      className="text-left"
+      interactive
       type="button"
-      onClick={function () { onFocusLocation(location); }}
+      onClick={function () {
+        onFocusLocation(location);
+      }}
     >
-      <div className="min-w-0">
-        <h3 className="font-semibold text-base-content truncate">
-          {location.city}
-        </h3>
+      <div className="w-full min-w-0 flex flex-row justify-between items-center gap-4">
+        <div className="min-w-0">
+          <h3 className="font-semibold text-base-content truncate">
+            {location.city}
+          </h3>
 
-        <p className="mt-1 text-sm text-base-content/60 truncate">
-          {location.count} candidature(s)
-        </p>
+          <p className="mt-1 text-sm text-base-content/60 truncate">
+            {location.count} candidature(s)
+          </p>
+        </div>
+
+        <LocationCounter count={location.count} />
       </div>
-
-      <span className="w-10 h-10 shrink-0 flex flex-row justify-center items-center text-sm font-black text-primary-content rounded-full bg-primary">
-        {location.count}
-      </span>
-    </button>
+    </ItemCard>
   );
 }
 
@@ -126,7 +147,12 @@ function ApplicationsLocationMap({ applications }) {
 
     if (mappedLocations.length === 1) {
       const location = mappedLocations[0];
-      mapRef.current.setView([location.latitude, location.longitude], DEFAULT_ZOOM);
+
+      mapRef.current.setView(
+        [location.latitude, location.longitude],
+        DEFAULT_ZOOM
+      );
+
       return;
     }
 
@@ -197,6 +223,12 @@ function ApplicationsLocationMap({ applications }) {
     });
 
     resetMapView();
+
+    window.setTimeout(function () {
+      if (mapRef.current) {
+        mapRef.current.invalidateSize();
+      }
+    }, 0);
   }, [mappedLocations, resetMapView]);
 
   function focusLocation(location) {
@@ -204,74 +236,63 @@ function ApplicationsLocationMap({ applications }) {
       return;
     }
 
-    mapRef.current.flyTo([location.latitude, location.longitude], LOCATION_FOCUS_ZOOM);
+    mapRef.current.flyTo(
+      [location.latitude, location.longitude],
+      LOCATION_FOCUS_ZOOM
+    );
   }
 
   return (
-    <div className="w-full min-w-0 p-4 md:p-6 rounded-2xl bg-base-100 shadow-sm">
-      <div className="w-full flex flex-row justify-between items-start gap-4">
-        <div className="min-w-0">
-          <h2 className="text-xl font-bold text-base-content">
-            Carte des candidatures
-          </h2>
+    <SectionCard
+      title="Carte des candidatures"
+      description="Visualisation des villes reconnues à partir des localisations renseignées."
+      contentClassName="grid grid-cols-1 xl:grid-cols-[2fr_1fr] items-stretch gap-6"
+    >
+      <div className="relative w-full h-[360px] md:h-[420px] xl:h-full xl:min-h-0 rounded-xl border border-base-300 bg-base-200 overflow-hidden">
+        <button
+          className="btn btn-sm btn-primary absolute bottom-4 left-4 flex flex-row justify-center items-center gap-2 text-primary-content shadow-sm cursor-pointer z-[1000]"
+          type="button"
+          onClick={resetMapView}
+        >
+          <RotateCcw className="w-4 h-4" />
+          Réinitialiser
+        </button>
 
-          <p className="mt-1 text-sm text-base-content/60">
-            Visualisation des villes reconnues à partir des localisations renseignées.
-          </p>
-        </div>
-
-        <span className="badge badge-primary shrink-0 text-primary-content">
-          {mappedLocations.length} ville(s)
-        </span>
+        <div className="w-full h-full" ref={mapContainerRef} />
       </div>
 
-      <div className="w-full mt-6 grid grid-cols-1 xl:grid-cols-[1.4fr_0.6fr] justify-start items-start gap-6">
-        <div className="relative w-full h-[360px] md:h-[420px] xl:h-[430px] rounded-xl border border-base-300 bg-base-200 overflow-hidden">
-          <button
-            className="btn btn-sm btn-primary absolute bottom-4 left-4 flex flex-row justify-center items-center gap-2 text-primary-content shadow-sm cursor-pointer z-[1000]"
-            type="button"
-            onClick={resetMapView}
-          >
-            <RotateCcw className="w-4 h-4" />
-            Réinitialiser
-          </button>
+      <div className="w-full min-w-0 h-full flex flex-col justify-start items-stretch">
+        <h3 className="font-semibold text-base-content">
+          Villes principales
+        </h3>
 
-          <div className="w-full h-full" ref={mapContainerRef} />
-        </div>
+        <p className="mt-1 text-sm text-base-content/60">
+          Cliquez sur une ville pour recentrer la carte.
+        </p>
 
-        <div className="w-full min-w-0">
-          <h3 className="font-semibold text-base-content">
-            Villes principales
-          </h3>
-
-          <p className="mt-1 text-sm text-base-content/60">
-            Cliquez sur une ville pour recentrer la carte.
-          </p>
-
-          <div className="w-full mt-4 flex flex-col justify-start items-stretch gap-2">
-            {topMappedLocations.length === 0 && (
-              <EmptyLocationsCard />
-            )}
-
-            {topMappedLocations.length > 0 && topMappedLocations.map(function (location) {
-              return (
-                <LocationItem
-                  key={location.city}
-                  location={location}
-                  onFocusLocation={focusLocation}
-                />
-              );
-            })}
-          </div>
-
-          {mappedLocations.length > 5 && (
-            <p className="mt-4 text-xs text-base-content/50">
-              +{mappedLocations.length - 5} autre(s) ville(s) détectée(s).
-            </p>
+        <div className="w-full mt-4 flex flex-col justify-start items-stretch gap-2">
+          {topMappedLocations.length === 0 && (
+            <EmptyLocationsCard />
           )}
+
+          {topMappedLocations.length > 0 && topMappedLocations.map(function (location) {
+            return (
+              <LocationItem
+                key={location.city}
+                location={location}
+                onFocusLocation={focusLocation}
+              />
+            );
+          })}
         </div>
+
+        {mappedLocations.length > 5 && (
+          <p className="mt-2 text-xs text-base-content/50 text-end">
+            +{mappedLocations.length - 5} autre(s) ville(s) détectée(s).
+          </p>
+        )}
       </div>
-    </div>
+    </SectionCard>
   );
 }
 

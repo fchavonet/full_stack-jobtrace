@@ -76,6 +76,16 @@ function getItemCardClassName(className, interactive) {
   return finalClassName;
 }
 
+function getProgressItemCardValueClassName(className) {
+  let finalClassName = "shrink-0 text-2xl font-black text-base-content";
+
+  if (className) {
+    finalClassName = finalClassName + " " + className;
+  }
+
+  return finalClassName;
+}
+
 export function SectionCard({
   as: Component = "div",
   title,
@@ -97,14 +107,14 @@ export function SectionCard({
           <div className={getSectionCardTitleBlockClassName(centered)}>
             {title && (
               <h2 className="text-lg font-semibold text-base-content truncate">
-  {title}
-</h2>
+                {title}
+              </h2>
             )}
 
             {description && (
-<p className="text-sm text-base-content/60 truncate">
-  {description}
-</p>
+              <p className="text-sm text-base-content/60 truncate">
+                {description}
+              </p>
             )}
           </div>
 
@@ -196,5 +206,43 @@ export function ItemCard({
         </div>
       )}
     </Component>
+  );
+}
+
+export function ProgressItemCard({
+  title,
+  subtitle,
+  value,
+  progressWidth,
+  className = "",
+  valueClassName = "",
+}) {
+  return (
+    <ItemCard className={className}>
+      <div className="w-full flex flex-row justify-between items-start gap-4">
+        <div className="min-w-0">
+          <h3 className="text-sm font-semibold text-base-content">
+            {title}
+          </h3>
+
+          {subtitle && (
+            <p className="mt-1 text-xs text-base-content/60">
+              {subtitle}
+            </p>
+          )}
+        </div>
+
+        <p className={getProgressItemCardValueClassName(valueClassName)}>
+          {value}
+        </p>
+      </div>
+
+      <div className="w-full h-2 mt-4 rounded-full bg-base-100 overflow-hidden">
+        <div
+          className="h-full rounded-full bg-primary"
+          style={{ width: progressWidth }}
+        />
+      </div>
+    </ItemCard>
   );
 }

@@ -7,7 +7,7 @@ import { JOB_BOARD_LINKS } from "../constants/jobBoards.constants";
 import { listApplications } from "../api/applications.api";
 import { getUserProfile } from "../api/profile.api";
 
-import { ItemCard, MetricCard, SectionCard } from "../components/ui/Cards";
+import { ItemCard, MetricCard, ProgressItemCard, SectionCard } from "../components/ui/Cards";
 import LoadingCard from "../components/ui/LoadingCard";
 import PageHeader from "../components/ui/PageHeader";
 
@@ -116,31 +116,23 @@ function ObjectiveCompactCard({ objective }) {
   return (
     <SectionCard
       className="h-full flex flex-col"
-      contentClassName="flex-1 flex flex-col justify-end"
+      contentClassName="flex-1 flex flex-col"
       title="Objectif journalier"
       description="Votre progression en cours."
     >
-      <ItemCard
-        className="flex flex-col justify-start items-stretch gap-2"
-        as={Link}
-        interactive
-        to="/dashboard/achievements"
-      >
-        <p className="flex flex-row justify-start items-center text-2xl md:text-4xl font-black text-base-content">
-          {objective.completedToday} <span className="-mt-2 mx-1">/</span> {objective.dailyGoal}
-        </p>
-
-        <p className="text-sm text-base-content/60">
-          {objective.remaining} candidature(s) restante(s)
-        </p>
-
-        <div className="w-full h-4 rounded-full bg-base-100 overflow-hidden">
-          <div
-            className="h-full rounded-full bg-primary"
-            style={{ width: getProgressWidth(objective.completedToday, objective.dailyGoal) }}
-          />
-        </div>
-      </ItemCard>
+      <Link className="h-full flex flex-col" to="/dashboard/achievements">
+        <ProgressItemCard
+          className="h-full flex flex-col justify-between hover:bg-base-300 cursor-pointer"
+          title="Progression du jour"
+          subtitle={objective.remaining + " candidature(s) restante(s)"}
+          value={objective.completedToday + " / " + objective.dailyGoal}
+          valueClassName="text-2xl md:text-4xl"
+          progressWidth={getProgressWidth(
+            objective.completedToday,
+            objective.dailyGoal
+          )}
+        />
+      </Link>
     </SectionCard>
   );
 }

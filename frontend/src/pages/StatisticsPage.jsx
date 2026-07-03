@@ -2,6 +2,12 @@ import { useEffect, useMemo, useState } from "react";
 
 import { listApplications } from "../api/applications.api";
 import ApplicationsLocationMap from "../components/statistics/ApplicationsLocationMap";
+import {
+  ItemCard,
+  MetricCard,
+  ProgressItemCard,
+  SectionCard,
+} from "../components/ui/Cards";
 import LoadingCard from "../components/ui/LoadingCard";
 import PageHeader from "../components/ui/PageHeader";
 import { useToast } from "../hooks/useToast";
@@ -9,7 +15,6 @@ import { getListFromResponse } from "../utils/common/apiResponse.utils";
 import {
   getBarHeight,
   getContractTypeRows,
-  getFunnelRows,
   getMaxCount,
   getMonthRows,
   getPercentLabel,
@@ -18,39 +23,13 @@ import {
   getTrackingQualityRows,
 } from "../utils/statistics/statistics.utils";
 
-function StatCard({ label, value, helper }) {
-  return (
-    <div className="w-full min-w-0 p-4 md:p-6 rounded-2xl bg-base-100 shadow-sm">
-      <div className="w-full flex flex-row justify-between items-start gap-4">
-        <div className="min-w-0">
-          <h2 className="text-sm font-semibold text-base-content">
-            {label}
-          </h2>
-
-          <p className="mt-1 text-xs text-base-content/60">
-            {helper}
-          </p>
-        </div>
-
-        <p className="shrink-0 text-3xl font-black text-base-content">
-          {value}
-        </p>
-      </div>
-    </div>
-  );
-}
-
 function EmptyStatisticsState() {
   return (
-    <div className="w-full min-w-0 p-4 md:p-6 text-center rounded-2xl bg-base-100 shadow-sm">
-      <h2 className="text-xl font-bold text-base-content">
-        Aucune statistique disponible
-      </h2>
-
-      <p className="mt-1 text-sm text-base-content/60">
-        Les statistiques apparaîtront dès que vous aurez créé vos premières candidatures.
-      </p>
-    </div>
+    <SectionCard
+      title="Aucune statistique disponible"
+      description="Les statistiques apparaîtront dès que vous aurez créé vos premières candidatures."
+      centered
+    />
   );
 }
 
@@ -90,6 +69,22 @@ function getDonutDotClassName(index) {
   return "bg-base-content";
 }
 
+function getInterviewDonutStrokeClassName(index) {
+  if (index === 0) {
+    return "stroke-primary";
+  }
+
+  return "stroke-base-300";
+}
+
+function getInterviewDonutDotClassName(index) {
+  if (index === 0) {
+    return "bg-primary";
+  }
+
+  return "bg-base-300";
+}
+
 function getDonutSegments(rows, total) {
   let previousPercent = 0;
 
@@ -119,194 +114,372 @@ function getDonutDashArray(segment) {
   return segment.percentForChart + " " + remaining;
 }
 
+function getOtherApplicationsCount(summary) {
+  const otherCount = summary.total - summary.interviews;
+
+  if (otherCount < 0) {
+    return 0;
+  }
+
+  return otherCount;
+}
+
+function getInterviewRateRows(summary) {
+  return [
+    {
+      key: "interviews",
+      label: "Entretiens obtenus",
+      count: summary.interviews,
+    },
+    {
+      key: "others",
+      label: "Autres statuts",
+      count: getOtherApplicationsCount(summary),
+    },
+  ];
+}
+
+function getDetailedFunnelRows(summary) {
+  return [
+    {
+      key: "total",
+      label: "Candidatures enregistrées",
+      count: summary.total,
+    },
+    {
+      key: "active",
+      label: "Candidatures actives",
+      count: summary.active,
+    },
+    {
+      key: "followUps",
+      label: "Relances planifiées",
+      count: summary.followUps,
+    },
+    {
+      key: "interviews",
+      label: "Entretiens obtenus",
+      count: summary.interviews,
+    },
+    {
+      key: "accepted",
+      label: "Candidatures acceptées",
+      count: summary.accepted,
+    },
+    {
+      key: "rejected",
+      label: "Candidatures refusées",
+      count: summary.rejected,
+    },
+  ];
+}
+
+function ContractTypeEmptyState() {
+  return (
+    <ItemCard className="text-center">
+      <p className="text-sm text-base-content/60">
+        Aucun type de contrat renseigné.
+      </p>
+    </ItemCard>
+  );
+}
+
+function ContractTypeLegendItem({ segment, total }) {
+  return (
+    <ItemCard>
+      <div className="w-full min-w-0 flex flex-row justify-between items-center gap-4">
+        <div className="min-w-0 flex flex-row justify-start items-center gap-2">
+          <span
+            className={
+              "w-4 h-4 shrink-0 rounded-full "
+              + getDonutDotClassName(segment.index)
+            }
+          />
+
+          <h3 className="font-semibold text-base-content truncate">
+            {segment.label}
+          </h3>
+        </div>
+
+        <div className="shrink-0 text-right">
+          <p className="text-sm font-bold text-base-content">
+            {segment.count}
+          </p>
+
+          <p className="text-xs text-base-content/60">
+            {getPercentLabel(segment.count, total)}
+          </p>
+        </div>
+      </div>
+    </ItemCard>
+  );
+}
+
+function ContractTypeDonut({ segments, total }) {
+  return (
+    <div className="relative w-56 h-56 mx-auto">
+      <svg className="w-full h-full" viewBox="0 0 40 40">
+        <circle
+          className="stroke-base-200"
+          cx="20"
+          cy="20"
+          r="16"
+          fill="none"
+          strokeWidth="8"
+        />
+
+        {segments.map(function (segment) {
+          return (
+            <circle
+              className={getDonutStrokeClassName(segment.index)}
+              cx="20"
+              cy="20"
+              r="16"
+              fill="none"
+              pathLength="100"
+              strokeWidth="8"
+              strokeDasharray={getDonutDashArray(segment)}
+              strokeDashoffset={-segment.offset}
+              strokeLinecap="butt"
+              transform="rotate(-90 20 20)"
+              key={segment.key}
+            />
+          );
+        })}
+      </svg>
+
+      <div className="absolute top-0 right-0 bottom-0 left-0 flex flex-col justify-center items-center text-center">
+        <p className="text-4xl font-black text-base-content">
+          {total}
+        </p>
+
+        <p className="text-xs text-base-content/60">
+          candidatures
+        </p>
+      </div>
+    </div>
+  );
+}
+
 function ContractTypeDonutCard({ rows, total }) {
   const segments = getDonutSegments(rows, total);
 
   return (
-    <div className="w-full min-w-0 p-4 md:p-6 rounded-2xl bg-base-100 shadow-sm">
-      <div className="w-full flex flex-row justify-between items-start gap-4">
-        <div className="min-w-0">
-          <h2 className="text-xl font-bold text-base-content">
-            Types de contrat
-          </h2>
-
-          <p className="mt-1 text-sm text-base-content/60">
-            Répartition des candidatures selon le type de contrat ciblé.
-          </p>
-        </div>
-
-        <span className="badge badge-primary shrink-0 text-primary-content">
-          {total}
-        </span>
-      </div>
-
+    <SectionCard
+      title="Types de contrat"
+      description="Répartition des candidatures selon le type de contrat ciblé."
+    >
       {rows.length === 0 && (
-        <div className="w-full mt-6 p-4 text-center rounded-xl bg-base-200">
-          <p className="text-sm text-base-content/60">
-            Aucun type de contrat renseigné.
-          </p>
-        </div>
+        <ContractTypeEmptyState />
       )}
 
       {rows.length > 0 && (
-        <div className="w-full mt-6 grid grid-cols-1 lg:grid-cols-[220px_1fr] justify-center items-center gap-6">
-          <div className="relative w-56 h-56 mx-auto">
-            <svg className="w-full h-full" viewBox="0 0 40 40">
-              <circle
-                className="stroke-base-200"
-                cx="20"
-                cy="20"
-                r="16"
-                fill="none"
-                strokeWidth="8"
-              />
+        <div className="w-full grid grid-cols-1 xl:grid-cols-[16rem_1fr] justify-center items-center gap-6">
+          <ContractTypeDonut segments={segments} total={total} />
 
-              {segments.map(function (segment) {
-                return (
-                  <circle
-                    className={getDonutStrokeClassName(segment.index)}
-                    cx="20"
-                    cy="20"
-                    r="16"
-                    fill="none"
-                    pathLength="100"
-                    strokeWidth="8"
-                    strokeDasharray={getDonutDashArray(segment)}
-                    strokeDashoffset={-segment.offset}
-                    strokeLinecap="butt"
-                    transform="rotate(-90 20 20)"
-                    key={segment.key}
-                  />
-                );
-              })}
-            </svg>
-
-            <div className="absolute top-0 right-0 bottom-0 left-0 flex flex-col justify-center items-center text-center">
-              <p className="text-4xl font-black text-base-content">
-                {total}
-              </p>
-
-              <p className="text-xs text-base-content/60">
-                candidatures
-              </p>
-            </div>
-          </div>
-
-          <div className="w-full min-w-0 flex flex-col justify-start items-stretch gap-2">
+          <div className="w-full min-w-0 grid grid-cols-1 md:grid-cols-2 gap-2">
             {segments.map(function (segment) {
               return (
-                <div className="w-full min-w-0 p-4 flex flex-row justify-between items-center gap-4 rounded-xl bg-base-200" key={segment.key}>
-                  <div className="min-w-0 flex flex-row justify-start items-center gap-2">
-                    <span className={"w-3 h-3 shrink-0 rounded-full " + getDonutDotClassName(segment.index)} />
-
-                    <h3 className="font-semibold text-base-content truncate">
-                      {segment.label}
-                    </h3>
-                  </div>
-
-                  <div className="shrink-0 text-right">
-                    <p className="text-sm font-bold text-base-content">
-                      {segment.count}
-                    </p>
-
-                    <p className="text-xs text-base-content/60">
-                      {getPercentLabel(segment.count, total)}
-                    </p>
-                  </div>
-                </div>
+                <ContractTypeLegendItem
+                  segment={segment}
+                  total={total}
+                  key={segment.key}
+                />
               );
             })}
           </div>
         </div>
       )}
-    </div>
+    </SectionCard>
+  );
+}
+
+function TrackingQualityItem({ row }) {
+  return (
+    <ProgressItemCard
+      title={row.label}
+      subtitle={row.percent + " % des candidatures"}
+      value={row.count}
+      progressWidth={row.percent + "%"}
+    />
   );
 }
 
 function TrackingQualityCard({ rows }) {
   return (
-    <div className="w-full min-w-0 p-4 md:p-6 rounded-2xl bg-base-100 shadow-sm">
-      <h2 className="text-xl font-bold text-base-content">
-        Qualité du suivi
-      </h2>
-
-      <p className="mt-1 text-sm text-base-content/60">
-        Ces indicateurs montrent si les candidatures sont suffisamment documentées.
-      </p>
-
-      <div className="w-full mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+    <SectionCard
+      title="Qualité du suivi"
+      description="Ces indicateurs montrent si les candidatures sont suffisamment documentées."
+      className="h-full"
+    >
+      <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-4">
         {rows.map(function (row) {
           return (
-            <div className="w-full min-w-0 p-4 rounded-xl bg-base-200" key={row.key}>
-              <div className="w-full flex flex-row justify-between items-start gap-4">
-                <div className="min-w-0">
-                  <h3 className="text-sm font-semibold text-base-content">
-                    {row.label}
-                  </h3>
-
-                  <p className="mt-1 text-xs text-base-content/60">
-                    {row.percent} % des candidatures
-                  </p>
-                </div>
-
-                <span className="badge badge-primary shrink-0 text-primary-content">
-                  {row.count}
-                </span>
-              </div>
-
-              <progress
-                className="progress progress-primary w-full h-2 mt-4"
-                value={row.percent}
-                max="100"
-              />
-            </div>
+            <TrackingQualityItem row={row} key={row.key} />
           );
         })}
+      </div>
+    </SectionCard>
+  );
+}
+
+function InterviewRateLegendItem({ segment, total }) {
+  return (
+    <ItemCard>
+      <div className="w-full min-w-0 flex flex-row justify-between items-center gap-4">
+        <div className="min-w-0 flex flex-row justify-start items-center gap-2">
+          <span
+            className={
+              "w-4 h-4 shrink-0 rounded-full "
+              + getInterviewDonutDotClassName(segment.index)
+            }
+          />
+
+          <h3 className="text-sm font-semibold text-base-content truncate">
+            {segment.label}
+          </h3>
+        </div>
+
+        <div className="shrink-0 text-right">
+          <p className="text-sm font-bold text-base-content">
+            {segment.count}
+          </p>
+
+          <p className="text-xs text-base-content/60">
+            {getPercentLabel(segment.count, total)}
+          </p>
+        </div>
+      </div>
+    </ItemCard>
+  );
+}
+
+function InterviewRateDonut({ segments, rate }) {
+  return (
+    <div className="relative w-48 h-48 mx-auto">
+      <svg className="w-full h-full" viewBox="0 0 40 40">
+        <circle
+          className="stroke-base-200"
+          cx="20"
+          cy="20"
+          r="16"
+          fill="none"
+          strokeWidth="8"
+        />
+
+        {segments.map(function (segment) {
+          return (
+            <circle
+              className={getInterviewDonutStrokeClassName(segment.index)}
+              cx="20"
+              cy="20"
+              r="16"
+              fill="none"
+              pathLength="100"
+              strokeWidth="8"
+              strokeDasharray={getDonutDashArray(segment)}
+              strokeDashoffset={-segment.offset}
+              strokeLinecap="butt"
+              transform="rotate(-90 20 20)"
+              key={segment.key}
+            />
+          );
+        })}
+      </svg>
+
+      <div className="absolute top-0 right-0 bottom-0 left-0 flex flex-col justify-center items-center text-center">
+        <p className="text-4xl font-black text-base-content">
+          {rate} %
+        </p>
+
+        <p className="text-xs text-base-content/60">
+          entretien
+        </p>
       </div>
     </div>
   );
 }
 
+function InterviewRateDonutCard({ summary }) {
+  const rows = getInterviewRateRows(summary);
+  const segments = getDonutSegments(rows, summary.total);
+
+  return (
+    <SectionCard
+      title="Taux d’entretien"
+      description="Part des candidatures ayant obtenu un entretien."
+      className="h-full"
+    >
+      <div className="w-full grid grid-cols-1 md:grid-cols-[12rem_1fr] xl:grid-cols-1 2xl:grid-cols-[12rem_1fr] justify-center items-center gap-6">
+        <InterviewRateDonut
+          segments={segments}
+          rate={summary.interviewRate}
+        />
+
+        <div className="w-full min-w-0 flex flex-col justify-start items-stretch gap-2">
+          {segments.map(function (segment) {
+            return (
+              <InterviewRateLegendItem
+                segment={segment}
+                total={summary.total}
+                key={segment.key}
+              />
+            );
+          })}
+        </div>
+      </div>
+    </SectionCard>
+  );
+}
+
+function FunnelItem({ row, total }) {
+  return (
+    <ProgressItemCard
+      title={row.label}
+      subtitle={getPercentLabel(row.count, total)}
+      value={row.count}
+      progressWidth={getProgressWidth(row.count, total)}
+    />
+  );
+}
+
 function FunnelCard({ rows, total }) {
   return (
-    <div className="w-full min-w-0 p-4 md:p-6 rounded-2xl bg-base-100 shadow-sm">
-      <h2 className="text-xl font-bold text-base-content">
-        Tunnel de suivi
-      </h2>
-
-      <p className="mt-1 text-sm text-base-content/60">
-        Une lecture simple du passage entre candidature, relance, entretien et réussite.
-      </p>
-
-      <div className="w-full mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+    <SectionCard
+      title="Tunnel de suivi"
+      description="Une lecture simple du passage entre candidature, relance, entretien et réussite."
+      className="h-full flex flex-col"
+      contentClassName="flex-1 flex flex-col"
+    >
+      <div className="w-full flex-1 grid grid-cols-1 md:grid-cols-2 gap-4">
         {rows.map(function (row) {
           return (
-            <div className="w-full min-w-0 p-4 rounded-xl bg-base-200" key={row.key}>
-              <div className="w-full flex flex-row justify-between items-start gap-4">
-                <div className="min-w-0">
-                  <h3 className="text-sm font-semibold text-base-content">
-                    {row.label}
-                  </h3>
-
-                  <p className="mt-1 text-xs text-base-content/60">
-                    {getPercentLabel(row.count, total)}
-                  </p>
-                </div>
-
-                <p className="shrink-0 text-2xl font-black text-base-content">
-                  {row.count}
-                </p>
-              </div>
-
-              <div className="w-full h-4 mt-4 rounded-full bg-base-100 overflow-hidden">
-                <div
-                  className="h-full rounded-full bg-primary"
-                  style={{ width: getProgressWidth(row.count, total) }}
-                />
-              </div>
-            </div>
+            <FunnelItem row={row} total={total} key={row.key} />
           );
         })}
+      </div>
+    </SectionCard>
+  );
+}
+
+function MonthlyActivityBar({ row, maxCount }) {
+  return (
+    <div className="min-w-0 h-full flex flex-col justify-start items-stretch gap-2">
+      <div className="w-full min-h-32 md:min-h-44 xl:min-h-0 flex-1 p-2 flex flex-row justify-center items-end rounded-xl bg-base-200 overflow-hidden">
+        <div
+          className="w-full rounded-lg bg-primary"
+          style={{ height: getBarHeight(row.count, maxCount) }}
+        />
+      </div>
+
+      <div className="shrink-0 text-center">
+        <p className="text-base font-black text-base-content">
+          {row.count}
+        </p>
+
+        <p className="text-xs text-base-content/60 truncate">
+          {row.label}
+        </p>
       </div>
     </div>
   );
@@ -316,48 +489,24 @@ function MonthlyActivityCard({ rows }) {
   const maxCount = getMaxCount(rows);
 
   return (
-    <div className="w-full min-w-0 p-4 md:p-6 rounded-2xl bg-base-100 shadow-sm">
-      <div className="w-full flex flex-row justify-between items-start gap-4">
-        <div className="min-w-0">
-          <h2 className="text-xl font-bold text-base-content">
-            Suivi sur 6 mois
-          </h2>
-
-          <p className="mt-1 text-sm text-base-content/60">
-            Volume mensuel basé sur la date d’envoi des candidatures.
-          </p>
-        </div>
-
-        <span className="badge badge-primary shrink-0 text-primary-content">
-          6 mois
-        </span>
-      </div>
-
-      <div className="w-full mt-6 grid grid-cols-3 md:grid-cols-6 gap-4">
+    <SectionCard
+      title="Suivi sur 6 mois"
+      description="Volume mensuel basé sur la date d’envoi des candidatures."
+      className="h-full flex flex-col"
+      contentClassName="flex-1 flex flex-col"
+    >
+      <div className="w-full min-h-0 flex-1 grid grid-cols-3 md:grid-cols-6 gap-4">
         {rows.map(function (row) {
           return (
-            <div className="min-w-0 flex flex-col justify-start items-stretch gap-2" key={row.key}>
-              <div className="w-full h-40 md:h-52 p-1 flex flex-row justify-center items-end rounded-xl bg-base-200 overflow-hidden">
-                <div
-                  className="w-full rounded-lg bg-primary"
-                  style={{ height: getBarHeight(row.count, maxCount) }}
-                />
-              </div>
-
-              <div className="text-center">
-                <p className="text-base font-black text-base-content">
-                  {row.count}
-                </p>
-
-                <p className="text-xs text-base-content/60 truncate">
-                  {row.label}
-                </p>
-              </div>
-            </div>
+            <MonthlyActivityBar
+              row={row}
+              maxCount={maxCount}
+              key={row.key}
+            />
           );
         })}
       </div>
-    </div>
+    </SectionCard>
   );
 }
 
@@ -372,7 +521,9 @@ function StatisticsPage() {
       try {
         const applicationsResponse = await listApplications();
 
-        setApplications(getListFromResponse(applicationsResponse, "applications"));
+        setApplications(
+          getListFromResponse(applicationsResponse, "applications")
+        );
       } catch {
         showToast("Impossible de charger les statistiques.", "error");
       } finally {
@@ -400,13 +551,16 @@ function StatisticsPage() {
   }, [summary]);
 
   const funnelRows = useMemo(function () {
-    return getFunnelRows(summary);
+    return getDetailedFunnelRows(summary);
   }, [summary]);
 
   if (loading) {
     return (
-      <section>
-        <PageHeader title="Statistiques" />
+      <section className="w-full min-w-0 flex flex-col justify-start items-stretch gap-6">
+        <PageHeader
+          title="Statistiques"
+          description="Analysez le volume, la progression et la qualité de suivi de vos candidatures."
+        />
 
         <LoadingCard />
       </section>
@@ -427,25 +581,27 @@ function StatisticsPage() {
       {applications.length > 0 && (
         <>
           <div className="w-full grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-            <StatCard
+            <MetricCard
               label="Total candidatures"
               value={summary.total}
               helper={summary.active + " candidature(s) active(s)"}
             />
 
-            <StatCard
+            <MetricCard
               label="Total entretiens"
               value={summary.interviews}
               helper={summary.interviewRate + " % du total"}
             />
 
-            <StatCard
+            <MetricCard
               label="Total refusées"
               value={summary.rejected}
-              helper={getPercentLabel(summary.rejected, summary.total) + " du total"}
+              helper={
+                getPercentLabel(summary.rejected, summary.total) + " du total"
+              }
             />
 
-            <StatCard
+            <MetricCard
               label="Total acceptées"
               value={summary.accepted}
               helper={summary.successRate + " % de réussite"}
@@ -453,10 +609,15 @@ function StatisticsPage() {
           </div>
 
           <div className="w-full grid grid-cols-1 xl:grid-cols-2 gap-6">
-            <ContractTypeDonutCard rows={contractTypeRows} total={summary.total} />
-
             <TrackingQualityCard rows={qualityRows} />
+
+            <InterviewRateDonutCard summary={summary} />
           </div>
+
+          <ContractTypeDonutCard
+            rows={contractTypeRows}
+            total={summary.total}
+          />
 
           <div className="w-full grid grid-cols-1 xl:grid-cols-2 gap-6">
             <FunnelCard rows={funnelRows} total={summary.total} />
