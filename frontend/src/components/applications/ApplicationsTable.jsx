@@ -1,26 +1,12 @@
 import { useMemo, useState } from "react";
-import {
-  ChevronDown,
-  ChevronUp,
-  ChevronsUpDown,
-  Eye,
-  Search,
-  Trash2,
-} from "lucide-react";
+import { ChevronDown, ChevronUp, ChevronsUpDown, Eye, Trash2 } from "lucide-react";
 
 import { APPLICATION_STATUS_OPTIONS } from "../../constants/application.constants";
-import {
-  getApplicationContractTypeLabel,
-  getApplicationStatusBadgeClassName,
-  getApplicationStatusLabel,
-} from "../../utils/applications/display.utils";
-import {
-  getApplicationFollowUpAt,
-  getFilteredApplications,
-  getFollowUpDisplay,
-  getNextSortDirection,
-  getSortedApplications,
-} from "../../utils/applications/table.utils";
+import Badge from "../ui/Badge";
+import { SectionCard } from "../ui/Cards";
+import Search from "../ui/Search";
+import { getApplicationContractTypeLabel, getApplicationStatusLabel } from "../../utils/applications/display.utils";
+import { getApplicationFollowUpAt, getApplicationInterviewAt, getFilteredApplications, getFollowUpDisplay, getNextSortDirection, getSortedApplications } from "../../utils/applications/table.utils";
 import { formatDate } from "../../utils/common/format.utils";
 
 const statusFilters = [
@@ -31,13 +17,66 @@ const statusFilters = [
   ...APPLICATION_STATUS_OPTIONS,
 ];
 
+function getApplicationStatusBadgeColor(status) {
+  if (status === "sent") {
+    return "info";
+  }
+
+  if (status === "follow_up") {
+    return "warning";
+  }
+
+  if (status === "interview") {
+    return "primary";
+  }
+
+  if (status === "rejected") {
+    return "error";
+  }
+
+  if (status === "accepted") {
+    return "success";
+  }
+
+  return "base";
+}
+
+function getFollowUpBadgeColor(followUpDisplay) {
+  if (!followUpDisplay) {
+    return "base";
+  }
+
+  if (followUpDisplay.className.includes("badge-error")) {
+    return "error";
+  }
+
+  if (followUpDisplay.className.includes("badge-warning")) {
+    return "warning";
+  }
+
+  if (followUpDisplay.className.includes("badge-info")) {
+    return "info";
+  }
+
+  return "base";
+}
+
 function FollowUpCell({ application }) {
   const followUpAt = getApplicationFollowUpAt(application);
+
+  if (!followUpAt) {
+    return (
+      <span className="block truncate text-base-content/40">
+        -
+      </span>
+    );
+  }
+
   const followUpDisplay = getFollowUpDisplay(followUpAt);
 
   if (!followUpDisplay) {
     return (
-      <span className="block text-base-content/40 truncate">
+      <span className="block truncate text-base-content/40">
         -
       </span>
     );
@@ -49,10 +88,30 @@ function FollowUpCell({ application }) {
         {formatDate(followUpAt)}
       </span>
 
-      <span className={followUpDisplay.className}>
-        {followUpDisplay.label}
-      </span>
+      <Badge
+        label={followUpDisplay.label}
+        color={getFollowUpBadgeColor(followUpDisplay)}
+        className="w-18 px-0 text-[8px]"
+      />
     </div>
+  );
+}
+
+function InterviewCell({ application }) {
+  const interviewAt = getApplicationInterviewAt(application);
+
+  if (!interviewAt) {
+    return (
+      <span className="block truncate text-base-content/40">
+        -
+      </span>
+    );
+  }
+
+  return (
+    <span className="block truncate">
+      {formatDate(interviewAt)}
+    </span>
   );
 }
 
@@ -86,11 +145,7 @@ function SortableHeader({
 }) {
   return (
     <th className="text-center">
-      <button
-        className="btn btn-ghost btn-xs w-full mx-auto px-1 flex flex-row justify-center items-center gap-1 font-semibold cursor-pointer"
-        type="button"
-        onClick={function () { onSort(sortKey); }}
-      >
+      <button className="btn btn-ghost btn-xs w-full mx-auto px-1 flex flex-row justify-center items-center gap-1 font-semibold cursor-pointer" type="button" onClick={function () { onSort(sortKey); }}>
         <span className="truncate">
           {label}
         </span>
@@ -114,11 +169,7 @@ function ApplicationsTable({
   });
 
   const displayedApplications = useMemo(function () {
-    const filteredApplications = getFilteredApplications(
-      applications,
-      searchValue,
-      statusFilter,
-    );
+    const filteredApplications = getFilteredApplications(applications, searchValue, statusFilter);
 
     return getSortedApplications(filteredApplications, sortConfig);
   }, [applications, searchValue, statusFilter, sortConfig]);
@@ -142,227 +193,151 @@ function ApplicationsTable({
 
   if (applications.length === 0) {
     return (
-      <div className="w-full min-w-0 mt-6 p-4 md:p-6 text-center rounded-2xl bg-base-100 shadow-sm">
+      <SectionCard className="text-center">
         <h2 className="text-lg font-semibold text-base-content">
           Aucune candidature pour le moment
         </h2>
 
-        <p className="mt-1 text-sm text-base-content/60">
+        <p className="mt-2 text-sm text-base-content/60">
           Créez votre première candidature pour commencer à organiser votre recherche.
         </p>
-      </div>
+      </SectionCard>
     );
   }
 
   return (
-    <div className="w-full min-w-0 mt-6 p-4 md:p-6 rounded-2xl bg-base-100 shadow-sm">
-      <div className="w-full flex flex-col md:flex-row justify-between items-start gap-4">
-        <div className="min-w-0">
-          <h2 className="text-lg font-semibold text-base-content">
-            Candidatures enregistrées
-          </h2>
+    <div className="w-full min-w-0 flex flex-col justify-start items-stretch gap-6">
+      <Search
+        title="Candidatures enregistrées"
+        description="Ouvrez une candidature pour consulter ou modifier ses détails."
+        resultLabel={displayedApplications.length + " / " + applications.length}
+        value={searchValue}
+        onChange={handleSearchChange}
+        placeholder="Rechercher une entreprise, un poste, une ville..."
+      />
 
-          <p className="mt-1 text-sm text-base-content/60">
-            Ouvrez une candidature pour consulter ou modifier ses détails.
-          </p>
-        </div>
-
-        <p className="shrink-0 text-sm text-base-content/60">
-          {displayedApplications.length} / {applications.length}
-        </p>
-      </div>
-
-      <div className="w-full mt-6 grid grid-cols-1 gap-4">
-        <label className="input input-bordered w-full flex flex-row justify-start items-center gap-2">
-          <Search className="w-4 h-4 text-base-content/40" />
-
-          <input
-            className="grow"
-            type="search"
-            value={searchValue}
-            onChange={handleSearchChange}
-            placeholder="Rechercher une entreprise, un poste, une ville..."
-          />
-        </label>
-
+      <SectionCard>
         <div className="flex flex-row flex-wrap justify-start items-center gap-2">
           {statusFilters.map(function (statusFilterOption) {
             return (
-              <button
-                className={getStatusFilterButtonClassName(statusFilter, statusFilterOption.value)}
-                type="button"
-                key={statusFilterOption.value}
-                onClick={function () { handleStatusFilterChange(statusFilterOption.value); }}
-              >
+              <button className={getStatusFilterButtonClassName(statusFilter, statusFilterOption.value)} type="button" key={statusFilterOption.value} onClick={function () { handleStatusFilterChange(statusFilterOption.value); }}>
                 {statusFilterOption.label}
               </button>
             );
           })}
         </div>
-      </div>
 
-      {displayedApplications.length === 0 && (
-        <div className="w-full mt-6 p-4 text-center rounded-xl bg-base-200">
-          <h3 className="font-semibold text-base-content">
-            Aucun résultat
-          </h3>
+        {displayedApplications.length === 0 && (
+          <div className="w-full mt-6 p-4 text-center rounded-xl bg-base-200">
+            <h3 className="font-semibold text-base-content">
+              Aucun résultat
+            </h3>
 
-          <p className="mt-1 text-sm text-base-content/60">
-            Modifiez la recherche ou le filtre pour afficher des candidatures.
-          </p>
-        </div>
-      )}
+            <p className="mt-2 text-sm text-base-content/60">
+              Modifiez la recherche ou le filtre pour afficher des candidatures.
+            </p>
+          </div>
+        )}
 
-      {displayedApplications.length > 0 && (
-        <div className="w-full mt-6 overflow-x-auto">
-          <table className="table table-fixed min-w-[1180px]">
-            <colgroup>
-              <col className="w-[15%]" />
-              <col className="w-[18%]" />
-              <col className="w-[13%]" />
-              <col className="w-[12%]" />
-              <col className="w-[11%]" />
-              <col className="w-[11%]" />
-              <col className="w-[11%]" />
-              <col className="w-[9%]" />
-            </colgroup>
+        {displayedApplications.length > 0 && (
+          <div className="w-full mt-6 overflow-x-auto">
+            <table className="table table-fixed min-w-[1024px]">
+              <colgroup>
+                <col className="w-[16%]" />
+                <col className="w-[16%]" />
+                <col className="w-[14%]" />
+                <col className="w-[10%]" />
+                <col className="w-[12%]" />
+                <col className="w-[12%]" />
+                <col className="w-[12%]" />
+                <col className="w-[8%]" />
+              </colgroup>
 
-            <thead>
-              <tr>
-                <SortableHeader
-                  label="Entreprise"
-                  sortKey="company"
-                  sortConfig={sortConfig}
-                  onSort={handleSort}
-                />
+              <thead>
+                <tr>
+                  <SortableHeader label="Entreprise" sortKey="company" sortConfig={sortConfig} onSort={handleSort} />
 
-                <SortableHeader
-                  label="Poste"
-                  sortKey="position"
-                  sortConfig={sortConfig}
-                  onSort={handleSort}
-                />
+                  <SortableHeader label="Poste" sortKey="position" sortConfig={sortConfig} onSort={handleSort} />
 
-                <SortableHeader
-                  label="Type de contrat"
-                  sortKey="contractType"
-                  sortConfig={sortConfig}
-                  onSort={handleSort}
-                />
+                  <SortableHeader label="Type de contrat" sortKey="contractType" sortConfig={sortConfig} onSort={handleSort} />
 
-                <SortableHeader
-                  label="Statut"
-                  sortKey="status"
-                  sortConfig={sortConfig}
-                  onSort={handleSort}
-                />
+                  <SortableHeader label="Statut" sortKey="status" sortConfig={sortConfig} onSort={handleSort} />
 
-                <SortableHeader
-                  label="Date d’envoi"
-                  sortKey="sentAt"
-                  sortConfig={sortConfig}
-                  onSort={handleSort}
-                />
+                  <SortableHeader label="Envoi" sortKey="sentAt" sortConfig={sortConfig} onSort={handleSort} />
 
-                <SortableHeader
-                  label="Date de relance"
-                  sortKey="followUpAt"
-                  sortConfig={sortConfig}
-                  onSort={handleSort}
-                />
+                  <SortableHeader label="Relance" sortKey="followUpAt" sortConfig={sortConfig} onSort={handleSort} />
 
-                <SortableHeader
-                  label="Date d’entretien"
-                  sortKey="interviewAt"
-                  sortConfig={sortConfig}
-                  onSort={handleSort}
-                />
+                  <SortableHeader label="Entretien" sortKey="interviewAt" sortConfig={sortConfig} onSort={handleSort} />
 
-                <th className="text-center">
-                  Actions
-                </th>
-              </tr>
-            </thead>
+                  <th className="text-center">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
 
-            <tbody>
-              {displayedApplications.map(function (application) {
-                return (
-                  <tr
-                    key={application.id}
-                    className="border-b border-base-200 last:border-b-0 hover:bg-base-200/50"
-                  >
-                    <td className="text-center align-middle">
-                      <button
-                        className="link link-hover w-full block font-semibold truncate cursor-pointer"
-                        type="button"
-                        onClick={function () { onOpenApplication(application); }}
-                      >
-                        {application.company}
-                      </button>
-                    </td>
-
-                    <td className="text-center align-middle">
-                      <span className="block truncate">
-                        {application.position}
-                      </span>
-                    </td>
-
-                    <td className="text-center align-middle">
-                      <span className="block truncate">
-                        {getApplicationContractTypeLabel(application.contractType)}
-                      </span>
-                    </td>
-
-                    <td className="text-center align-middle">
-                      <span className={getApplicationStatusBadgeClassName(application.status)}>
-                        {getApplicationStatusLabel(application.status)}
-                      </span>
-                    </td>
-
-                    <td className="text-center align-middle">
-                      <span className="block truncate">
-                        {formatDate(application.sentAt)}
-                      </span>
-                    </td>
-
-                    <td className="text-center align-middle">
-                      <FollowUpCell application={application} />
-                    </td>
-
-                    <td className="text-center align-middle">
-                      <span className="block truncate">
-                        {formatDate(application.interviewAt)}
-                      </span>
-                    </td>
-
-                    <td className="text-center align-middle">
-                      <div className="flex flex-row justify-center items-center gap-2">
-                        <button
-                          className="btn btn-ghost btn-sm btn-square cursor-pointer"
-                          type="button"
-                          onClick={function () { onOpenApplication(application); }}
-                          aria-label="Voir la candidature"
-                        >
-                          <Eye className="w-4 h-4" />
+              <tbody>
+                {displayedApplications.map(function (application) {
+                  return (
+                    <tr className="border-b border-base-200 last:border-b-0 hover:bg-base-200/50" key={application.id}>
+                      <td className="text-center align-middle">
+                        <button className="link link-hover w-full block truncate font-semibold cursor-pointer" type="button" onClick={function () { onOpenApplication(application); }}>
+                          {application.company}
                         </button>
+                      </td>
 
-                        <button
-                          className="btn btn-ghost btn-sm btn-square text-error cursor-pointer"
-                          type="button"
-                          onClick={function () { onDeleteApplication(application); }}
-                          aria-label="Supprimer la candidature"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      )}
+                      <td className="text-center align-middle">
+                        <span className="block truncate">
+                          {application.position}
+                        </span>
+                      </td>
+
+                      <td className="text-center align-middle">
+                        <span className="block truncate">
+                          {getApplicationContractTypeLabel(application.contractType)}
+                        </span>
+                      </td>
+
+                      <td className="text-center align-middle">
+                        <Badge
+                          label={getApplicationStatusLabel(application.status)}
+                          color={getApplicationStatusBadgeColor(application.status)}
+                          className="w-20 mx-auto"
+                        />
+                      </td>
+
+                      <td className="text-center align-middle">
+                        <span className="block truncate">
+                          {formatDate(application.sentAt)}
+                        </span>
+                      </td>
+
+                      <td className="text-center align-middle">
+                        <FollowUpCell application={application} />
+                      </td>
+
+                      <td className="text-center align-middle">
+                        <InterviewCell application={application} />
+                      </td>
+
+                      <td className="text-center align-middle">
+                        <div className="flex flex-row justify-center items-center gap-2">
+                          <button className="btn btn-ghost btn-sm btn-square cursor-pointer" type="button" onClick={function () { onOpenApplication(application); }} aria-label="Voir la candidature">
+                            <Eye className="w-4 h-4" />
+                          </button>
+
+                          <button className="btn btn-ghost btn-sm btn-square text-error cursor-pointer" type="button" onClick={function () { onDeleteApplication(application); }} aria-label="Supprimer la candidature">
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </SectionCard>
     </div>
   );
 }

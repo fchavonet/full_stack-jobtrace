@@ -246,3 +246,31 @@ export function ProgressItemCard({
     </ItemCard>
   );
 }
+
+export function ActiveFilterCard({
+  title = "Filtre actif",
+  description = "Cliquez sur le bouton de droite pour désactiver le filtre.",
+  actionLabel = "Afficher toutes",
+  onClear,
+  className = "",
+}) {
+  return (
+    <SectionCard className={className}>
+      <div className="w-full min-w-0 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div className="min-w-0">
+          <h2 className="text-base font-semibold text-base-content">
+            {title}
+          </h2>
+
+          <p className="mt-1 text-sm text-base-content/60">
+            {description}
+          </p>
+        </div>
+
+        <button className="btn btn-ghost btn-sm w-full md:w-auto shrink-0 cursor-pointer" type="button" onClick={onClear}>
+          {actionLabel}
+        </button>
+      </div>
+    </SectionCard>
+  );
+}

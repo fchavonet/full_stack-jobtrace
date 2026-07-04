@@ -1,21 +1,37 @@
-import {
-  getApplicationContractTypeLabel,
-  getApplicationStatusLabel,
-  getApplicationStatusSortValue,
-} from "./display.utils";
+import { getApplicationContractTypeLabel, getApplicationStatusIsFinal, getApplicationStatusLabel, getApplicationStatusSortValue } from "./display.utils";
 import { formatDate } from "../common/format.utils";
 import { normalizeValue } from "../common/string.utils";
+
+function getDateIsBefore(referenceDate, dateToCheck) {
+  if (!referenceDate || !dateToCheck) {
+    return false;
+  }
+
+  return String(dateToCheck).slice(0, 10) < String(referenceDate).slice(0, 10);
+}
+
+function getStatusDisablesFollowUp(status) {
+  if (status === "interview") {
+    return true;
+  }
+
+  if (getApplicationStatusIsFinal(status)) {
+    return true;
+  }
+
+  return false;
+}
 
 export function getApplicationFollowUpIsRelevant(application) {
   if (application.interviewAt) {
     return false;
   }
 
-  if (application.status === "accepted") {
+  if (getStatusDisablesFollowUp(application.status)) {
     return false;
   }
 
-  if (application.status === "rejected") {
+  if (getDateIsBefore(application.sentAt, application.followUpAt)) {
     return false;
   }
 
@@ -30,6 +46,18 @@ export function getApplicationFollowUpAt(application) {
   return application.followUpAt;
 }
 
+export function getApplicationInterviewAt(application) {
+  if (getApplicationStatusIsFinal(application.status)) {
+    return "";
+  }
+
+  if (getDateIsBefore(application.sentAt, application.interviewAt)) {
+    return "";
+  }
+
+  return application.interviewAt;
+}
+
 function getStartOfDayTimestamp(value) {
   const date = new Date(value);
 
@@ -37,11 +65,7 @@ function getStartOfDayTimestamp(value) {
     return null;
   }
 
-  return new Date(
-    date.getFullYear(),
-    date.getMonth(),
-    date.getDate(),
-  ).getTime();
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime();
 }
 
 export function getFollowUpDisplay(value) {
@@ -53,9 +77,7 @@ export function getFollowUpDisplay(value) {
 
   const todayTimestamp = getStartOfDayTimestamp(new Date());
   const millisecondsPerDay = 24 * 60 * 60 * 1000;
-  const daysDifference = Math.round(
-    (followUpTimestamp - todayTimestamp) / millisecondsPerDay,
-  );
+  const daysDifference = Math.round((followUpTimestamp - todayTimestamp) / millisecondsPerDay);
 
   if (daysDifference < 0) {
     return {
@@ -115,7 +137,7 @@ function getSearchableValue(application) {
       getApplicationStatusLabel(application.status),
       formatDate(application.sentAt),
       formatDate(getApplicationFollowUpAt(application)),
-      formatDate(application.interviewAt),
+      formatDate(getApplicationInterviewAt(application)),
     ].join(" "),
   );
 }
@@ -146,7 +168,7 @@ function getSortableValue(application, sortKey) {
   }
 
   if (sortKey === "interviewAt") {
-    return getDateTimestamp(application.interviewAt);
+    return getDateTimestamp(getApplicationInterviewAt(application));
   }
 
   return "";

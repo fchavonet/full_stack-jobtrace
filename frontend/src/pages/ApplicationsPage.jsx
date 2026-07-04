@@ -1,28 +1,21 @@
-import { Plus, RefreshCw } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
+import { CirclePlus, RefreshCw } from "lucide-react";
 
-import {
-  deleteApplication,
-  getApplication,
-  getApplicationHistory,
-  listApplications,
-  updateApplication,
-} from "../api/applications.api";
+import { deleteApplication, getApplication, getApplicationHistory, listApplications, updateApplication } from "../api/applications.api";
 import { listContacts } from "../api/contacts.api";
 import { getUserProfile } from "../api/profile.api";
 import ApplicationDetailsModal from "../components/applications/ApplicationDetailsModal";
 import ApplicationModal from "../components/applications/ApplicationModal";
 import ApplicationsTable from "../components/applications/ApplicationsTable";
+import { SectionCard } from "../components/ui/Cards";
+import LoadingCard from "../components/ui/LoadingCard";
+import { ActiveFilterCard } from "../components/ui/Cards";
+import PageHeader from "../components/ui/PageHeader";
 import { useToast } from "../hooks/useToast";
 import { getFollowUpDelayDays } from "../utils/applications/dates.utils";
-import {
-  getListFromResponse,
-  getResponseEntity,
-} from "../utils/common/apiResponse.utils";
+import { getListFromResponse, getResponseEntity } from "../utils/common/apiResponse.utils";
 import { getProfileFromResponse } from "../utils/profile/profile.utils";
-import LoadingCard from "../components/ui/LoadingCard";
-import PageHeader from "../components/ui/PageHeader";
 
 function getDetailsModalKey(application) {
   if (application && application.id) {
@@ -30,6 +23,22 @@ function getDetailsModalKey(application) {
   }
 
   return "empty";
+}
+
+function getApplicationModalOpen(isModalOpen, hasNewApplicationRequest, loading) {
+  if (isModalOpen) {
+    return true;
+  }
+
+  if (loading) {
+    return false;
+  }
+
+  if (hasNewApplicationRequest) {
+    return true;
+  }
+
+  return false;
 }
 
 function ApplicationsPage() {
@@ -49,6 +58,8 @@ function ApplicationsPage() {
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
 
   const applicationFilterId = searchParams.get("application") || "";
+  const hasNewApplicationRequest = searchParams.get("new") === "1";
+  const isApplicationModalOpen = getApplicationModalOpen(isModalOpen, hasNewApplicationRequest, loading);
 
   const filteredApplications = useMemo(function () {
     if (!applicationFilterId) {
@@ -60,30 +71,10 @@ function ApplicationsPage() {
     });
   }, [applications, applicationFilterId]);
 
-  const calendarFilteredApplication = useMemo(function () {
-    if (!applicationFilterId) {
-      return null;
-    }
-
-    const foundApplication = applications.find(function (application) {
-      return application.id === applicationFilterId;
-    });
-
-    if (foundApplication) {
-      return foundApplication;
-    }
-
-    return null;
-  }, [applications, applicationFilterId]);
-
   useEffect(function () {
     async function loadInitialData() {
       try {
-        const [
-          applicationsResponse,
-          contactsResponse,
-          profileResponse,
-        ] = await Promise.all([
+        const [applicationsResponse, contactsResponse, profileResponse] = await Promise.all([
           listApplications(),
           listContacts(),
           getUserProfile(),
@@ -130,11 +121,7 @@ function ApplicationsPage() {
 
   async function reloadSelectedApplication(applicationId) {
     try {
-      const [
-        applicationResponse,
-        historyResponse,
-        applicationsResponse,
-      ] = await Promise.all([
+      const [applicationResponse, historyResponse, applicationsResponse] = await Promise.all([
         getApplication(applicationId),
         getApplicationHistory(applicationId),
         listApplications(),
@@ -153,18 +140,14 @@ function ApplicationsPage() {
     }
   }
 
-  function clearApplicationFilter() {
+  function removeSearchParam(searchParamName) {
     const nextSearchParams = new URLSearchParams(searchParams);
-    nextSearchParams.delete("application");
-    setSearchParams(nextSearchParams);
+    nextSearchParams.delete(searchParamName);
+    setSearchParams(nextSearchParams, { replace: true });
   }
 
-  function getCalendarFilterLabel() {
-    if (!calendarFilteredApplication) {
-      return "Candidature introuvable.";
-    }
-
-    return calendarFilteredApplication.company + " - " + calendarFilteredApplication.position;
+  function clearApplicationFilter() {
+    removeSearchParam("application");
   }
 
   function openModal() {
@@ -172,6 +155,10 @@ function ApplicationsPage() {
   }
 
   function closeModal() {
+    if (hasNewApplicationRequest) {
+      removeSearchParam("new");
+    }
+
     setIsModalOpen(false);
   }
 
@@ -262,17 +249,13 @@ function ApplicationsPage() {
   }
 
   return (
-    <section>
+    <section className="w-full min-w-0 flex flex-col justify-start items-stretch gap-6">
       <PageHeader
         title="Candidatures"
         description="Enregistrez et suivez vos candidatures."
         actions={
           <>
             <button className="btn btn-outline w-full md:w-auto flex flex-row justify-center items-center gap-2 cursor-pointer" type="button" onClick={reloadApplications} disabled={loading || refreshingApplications}>
-              {refreshingApplications && (
-                <span className="loading loading-spinner loading-sm" />
-              )}
-
               {!refreshingApplications && (
                 <RefreshCw className="w-5 h-5" />
               )}
@@ -281,7 +264,7 @@ function ApplicationsPage() {
             </button>
 
             <button className="btn btn-primary w-full md:w-auto flex flex-row justify-center items-center gap-2 text-primary-content cursor-pointer" type="button" onClick={openModal} disabled={loading}>
-              <Plus className="w-5 h-5" />
+              <CirclePlus className="w-5 h-5" />
               Nouvelle candidature
             </button>
           </>
@@ -293,33 +276,19 @@ function ApplicationsPage() {
       )}
 
       {applicationFilterId && (
-        <div className="w-full min-w-0 mt-6 p-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 rounded-2xl bg-base-100 shadow-sm">
-          <div className="min-w-0">
-            <h2 className="text-base font-semibold text-base-content">
-              Filtre calendrier actif
-            </h2>
-
-            <p className="mt-1 text-sm text-base-content/60 truncate">
-              {getCalendarFilterLabel()}
-            </p>
-          </div>
-
-          <button className="btn btn-ghost btn-sm shrink-0 cursor-pointer" type="button" onClick={clearApplicationFilter}>
-            Afficher toutes
-          </button>
-        </div>
+        <ActiveFilterCard className="mt-6" onClear={clearApplicationFilter} />
       )}
 
       {!loading && applicationFilterId && filteredApplications.length === 0 && (
-        <div className="w-full min-w-0 mt-6 p-4 md:p-6 text-center rounded-2xl bg-base-100 shadow-sm">
+        <SectionCard className="text-center">
           <h2 className="text-lg font-semibold text-base-content">
             Aucune candidature trouvée
           </h2>
 
-          <p className="mt-1 text-sm text-base-content/60">
+          <p className="mt-2 text-sm text-base-content/60">
             La candidature liée à cet événement calendrier n’existe plus ou n’est plus disponible.
           </p>
-        </div>
+        </SectionCard>
       )}
 
       {!loading && (!applicationFilterId || filteredApplications.length > 0) && (
@@ -333,7 +302,7 @@ function ApplicationsPage() {
       <ApplicationModal
         contacts={contacts}
         followUpDelayDays={followUpDelayDays}
-        isOpen={isModalOpen}
+        isOpen={isApplicationModalOpen}
         onClose={closeModal}
         onApplicationCreated={handleApplicationCreated}
       />

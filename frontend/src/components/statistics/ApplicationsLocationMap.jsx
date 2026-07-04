@@ -248,20 +248,7 @@ function ApplicationsLocationMap({ applications }) {
       description="Visualisation des villes reconnues à partir des localisations renseignées."
       contentClassName="grid grid-cols-1 xl:grid-cols-[2fr_1fr] items-stretch gap-6"
     >
-      <div className="relative w-full h-[360px] md:h-[420px] xl:h-full xl:min-h-0 rounded-xl border border-base-300 bg-base-200 overflow-hidden">
-        <button
-          className="btn btn-sm btn-primary absolute bottom-4 left-4 flex flex-row justify-center items-center gap-2 text-primary-content shadow-sm cursor-pointer z-[1000]"
-          type="button"
-          onClick={resetMapView}
-        >
-          <RotateCcw className="w-4 h-4" />
-          Réinitialiser
-        </button>
-
-        <div className="w-full h-full" ref={mapContainerRef} />
-      </div>
-
-      <div className="w-full min-w-0 h-full flex flex-col justify-start items-stretch">
+      <div className="w-full min-w-0 h-full order-1 xl:order-2 flex flex-col justify-start items-stretch">
         <h3 className="font-semibold text-base-content">
           Villes principales
         </h3>
@@ -291,6 +278,19 @@ function ApplicationsLocationMap({ applications }) {
             +{mappedLocations.length - 5} autre(s) ville(s) détectée(s).
           </p>
         )}
+      </div>
+
+      <div className="relative z-0 isolate w-full min-h-[360px] md:min-h-[420px] xl:min-h-[460px] rounded-xl border border-base-300 bg-base-200 overflow-hidden">
+        <button
+          className="btn btn-sm btn-primary absolute bottom-4 left-4 z-10 flex flex-row justify-center items-center gap-2 text-primary-content shadow-sm cursor-pointer"
+          type="button"
+          onClick={resetMapView}
+        >
+          <RotateCcw className="w-4 h-4" />
+          Réinitialiser
+        </button>
+
+        <div className="absolute inset-0 z-0" ref={mapContainerRef} />
       </div>
     </SectionCard>
   );

@@ -174,16 +174,6 @@ function getDetailedFunnelRows(summary) {
   ];
 }
 
-function ContractTypeEmptyState() {
-  return (
-    <ItemCard className="text-center">
-      <p className="text-sm text-base-content/60">
-        Aucun type de contrat renseigné.
-      </p>
-    </ItemCard>
-  );
-}
-
 function ContractTypeLegendItem({ segment, total }) {
   return (
     <ItemCard>
@@ -269,27 +259,21 @@ function ContractTypeDonutCard({ rows, total }) {
       title="Types de contrat"
       description="Répartition des candidatures selon le type de contrat ciblé."
     >
-      {rows.length === 0 && (
-        <ContractTypeEmptyState />
-      )}
+      <div className="w-full grid grid-cols-1 xl:grid-cols-[16rem_1fr] justify-center items-center gap-6">
+        <ContractTypeDonut segments={segments} total={total} />
 
-      {rows.length > 0 && (
-        <div className="w-full grid grid-cols-1 xl:grid-cols-[16rem_1fr] justify-center items-center gap-6">
-          <ContractTypeDonut segments={segments} total={total} />
-
-          <div className="w-full min-w-0 grid grid-cols-1 md:grid-cols-2 gap-2">
-            {segments.map(function (segment) {
-              return (
-                <ContractTypeLegendItem
-                  segment={segment}
-                  total={total}
-                  key={segment.key}
-                />
-              );
-            })}
-          </div>
+        <div className="w-full min-w-0 grid grid-cols-1 md:grid-cols-2 gap-2">
+          {segments.map(function (segment) {
+            return (
+              <ContractTypeLegendItem
+                segment={segment}
+                total={total}
+                key={segment.key}
+              />
+            );
+          })}
         </div>
-      )}
+      </div>
     </SectionCard>
   );
 }
@@ -609,7 +593,8 @@ function StatisticsPage() {
           </div>
 
           <div className="w-full grid grid-cols-1 xl:grid-cols-2 gap-6">
-            <TrackingQualityCard rows={qualityRows} />
+            <FunnelCard rows={funnelRows} total={summary.total} />
+
 
             <InterviewRateDonutCard summary={summary} />
           </div>
@@ -620,7 +605,7 @@ function StatisticsPage() {
           />
 
           <div className="w-full grid grid-cols-1 xl:grid-cols-2 gap-6">
-            <FunnelCard rows={funnelRows} total={summary.total} />
+            <TrackingQualityCard rows={qualityRows} />
 
             <MonthlyActivityCard rows={monthRows} />
           </div>
