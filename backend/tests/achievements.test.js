@@ -21,12 +21,15 @@ import {
 
 const EXPECTED_ACHIEVEMENT_SLUGS = [
   "first-application",
+  "first-follow-up",
   "first-tag",
   "first-contact",
   "first-document",
-  "application-organized",
-  "follow-up-planned",
-  "five-applications"
+  "first-interview",
+  "first-daily-goal",
+  "first-monthly-goal",
+  "ten-applications",
+  "fifty-applications"
 ];
 
 const APPLICATION_PAYLOAD = {
@@ -244,7 +247,7 @@ describe("Achievement routes", function () {
     expectLockedAchievement(response.body.data.achievements, "first-document");
   });
 
-  test("GET /api/achievements - Should unlock follow-up planned achievement", async function () {
+  test("GET /api/achievements - Should unlock first follow-up achievement", async function () {
     const { token } = await createAuthenticatedTestUser();
 
     await createTestApplication(token, FOLLOW_UP_APPLICATION_PAYLOAD);
@@ -254,13 +257,13 @@ describe("Achievement routes", function () {
     expect(response.status).toBe(200);
 
     expectUnlockedAchievement(response.body.data.achievements, "first-application");
-    expectUnlockedAchievement(response.body.data.achievements, "follow-up-planned");
+    expectUnlockedAchievement(response.body.data.achievements, "first-follow-up");
   });
 
-  test("GET /api/achievements - Should unlock five applications achievement", async function () {
+  test("GET /api/achievements - Should unlock ten applications achievement", async function () {
     const { token } = await createAuthenticatedTestUser();
 
-    for (let applicationIndex = 1; applicationIndex <= 5; applicationIndex += 1) {
+    for (let applicationIndex = 1; applicationIndex <= 10; applicationIndex += 1) {
       await createTestApplication(token, {
         ...APPLICATION_PAYLOAD,
         company: `Wayne Enterprises ${applicationIndex}`,
@@ -273,7 +276,7 @@ describe("Achievement routes", function () {
     expect(response.status).toBe(200);
 
     expectUnlockedAchievement(response.body.data.achievements, "first-application");
-    expectUnlockedAchievement(response.body.data.achievements, "five-applications");
+    expectUnlockedAchievement(response.body.data.achievements, "ten-applications");
   });
 
   test("GET /api/achievements - Should unlock first tag achievement", async function () {
@@ -315,7 +318,7 @@ describe("Achievement routes", function () {
     expectLockedAchievement(response.body.data.achievements, "first-application");
   });
 
-  test("GET /api/achievements - Should unlock application organized achievement after linking tag", async function () {
+  test("GET /api/achievements - Should keep relation actions without extra achievement", async function () {
     const { token } = await createAuthenticatedTestUser();
 
     const application = await createTestApplication(token);
@@ -334,7 +337,7 @@ describe("Achievement routes", function () {
 
     expectUnlockedAchievement(response.body.data.achievements, "first-application");
     expectUnlockedAchievement(response.body.data.achievements, "first-tag");
-    expectUnlockedAchievement(response.body.data.achievements, "application-organized");
+    expectLockedAchievement(response.body.data.achievements, "first-follow-up");
   });
 
   test("GET /api/achievements - Should keep achievements scoped to authenticated user", async function () {
