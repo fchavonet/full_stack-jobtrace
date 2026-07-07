@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { BriefcaseBusiness, FileText, History, LinkIcon, Users } from "lucide-react";
+import { BriefcaseBusiness, FileText, History, LinkIcon, Users, X } from "lucide-react";
 
 import { listContacts } from "../../api/contacts.api";
 import { listDocuments } from "../../api/documents.api";
@@ -483,8 +483,8 @@ function ApplicationDetailsModal({
 
   function renderTabs() {
     return (
-      <div className="w-full">
-        <div className="tabs tabs-lift w-full" role="tablist">
+      <div className="w-full overflow-x-auto">
+        <div className="tabs tabs-lift w-full min-w-full" role="tablist">
           <button className={getTabClassName(activeTab, "announcement")} type="button" role="tab" onClick={showAnnouncementTab} aria-label="Annonce">
             <BriefcaseBusiness className="w-6 h-6 md:hidden" />
 
@@ -516,6 +516,41 @@ function ApplicationDetailsModal({
               Historique
             </span>
           </button>
+        </div>
+      </div>
+    );
+  }
+
+  function renderCustomHeader() {
+    return (
+      <div className="bg-base-100 border-b border-base-300">
+        <div className="p-4 lg:p-6 pb-4 flex flex-row justify-between items-start gap-4">
+          <div className="min-w-0 flex-1">
+            <h2
+              className="text-xl font-semibold text-base-content truncate"
+              title={application.position}
+            >
+              {application.position}
+            </h2>
+
+            <p className="mt-1 text-sm text-base-content/60 truncate">
+              {application.company}
+            </p>
+          </div>
+
+          <button
+            className="btn btn-ghost btn-sm btn-circle shrink-0 cursor-pointer"
+            type="button"
+            onClick={handleClose}
+            disabled={updating || tagsUpdating || relationsUpdating}
+            aria-label="Fermer le détail"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        <div className="px-4 lg:px-6 -mb-px">
+          {renderTabs()}
         </div>
       </div>
     );
@@ -840,30 +875,22 @@ function ApplicationDetailsModal({
   return (
     <Modal
       isOpen={isOpen}
-      title={application.position}
-      description={application.company}
+      customHeader={renderCustomHeader()}
       onClose={handleClose}
       closeDisabled={updating || tagsUpdating || relationsUpdating}
       closeAriaLabel="Fermer le détail"
       maxWidthClassName="max-w-5xl"
       className="lg:!h-[92vh]"
-      bodyClassName="p-0"
       footer={renderFooter()}
     >
-      <div className="w-full min-w-0 p-4 md:p-6 pb-0 bg-base-200">
-        {renderTabs()}
-      </div>
+      {loading && (
+        <div className="mb-4 p-4 flex flex-row justify-start items-center gap-2 text-sm text-base-content/60 rounded-2xl bg-base-100 shadow-sm">
+          <span className="loading loading-sm loading-spinner" />
+          Chargement des détails...
+        </div>
+      )}
 
-      <div className="w-full min-w-0 p-4 md:p-6 bg-base-200">
-        {loading && (
-          <div className="mb-4 p-4 flex flex-row justify-start items-center gap-2 text-sm text-base-content/60 rounded-2xl bg-base-100 shadow-sm">
-            <span className="loading loading-sm loading-spinner" />
-            Chargement des détails...
-          </div>
-        )}
-
-        {renderActiveTabContent()}
-      </div>
+      {renderActiveTabContent()}
     </Modal>
   );
 }

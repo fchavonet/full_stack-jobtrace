@@ -394,7 +394,7 @@ function InterviewRateDonutCard({ summary }) {
       description="Part des candidatures ayant obtenu un entretien."
       className="h-full"
     >
-      <div className="w-full grid grid-cols-1 md:grid-cols-[12rem_1fr] xl:grid-cols-1 2xl:grid-cols-[12rem_1fr] justify-center items-center gap-6">
+      <div className="w-full grid grid-cols-1 md:grid-cols-[12rem_minmax(0,1fr)] justify-center items-center gap-6">
         <InterviewRateDonut
           segments={segments}
           rate={summary.interviewRate}
@@ -593,8 +593,7 @@ function StatisticsPage() {
           </div>
 
           <div className="w-full grid grid-cols-1 xl:grid-cols-2 gap-6">
-            <FunnelCard rows={funnelRows} total={summary.total} />
-
+            <TrackingQualityCard rows={qualityRows} />
 
             <InterviewRateDonutCard summary={summary} />
           </div>
@@ -605,7 +604,7 @@ function StatisticsPage() {
           />
 
           <div className="w-full grid grid-cols-1 xl:grid-cols-2 gap-6">
-            <TrackingQualityCard rows={qualityRows} />
+            <FunnelCard rows={funnelRows} total={summary.total} />
 
             <MonthlyActivityCard rows={monthRows} />
           </div>

@@ -31,6 +31,7 @@ function Modal({
   description,
   children,
   footer,
+  customHeader,
   onClose,
   closeDisabled = false,
   closeAriaLabel = "Fermer",
@@ -43,40 +44,48 @@ function Modal({
     return null;
   }
 
+  let headerContent = (
+    <div className="p-4 lg:p-6 flex flex-row justify-between items-start gap-4 border-b border-base-300 bg-base-100">
+      <div className="min-w-0 flex-1">
+        {title && (
+          <h2
+            className="text-xl font-semibold text-base-content truncate"
+            title={title}
+          >
+            {title}
+          </h2>
+        )}
+
+        {description && (
+          <p className="mt-1 text-sm text-base-content/60">
+            {description}
+          </p>
+        )}
+      </div>
+
+      <button
+        className="btn btn-ghost btn-sm btn-circle shrink-0 cursor-pointer"
+        type="button"
+        onClick={onClose}
+        disabled={closeDisabled}
+        aria-label={closeAriaLabel}
+      >
+        <X className="w-5 h-5" />
+      </button>
+    </div>
+  );
+
+  if (customHeader) {
+    headerContent = customHeader;
+  }
+
   return (
     <div className="modal modal-open bg-black/40 backdrop-blur-sm">
       <Component
         className={getModalBoxClassName(maxWidthClassName, className)}
         {...props}
       >
-        <div className="p-4 lg:p-6 flex flex-row justify-between items-start gap-4 border-b border-base-300">
-          <div className="min-w-0 flex-1">
-            {title && (
-              <h2
-                className="text-xl font-semibold text-base-content truncate"
-                title={title}
-              >
-                {title}
-              </h2>
-            )}
-
-            {description && (
-              <p className="mt-1 text-sm text-base-content/60">
-                {description}
-              </p>
-            )}
-          </div>
-
-          <button
-            className="btn btn-ghost btn-sm btn-circle shrink-0 cursor-pointer"
-            type="button"
-            onClick={onClose}
-            disabled={closeDisabled}
-            aria-label={closeAriaLabel}
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
+        {headerContent}
 
         <div className={getModalBodyClassName(bodyClassName)}>
           {children}
