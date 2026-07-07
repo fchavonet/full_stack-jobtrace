@@ -443,8 +443,15 @@ function SettingsPage() {
           <div className="w-full grid gap-6 sm:grid-cols-[220px_1fr] sm:items-start">
             <div className="w-full h-full min-h-56 overflow-hidden rounded-xl bg-primary">
               {profileForm.avatarUrl && (
-                <img className="w-full h-full min-h-56 object-cover" src={profileForm.avatarUrl} alt="Avatar utilisateur" />
-              )}
+                <img
+                  className="w-full h-full min-h-56 object-cover"
+                  width="220"
+                  height="224"
+                  src={profileForm.avatarUrl}
+                  alt="Avatar utilisateur"
+                  loading="lazy"
+                  decoding="async"
+                />)}
 
               {!profileForm.avatarUrl && (
                 <div className="w-full h-full min-h-56 flex flex-row justify-center items-center text-6xl font-bold text-primary-content">

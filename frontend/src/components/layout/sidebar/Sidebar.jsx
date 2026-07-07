@@ -58,8 +58,15 @@ function Sidebar({ userProfile }) {
         <div className="w-full mb-4 p-2 rounded-xl bg-base-200">
           <div className="min-w-0 flex flex-row justify-start items-center gap-4">
             {userProfile.avatarUrl && (
-              <img className="w-10 h-10 shrink-0 rounded-full object-cover" src={userProfile.avatarUrl} alt="Avatar utilisateur" />
-            )}
+              <img
+                className="w-10 h-10 shrink-0 rounded-full object-cover"
+                width="40"
+                height="40"
+                src={userProfile.avatarUrl}
+                alt="Avatar utilisateur"
+                loading="lazy"
+                decoding="async"
+              />)}
 
             {!userProfile.avatarUrl && (
               <div className="w-10 h-10 shrink-0 flex flex-row justify-center items-center text-sm font-bold text-primary-content rounded-full bg-primary">

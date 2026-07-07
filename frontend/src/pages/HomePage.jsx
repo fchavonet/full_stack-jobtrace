@@ -1,8 +1,11 @@
-import { useState } from "react";
+import { lazy, Suspense, useState } from "react";
 import { useLocation } from "react-router-dom";
 
-import AuthModal from "../components/auth/AuthModal";
 import Header from "../components/layout/Header";
+
+const AuthModal = lazy(function () {
+  return import("../components/auth/AuthModal.jsx");
+});
 
 function HomePage() {
   const location = useLocation();
@@ -52,12 +55,16 @@ function HomePage() {
 
       </main>
 
-      <AuthModal
-        isOpen={isAuthModalOpen}
-        mode={authMode}
-        setMode={setAuthMode}
-        onClose={closeAuthModal}
-      />
+      {isAuthModalOpen && (
+        <Suspense fallback={null}>
+          <AuthModal
+            isOpen={isAuthModalOpen}
+            mode={authMode}
+            setMode={setAuthMode}
+            onClose={closeAuthModal}
+          />
+        </Suspense>
+      )}
     </div>
   );
 }

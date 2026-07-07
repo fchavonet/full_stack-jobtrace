@@ -311,8 +311,15 @@ function JobLinksCard() {
 
               rightElement={
                 <span className="h-10 shrink-0 flex flex-row justify-end items-center rounded-lg">
-                  <img className="h-full w-auto max-w-28 object-contain" src={link.logo} alt={"Logo " + link.label} loading="lazy" />
-                </span>
+                  <img
+                    className="h-full w-auto max-w-28 object-contain"
+                    width="112"
+                    height="40"
+                    src={link.logo}
+                    alt={"Logo " + link.label}
+                    loading="lazy"
+                    decoding="async"
+                  />                </span>
               }
             />
           );

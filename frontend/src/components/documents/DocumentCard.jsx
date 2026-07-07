@@ -166,8 +166,12 @@ function DocumentPreview({
         {previewUrl && isImageDocument(doc) && (
           <img
             className="w-full h-full object-cover"
+            width="210"
+            height="297"
             src={previewUrl}
             alt={"Aperçu de " + getDocumentName(doc)}
+            loading="lazy"
+            decoding="async"
           />
         )}
 
