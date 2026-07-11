@@ -12,7 +12,7 @@ The validation is designed to be executed from top to bottom on a fresh database
 - Database: `PostgreSQL`.
 - ORM: `Prisma`.
 - API documentation: `Swagger` / `OpenAPI`.
-- Authentication: `JWT`.
+- Authentication: `JWT` stored in a secure `HttpOnly` cookie.
 - Email system: `Nodemailer` with `SMTP`.
 - Upload system: `Multer` with local storage.
 
@@ -41,6 +41,14 @@ Set them manually before running the tests:
 - `EMAIL`: email of the main test account.
 - `PASSWORD`: current password of the main test account.
 - `NEW_PASSWORD`: temporary password used during password update validation.
+- `COOKIE_JAR`: local file used by `curl` to store and resend the authentication cookie.
+
+Initialize the cookie file before starting the authentication tests:
+
+```bash
+COOKIE_JAR="/tmp/jobtrace-cookies.txt"
+rm -f "$COOKIE_JAR"
+```
 
 The email address must be real and accessible because email verification and password reset links are sent by email.
 <br>
@@ -49,7 +57,6 @@ Passwords must respect the backend password rules.
 The following variables will be filled manually during the validation:
 
 - `EMAIL_VERIFICATION_TOKEN`: token received in the email verification link.
-- `TOKEN`: JWT of the authenticated test user.
 - `PASSWORD_RESET_TOKEN`: token received in the password reset link.
 
 <br>
@@ -59,7 +66,7 @@ The following variables will be filled manually during the validation:
 - `TAG_ID`: id of the tag created during validation.
 - `DOCUMENT_ID`: id of the document uploaded during validation.
 
-IDs and tokens must be copied manually from the real API responses.
+IDs and email tokens must be copied manually from the real API responses.
 
 ## 1. Project startup
 
@@ -422,7 +429,7 @@ Verify that a verified user can log in.
 #### Command to run
 
 ```bash
-curl -s -X POST http://localhost:4000/api/auth/login \
+curl -s -c "$COOKIE_JAR" -X POST http://localhost:4000/api/auth/login \
   -H "Content-Type: application/json" \
   -d "{
     \"email\": \"$EMAIL\",
@@ -449,19 +456,20 @@ curl -s -X POST http://localhost:4000/api/auth/login \
       "followUpDelayDays": 15,
       "createdAt": "*",
       "updatedAt": "*"
-    },
-    "token": "*"
+    }
   }
 }
 ```
 
-#### Variable to save
+The JWT must not appear in the JSON response.
 
-Copy the token manually from the response:
+Verify that the authentication cookie was stored:
 
 ```bash
-TOKEN="PASTE_THE_TOKEN_HERE"
+cat "$COOKIE_JAR"
 ```
+
+The cookie file should contain an entry named `jobtrace_auth` marked as `HttpOnly`.
 
 Status:
 
@@ -504,7 +512,7 @@ Verify that the authenticated user can retrieve their account data.
 
 ```bash
 curl -s http://localhost:4000/api/auth/me \
-  -H "Authorization: Bearer $TOKEN" | jq
+  -b "$COOKIE_JAR" | jq
 ```
 
 #### Expected result
@@ -547,7 +555,7 @@ Verify that the authenticated user can retrieve their profile.
 
 ```bash
 curl -s http://localhost:4000/api/profile \
-  -H "Authorization: Bearer $TOKEN" | jq
+  -b "$COOKIE_JAR" | jq
 ```
 
 #### Expected result
@@ -587,7 +595,7 @@ Verify that the authenticated user can update their profile.
 ```bash
 curl -s -X PATCH http://localhost:4000/api/profile \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $TOKEN" \
+  -b "$COOKIE_JAR" \
   -d '{
     "firstName": "Dick",
     "lastName": "Grayson"
@@ -631,7 +639,7 @@ Verify that invalid profile values are rejected.
 ```bash
 curl -s -X PATCH http://localhost:4000/api/profile \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $TOKEN" \
+  -b "$COOKIE_JAR" \
   -d '{
     "firstName": "J@son",
     "lastName": "Todd"
@@ -663,7 +671,7 @@ Verify that the authenticated user can update their settings.
 ```bash
 curl -s -X PATCH http://localhost:4000/api/profile/settings \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $TOKEN" \
+  -b "$COOKIE_JAR" \
   -d '{
     "theme": "dark",
     "dailyGoal": 10,
@@ -708,7 +716,7 @@ Verify that invalid settings are rejected.
 ```bash
 curl -s -X PATCH http://localhost:4000/api/profile/settings \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $TOKEN" \
+  -b "$COOKIE_JAR" \
   -d '{
     "theme": "red"
   }' | jq
@@ -739,7 +747,7 @@ Verify that the authenticated user can update their password.
 ```bash
 curl -s -X PATCH http://localhost:4000/api/profile/password \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $TOKEN" \
+  -b "$COOKIE_JAR" \
   -d "{
     \"currentPassword\": \"$PASSWORD\",
     \"newPassword\": \"$NEW_PASSWORD\"
@@ -767,7 +775,7 @@ Verify that the updated password can be used to log in.
 #### Command to run
 
 ```bash
-curl -s -X POST http://localhost:4000/api/auth/login \
+curl -s -c "$COOKIE_JAR" -X POST http://localhost:4000/api/auth/login \
   -H "Content-Type: application/json" \
   -d "{
     \"email\": \"$EMAIL\",
@@ -794,19 +802,11 @@ curl -s -X POST http://localhost:4000/api/auth/login \
       "followUpDelayDays": 30,
       "createdAt": "*",
       "updatedAt": "*"
-    },
-    "token": ""
+    }
   }
 }
 ```
 
-#### Variable to update
-
-Copy the new token manually from the response:
-
-```bash
-TOKEN="PASTE_THE_NEW_TOKEN_HERE"
-```
 
 Status:
 
@@ -821,7 +821,7 @@ Verify that a wrong current password is rejected.
 ```bash
 curl -s -X PATCH http://localhost:4000/api/profile/password \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $TOKEN" \
+  -b "$COOKIE_JAR" \
   -d '{
     "currentPassword": "WrongPassword42",
     "newPassword": "AnotherWrongPassword42"
@@ -952,7 +952,7 @@ Verify that the reset password works.
 #### Command to run
 
 ```bash
-curl -s -X POST http://localhost:4000/api/auth/login \
+curl -s -c "$COOKIE_JAR" -X POST http://localhost:4000/api/auth/login \
   -H "Content-Type: application/json" \
   -d "{
     \"email\": \"$EMAIL\",
@@ -979,19 +979,11 @@ curl -s -X POST http://localhost:4000/api/auth/login \
       "followUpDelayDays": 30,
       "createdAt": "*",
       "updatedAt": "*"
-    },
-    "token": "*"
+    }
   }
 }
 ```
 
-#### Variable to update
-
-Copy the new token manually from the response:
-
-```bash
-TOKEN="PASTE_THE_NEW_TOKEN_HERE"
-```
 
 Status:
 
@@ -1037,7 +1029,7 @@ Verify that an authenticated user can create an application.
 ```bash
 curl -s -X POST http://localhost:4000/api/applications \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $TOKEN" \
+  -b "$COOKIE_JAR" \
   -d '{
     "company": "Wayne Enterprises",
     "position": "Robin",
@@ -1103,7 +1095,7 @@ Verify that the authenticated user can list their applications.
 
 ```bash
 curl -s http://localhost:4000/api/applications \
-  -H "Authorization: Bearer $TOKEN" | jq
+  -b "$COOKIE_JAR" | jq
 ```
 
 #### Expected result
@@ -1150,7 +1142,7 @@ Verify that the authenticated user can retrieve one of their applications.
 
 ```bash
 curl -s http://localhost:4000/api/applications/$APPLICATION_ID \
-  -H "Authorization: Bearer $TOKEN" | jq
+  -b "$COOKIE_JAR" | jq
 ```
 
 #### Expected result
@@ -1196,7 +1188,7 @@ Verify that the authenticated user can update one of their applications.
 ```bash
 curl -s -X PATCH http://localhost:4000/api/applications/$APPLICATION_ID \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $TOKEN" \
+  -b "$COOKIE_JAR" \
   -d '{
     "status": "interview",
     "interviewAt": "2026-07-12"
@@ -1246,7 +1238,7 @@ Verify that invalid application status values are rejected.
 ```bash
 curl -s -X POST http://localhost:4000/api/applications \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $TOKEN" \
+  -b "$COOKIE_JAR" \
   -d '{
     "company": "Wayne Enterprises",
     "position": "Nightwing",
@@ -1270,7 +1262,7 @@ curl -s -X POST http://localhost:4000/api/applications \
 
 Status:
 
-### GET `/api/applications` without JWT
+### GET `/api/applications` without authentication cookie
 
 #### Goal
 
@@ -1307,7 +1299,7 @@ Verify that an authenticated user can create a tag.
 ```bash
 curl -s -X POST http://localhost:4000/api/tags \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $TOKEN" \
+  -b "$COOKIE_JAR" \
   -d '{
     "name": "Bat Signal",
     "color": "#ffee00"
@@ -1353,7 +1345,7 @@ Verify that the authenticated user can list their tags.
 
 ```bash
 curl -s http://localhost:4000/api/tags \
-  -H "Authorization: Bearer $TOKEN" | jq
+  -b "$COOKIE_JAR" | jq
 ```
 
 #### Expected result
@@ -1389,7 +1381,7 @@ Verify that the authenticated user can retrieve one of their tags.
 
 ```bash
 curl -s http://localhost:4000/api/tags/$TAG_ID \
-  -H "Authorization: Bearer $TOKEN" | jq
+  -b "$COOKIE_JAR" | jq
 ```
 
 #### Expected result
@@ -1424,7 +1416,7 @@ Verify that the authenticated user can update one of their tags.
 ```bash
 curl -s -X PATCH http://localhost:4000/api/tags/$TAG_ID \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $TOKEN" \
+  -b "$COOKIE_JAR" \
   -d '{
     "name": "Gotham Priority",
     "color": "#000000"
@@ -1463,7 +1455,7 @@ Verify that the same user cannot create two tags with the same slug.
 ```bash
 curl -s -X POST http://localhost:4000/api/tags \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $TOKEN" \
+  -b "$COOKIE_JAR" \
   -d '{
     "name": "Gotham Priority",
     "color": "#000000"
@@ -1493,7 +1485,7 @@ Verify that invalid tag color values are rejected.
 ```bash
 curl -s -X POST http://localhost:4000/api/tags \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $TOKEN" \
+  -b "$COOKIE_JAR" \
   -d '{
     "name": "Invalid Color",
     "color": "red"
@@ -1525,7 +1517,7 @@ Verify that an authenticated user can link one of their tags to one of their app
 ```bash
 curl -s -X POST http://localhost:4000/api/applications/$APPLICATION_ID/tags \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $TOKEN" \
+  -b "$COOKIE_JAR" \
   -d "{
     \"tagId\": \"$TAG_ID\"
   }" | jq
@@ -1571,7 +1563,7 @@ curl -s -X POST http://localhost:4000/api/applications/$APPLICATION_ID/tags \
 
 Status:
 
-### GET `/api/tags` without JWT
+### GET `/api/tags` without authentication cookie
 
 #### Goal
 
@@ -1608,7 +1600,7 @@ Verify that an authenticated user can create a contact.
 ```bash
 curl -s -X POST http://localhost:4000/api/contacts \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $TOKEN" \
+  -b "$COOKIE_JAR" \
   -d '{
     "firstName": "Bruce",
     "lastName": "Wayne",
@@ -1665,7 +1657,7 @@ Verify that the authenticated user can list their contacts.
 
 ```bash
 curl -s http://localhost:4000/api/contacts \
-  -H "Authorization: Bearer $TOKEN" | jq
+  -b "$COOKIE_JAR" | jq
 ```
 
 #### Expected result
@@ -1706,7 +1698,7 @@ Verify that the authenticated user can retrieve one of their contacts.
 
 ```bash
 curl -s http://localhost:4000/api/contacts/$CONTACT_ID \
-  -H "Authorization: Bearer $TOKEN" | jq
+  -b "$COOKIE_JAR" | jq
 ```
 
 #### Expected result
@@ -1746,7 +1738,7 @@ Verify that the authenticated user can update one of their contacts.
 ```bash
 curl -s -X PATCH http://localhost:4000/api/contacts/$CONTACT_ID \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $TOKEN" \
+  -b "$COOKIE_JAR" \
   -d '{
     "position": "Chairman",
     "company": "Wayne Industries",
@@ -1791,7 +1783,7 @@ Verify that invalid contact email values are rejected.
 ```bash
 curl -s -X PATCH http://localhost:4000/api/contacts/$CONTACT_ID \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $TOKEN" \
+  -b "$COOKIE_JAR" \
   -d '{
     "email": "invalid-email"
   }' | jq
@@ -1820,7 +1812,7 @@ Verify that invalid contact LinkedIn URL values are rejected.
 ```bash
 curl -s -X PATCH http://localhost:4000/api/contacts/$CONTACT_ID \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $TOKEN" \
+  -b "$COOKIE_JAR" \
   -d '{
     "linkedinUrl": "invalid-url"
   }' | jq
@@ -1849,7 +1841,7 @@ Verify that an authenticated user can link one of their contacts to one of their
 ```bash
 curl -s -X POST http://localhost:4000/api/applications/$APPLICATION_ID/contacts \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $TOKEN" \
+  -b "$COOKIE_JAR" \
   -d "{
     \"contactId\": \"$CONTACT_ID\",
     \"role\": \"Mentor\"
@@ -1910,7 +1902,7 @@ curl -s -X POST http://localhost:4000/api/applications/$APPLICATION_ID/contacts 
 
 Status:
 
-### GET `/api/contacts` without JWT
+### GET `/api/contacts` without authentication cookie
 
 #### Goal
 
@@ -1950,7 +1942,7 @@ echo "Wayne Enterprises document validation" > /tmp/dick-document.txt
 
 ```bash
 curl -s -X POST http://localhost:4000/api/documents \
-  -H "Authorization: Bearer $TOKEN" \
+  -b "$COOKIE_JAR" \
   -F "type=resume" \
   -F "document=@/tmp/dick-document.txt" | jq
 ```
@@ -1981,7 +1973,7 @@ printf '%s\n' '%PDF-1.4' '1 0 obj' '<<>>' 'endobj' 'trailer' '<<>>' '%%EOF' > /t
 
 ```bash
 curl -s -X POST http://localhost:4000/api/documents \
-  -H "Authorization: Bearer $TOKEN" \
+  -b "$COOKIE_JAR" \
   -F "type=resume" \
   -F "document=@/tmp/dick-resume.pdf" | jq
 ```
@@ -2027,7 +2019,7 @@ Verify that the authenticated user can list their documents.
 
 ```bash
 curl -s http://localhost:4000/api/documents \
-  -H "Authorization: Bearer $TOKEN" | jq
+  -b "$COOKIE_JAR" | jq
 ```
 
 #### Expected result
@@ -2065,7 +2057,7 @@ Verify that the authenticated user can retrieve one of their documents.
 
 ```bash
 curl -s http://localhost:4000/api/documents/$DOCUMENT_ID \
-  -H "Authorization: Bearer $TOKEN" | jq
+  -b "$COOKIE_JAR" | jq
 ```
 
 #### Expected result
@@ -2102,7 +2094,7 @@ Verify that the authenticated user can update the type of one of their documents
 ```bash
 curl -s -X PATCH http://localhost:4000/api/documents/$DOCUMENT_ID \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $TOKEN" \
+  -b "$COOKIE_JAR" \
   -d '{
     "type": "cover_letter"
   }' | jq
@@ -2142,7 +2134,7 @@ Verify that invalid document type values are rejected.
 ```bash
 curl -s -X PATCH http://localhost:4000/api/documents/$DOCUMENT_ID \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $TOKEN" \
+  -b "$COOKIE_JAR" \
   -d '{
     "type": "invalid"
   }' | jq
@@ -2172,7 +2164,7 @@ Verify that the authenticated user can download one of their documents.
 
 ```bash
 curl -s -L http://localhost:4000/api/documents/$DOCUMENT_ID/download \
-  -H "Authorization: Bearer $TOKEN" \
+  -b "$COOKIE_JAR" \
   -o /tmp/downloaded-dick-resume.pdf
 
 ls -lh /tmp/downloaded-dick-resume.pdf
@@ -2195,7 +2187,7 @@ Verify that an authenticated user can link one of their documents to one of thei
 ```bash
 curl -s -X POST http://localhost:4000/api/applications/$APPLICATION_ID/documents \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $TOKEN" \
+  -b "$COOKIE_JAR" \
   -d "{
     \"documentId\": \"$DOCUMENT_ID\"
   }" | jq
@@ -2265,7 +2257,7 @@ curl -s -X POST http://localhost:4000/api/applications/$APPLICATION_ID/documents
 
 Status:
 
-### GET `/api/documents` without JWT
+### GET `/api/documents` without authentication cookie
 
 #### Goal
 
@@ -2301,7 +2293,7 @@ Verify that the authenticated user can read the history of one of their applicat
 
 ```bash
 curl -s http://localhost:4000/api/applications/$APPLICATION_ID/history \
-  -H "Authorization: Bearer $TOKEN" | jq
+  -b "$COOKIE_JAR" | jq
 ```
 
 #### Expected result
@@ -2377,7 +2369,7 @@ Verify that an authenticated user can unlink a tag from one of their application
 
 ```bash
 curl -s -X DELETE http://localhost:4000/api/applications/$APPLICATION_ID/tags/$TAG_ID \
-  -H "Authorization: Bearer $TOKEN" | jq
+  -b "$COOKIE_JAR" | jq
 ```
 
 #### Expected result
@@ -2446,7 +2438,7 @@ Verify that an authenticated user can unlink a contact from one of their applica
 
 ```bash
 curl -s -X DELETE http://localhost:4000/api/applications/$APPLICATION_ID/contacts/$CONTACT_ID \
-  -H "Authorization: Bearer $TOKEN" | jq
+  -b "$COOKIE_JAR" | jq
 ```
 
 #### Expected result
@@ -2501,7 +2493,7 @@ Verify that an authenticated user can unlink a document from one of their applic
 
 ```bash
 curl -s -X DELETE http://localhost:4000/api/applications/$APPLICATION_ID/documents/$DOCUMENT_ID \
-  -H "Authorization: Bearer $TOKEN" | jq
+  -b "$COOKIE_JAR" | jq
 ```
 
 #### Expected result
@@ -2546,7 +2538,7 @@ Verify that unlink actions are also stored in the application history.
 
 ```bash
 curl -s http://localhost:4000/api/applications/$APPLICATION_ID/history \
-  -H "Authorization: Bearer $TOKEN" | jq
+  -b "$COOKIE_JAR" | jq
 ```
 
 #### Expected result
@@ -2582,7 +2574,7 @@ The response should now also contain:
 
 Status:
 
-### GET `/api/applications/:id/history` without JWT
+### GET `/api/applications/:id/history` without authentication cookie
 
 #### Goal
 
@@ -2618,7 +2610,7 @@ Verify that an authenticated user can retrieve the achievements catalog with the
 
 ```bash
 curl -s http://localhost:4000/api/achievements \
-  -H "Authorization: Bearer $TOKEN" | jq
+  -b "$COOKIE_JAR" | jq
 ```
 
 #### Expected result
@@ -2718,7 +2710,7 @@ Verify that creating five applications unlocks the five applications achievement
 
 ```bash
 curl -s http://localhost:4000/api/achievements \
-  -H "Authorization: Bearer $TOKEN" | jq
+  -b "$COOKIE_JAR" | jq
 ```
 
 #### Expected result
@@ -2742,7 +2734,7 @@ Example:
 
 Status:
 
-### GET `/api/achievements` without JWT
+### GET `/api/achievements` without authentication cookie
 
 #### Goal
 
@@ -2782,7 +2774,7 @@ Sensitive fields such as password hashes, email verification tokens and password
 
 ```bash
 curl -s http://localhost:4000/api/auth/export \
-  -H "Authorization: Bearer $TOKEN" | jq
+  -b "$COOKIE_JAR" | jq
 ```
 
 #### Expected result
@@ -2841,7 +2833,7 @@ Verify that the export response does not expose sensitive fields.
 
 ```bash
 curl -s http://localhost:4000/api/auth/export \
-  -H "Authorization: Bearer $TOKEN" | grep -Ei "password|hash|token|verification|reset"
+  -b "$COOKIE_JAR" | grep -Ei "password|hash|token|verification|reset"
 ```
 
 #### Expected result
@@ -2850,7 +2842,7 @@ The command should not return any sensitive field.
 
 Status:
 
-### GET `/api/auth/export` without JWT
+### GET `/api/auth/export` without authentication cookie
 
 #### Goal
 
@@ -2886,7 +2878,7 @@ Verify that an authenticated user can delete one of their documents.
 
 ```bash
 curl -s -X DELETE http://localhost:4000/api/documents/$DOCUMENT_ID \
-  -H "Authorization: Bearer $TOKEN" | jq
+  -b "$COOKIE_JAR" | jq
 ```
 
 #### Expected result
@@ -2922,7 +2914,7 @@ Verify that an authenticated user can delete one of their contacts.
 
 ```bash
 curl -s -X DELETE http://localhost:4000/api/contacts/$CONTACT_ID \
-  -H "Authorization: Bearer $TOKEN" | jq
+  -b "$COOKIE_JAR" | jq
 ```
 
 #### Expected result
@@ -2961,7 +2953,7 @@ Verify that an authenticated user can delete one of their tags.
 
 ```bash
 curl -s -X DELETE http://localhost:4000/api/tags/$TAG_ID \
-  -H "Authorization: Bearer $TOKEN" | jq
+  -b "$COOKIE_JAR" | jq
 ```
 
 #### Expected result
@@ -2995,7 +2987,7 @@ Verify that an authenticated user can delete one of their applications.
 
 ```bash
 curl -s -X DELETE http://localhost:4000/api/applications/$APPLICATION_ID \
-  -H "Authorization: Bearer $TOKEN" | jq
+  -b "$COOKIE_JAR" | jq
 ```
 
 #### Expected result
@@ -3030,6 +3022,45 @@ curl -s -X DELETE http://localhost:4000/api/applications/$APPLICATION_ID \
 
 Status:
 
+### POST `/api/auth/logout`
+
+#### Goal
+
+Verify that the authenticated user can log out and that the authentication cookie is cleared.
+
+#### Command to run
+
+```bash
+curl -s -X POST http://localhost:4000/api/auth/logout \
+  -b "$COOKIE_JAR" \
+  -c "$COOKIE_JAR" | jq
+```
+
+#### Expected result
+
+```json
+{
+  "success": true,
+  "message": "User logged out successfully.",
+  "data": {}
+}
+```
+
+The `jobtrace_auth` cookie should no longer contain a valid authentication token.
+
+Log in again before deleting the account:
+
+```bash
+curl -s -c "$COOKIE_JAR" -X POST http://localhost:4000/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d "{
+    \"email\": \"$EMAIL\",
+    \"password\": \"$PASSWORD\"
+  }" | jq
+```
+
+Status:
+
 ### DELETE `/api/auth/me`
 
 #### Goal
@@ -3041,14 +3072,15 @@ Verify that an authenticated user can delete their account.
 Delete the authenticated account:
 
 ```bash
-curl -s -X DELETE http://localhost:4000/api/auth/me \
-  -H "Authorization: Bearer $TOKEN" | jq
+curl -i -s -X DELETE http://localhost:4000/api/auth/me \
+  -b "$COOKIE_JAR" \
+  -c "$COOKIE_JAR"
 ```
 
 Then try to log in again:
 
 ```bash
-curl -s -X POST http://localhost:4000/api/auth/login \
+curl -s -c "$COOKIE_JAR" -X POST http://localhost:4000/api/auth/login \
   -H "Content-Type: application/json" \
   -d "{
     \"email\": \"$EMAIL\",
@@ -3065,6 +3097,8 @@ curl -s -X POST http://localhost:4000/api/auth/login \
   "data": {}
 }
 ```
+
+The account deletion response must also expire the `jobtrace_auth` cookie.
 
 #### Expected result after deletion
 
@@ -3098,7 +3132,9 @@ The following backend features have been manually validated:
 - Real email verification.
 - Login blocked before email verification.
 - Login after email verification.
-- JWT authentication.
+- Authentication cookie creation.
+- Logout and authentication cookie deletion.
+- Authentication with a JWT stored in an HttpOnly cookie.
 - Protected route access.
 - Current user endpoint.
 
@@ -3178,7 +3214,7 @@ The following backend features have been manually validated:
 - Contact deletion.
 - Tag deletion.
 - Application deletion.
-- Account deletion.
+- Account deletion and authentication cookie deletion.
 - Login rejection after account deletion.
 
 <br>

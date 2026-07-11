@@ -10,6 +10,9 @@ info:
     This OpenAPI documentation describes the backend API routes, request formats
     and responses used by the application.
 
+    Authentication uses a JWT stored in the `jobtrace_auth` HttpOnly cookie.
+    The cookie uses `SameSite=Lax`, `Path=/` and `Secure` in production.
+
 servers:
 - url: http://localhost:4000
 
@@ -17,7 +20,8 @@ tags:
 - name: Health
   description: API and database health checks
 - name: Authentication
-  description: Registration, login, email verification and account management
+  description: Registration, cookie-based login, logout, email verification
+    and account management
 - name: Profile
   description: User profile, settings and password management
 - name: Applications
@@ -217,7 +221,14 @@ paths:
               $ref: "#/components/schemas/LoginRequest"
       responses:
         "200":
-          description: User logged in successfully.
+          description: User logged in successfully. The JWT is stored in an
+            HttpOnly authentication cookie.
+          headers:
+            Set-Cookie:
+              description: Authentication cookie containing the JWT.
+              schema:
+                type: string
+                example: jobtrace_auth=jwt-token-value; Path=/; HttpOnly; SameSite=Lax
           content:
             application/json:
               schema:
@@ -238,7 +249,6 @@ paths:
                     followUpDelayDays: 15
                     createdAt: "2026-06-22T17:12:37.374Z"
                     updatedAt: "2026-06-22T17:14:00.000Z"
-                  token: jwt-token-value
         "400":
           description: Email or password validation failed.
           content:
@@ -277,13 +287,39 @@ paths:
                 message: Email must be verified before login.
                 errors: []
 
+
+  /api/auth/logout:
+    post:
+      tags:
+      - Authentication
+      summary: Log out the current user
+      description: Clears the authentication cookie. This endpoint succeeds
+        even when no valid cookie is present.
+      responses:
+        "200":
+          description: User logged out successfully.
+          headers:
+            Set-Cookie:
+              description: Expired authentication cookie.
+              schema:
+                type: string
+                example: jobtrace_auth=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmptySuccessResponse"
+              example:
+                success: true
+                message: User logged out successfully.
+                data: {}
+
   /api/auth/me:
     get:
       tags:
       - Authentication
       summary: Get current authenticated user
       security:
-      - JWT: []
+      - CookieAuth: []
       responses:
         "200":
           description: Current user retrieved successfully.
@@ -308,10 +344,17 @@ paths:
       - Authentication
       summary: Delete current authenticated user account
       security:
-      - JWT: []
+      - CookieAuth: []
       responses:
         "200":
-          description: Account deleted successfully.
+          description: Account deleted successfully. The authentication
+            cookie is cleared.
+          headers:
+            Set-Cookie:
+              description: Expired authentication cookie.
+              schema:
+                type: string
+                example: jobtrace_auth=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0
           content:
             application/json:
               schema:
@@ -339,7 +382,7 @@ paths:
       - Authentication
       summary: Export authenticated user data
       security:
-      - JWT: []
+      - CookieAuth: []
       responses:
         "200":
           description: User data exported successfully.
@@ -451,7 +494,7 @@ paths:
       - Profile
       summary: Get authenticated user profile
       security:
-      - JWT: []
+      - CookieAuth: []
       responses:
         "200":
           description: Profile retrieved successfully.
@@ -468,7 +511,7 @@ paths:
       - Profile
       summary: Update authenticated user profile
       security:
-      - JWT: []
+      - CookieAuth: []
       requestBody:
         required: true
         content:
@@ -509,7 +552,7 @@ paths:
       - Profile
       summary: Update authenticated user settings
       security:
-      - JWT: []
+      - CookieAuth: []
       requestBody:
         required: true
         content:
@@ -549,7 +592,7 @@ paths:
       - Profile
       summary: Update authenticated user password
       security:
-      - JWT: []
+      - CookieAuth: []
       requestBody:
         required: true
         content:
@@ -611,7 +654,7 @@ paths:
       - Applications
       summary: List authenticated user applications
       security:
-      - JWT: []
+      - CookieAuth: []
       responses:
         "200":
           description: Applications retrieved successfully.
@@ -626,7 +669,7 @@ paths:
       - Applications
       summary: Create a job application
       security:
-      - JWT: []
+      - CookieAuth: []
       requestBody:
         required: true
         content:
@@ -651,7 +694,7 @@ paths:
       - Applications
       summary: Get one job application
       security:
-      - JWT: []
+      - CookieAuth: []
       parameters:
       - $ref: "#/components/parameters/ApplicationId"
       responses:
@@ -670,7 +713,7 @@ paths:
       - Applications
       summary: Update one job application
       security:
-      - JWT: []
+      - CookieAuth: []
       parameters:
       - $ref: "#/components/parameters/ApplicationId"
       requestBody:
@@ -697,7 +740,7 @@ paths:
       - Applications
       summary: Delete one job application
       security:
-      - JWT: []
+      - CookieAuth: []
       parameters:
       - $ref: "#/components/parameters/ApplicationId"
       responses:
@@ -718,7 +761,7 @@ paths:
       - Applications
       summary: Get application history
       security:
-      - JWT: []
+      - CookieAuth: []
       parameters:
       - $ref: "#/components/parameters/ApplicationId"
       responses:
@@ -739,7 +782,7 @@ paths:
       - Tags
       summary: List authenticated user tags
       security:
-      - JWT: []
+      - CookieAuth: []
       responses:
         "200":
           description: Tags retrieved successfully.
@@ -754,7 +797,7 @@ paths:
       - Tags
       summary: Create a tag
       security:
-      - JWT: []
+      - CookieAuth: []
       requestBody:
         required: true
         content:
@@ -781,7 +824,7 @@ paths:
       - Tags
       summary: Get one tag
       security:
-      - JWT: []
+      - CookieAuth: []
       parameters:
       - $ref: "#/components/parameters/TagResourceId"
       responses:
@@ -800,7 +843,7 @@ paths:
       - Tags
       summary: Update one tag
       security:
-      - JWT: []
+      - CookieAuth: []
       parameters:
       - $ref: "#/components/parameters/TagResourceId"
       requestBody:
@@ -829,7 +872,7 @@ paths:
       - Tags
       summary: Delete one tag
       security:
-      - JWT: []
+      - CookieAuth: []
       parameters:
       - $ref: "#/components/parameters/TagResourceId"
       responses:
@@ -850,7 +893,7 @@ paths:
       - Contacts
       summary: List authenticated user contacts
       security:
-      - JWT: []
+      - CookieAuth: []
       responses:
         "200":
           description: Contacts retrieved successfully.
@@ -881,7 +924,7 @@ paths:
       - Contacts
       summary: Create a contact
       security:
-      - JWT: []
+      - CookieAuth: []
       requestBody:
         required: true
         content:
@@ -951,7 +994,7 @@ paths:
       - Contacts
       summary: Get one contact
       security:
-      - JWT: []
+      - CookieAuth: []
       parameters:
       - $ref: "#/components/parameters/ContactResourceId"
       responses:
@@ -986,7 +1029,7 @@ paths:
       - Contacts
       summary: Update one contact
       security:
-      - JWT: []
+      - CookieAuth: []
       parameters:
       - $ref: "#/components/parameters/ContactResourceId"
       requestBody:
@@ -1053,7 +1096,7 @@ paths:
       - Contacts
       summary: Delete one contact
       security:
-      - JWT: []
+      - CookieAuth: []
       parameters:
       - $ref: "#/components/parameters/ContactResourceId"
       responses:
@@ -1090,7 +1133,7 @@ paths:
       - Documents
       summary: List authenticated user documents
       security:
-      - JWT: []
+      - CookieAuth: []
       responses:
         "200":
           description: Documents retrieved successfully.
@@ -1105,7 +1148,7 @@ paths:
       - Documents
       summary: Upload a document
       security:
-      - JWT: []
+      - CookieAuth: []
       requestBody:
         required: true
         content:
@@ -1159,7 +1202,7 @@ paths:
       - Documents
       summary: Get one document
       security:
-      - JWT: []
+      - CookieAuth: []
       parameters:
       - $ref: "#/components/parameters/DocumentResourceId"
       responses:
@@ -1178,7 +1221,7 @@ paths:
       - Documents
       summary: Update document type
       security:
-      - JWT: []
+      - CookieAuth: []
       parameters:
       - $ref: "#/components/parameters/DocumentResourceId"
       requestBody:
@@ -1214,7 +1257,7 @@ paths:
       - Documents
       summary: Delete one document
       security:
-      - JWT: []
+      - CookieAuth: []
       parameters:
       - $ref: "#/components/parameters/DocumentResourceId"
       responses:
@@ -1235,7 +1278,7 @@ paths:
       - Documents
       summary: Download one document
       security:
-      - JWT: []
+      - CookieAuth: []
       parameters:
       - $ref: "#/components/parameters/DocumentResourceId"
       responses:
@@ -1257,7 +1300,7 @@ paths:
       - Relations
       summary: Link a tag to an application
       security:
-      - JWT: []
+      - CookieAuth: []
       parameters:
       - $ref: "#/components/parameters/ApplicationId"
       requestBody:
@@ -1303,7 +1346,7 @@ paths:
       - Relations
       summary: Unlink a tag from an application
       security:
-      - JWT: []
+      - CookieAuth: []
       parameters:
       - $ref: "#/components/parameters/ApplicationId"
       - $ref: "#/components/parameters/LinkedTagId"
@@ -1333,7 +1376,7 @@ paths:
       - Relations
       summary: Link a contact to an application
       security:
-      - JWT: []
+      - CookieAuth: []
       parameters:
       - $ref: "#/components/parameters/ApplicationId"
       requestBody:
@@ -1379,7 +1422,7 @@ paths:
       - Relations
       summary: Unlink a contact from an application
       security:
-      - JWT: []
+      - CookieAuth: []
       parameters:
       - $ref: "#/components/parameters/ApplicationId"
       - $ref: "#/components/parameters/LinkedContactId"
@@ -1409,7 +1452,7 @@ paths:
       - Relations
       summary: Link a document to an application
       security:
-      - JWT: []
+      - CookieAuth: []
       parameters:
       - $ref: "#/components/parameters/ApplicationId"
       requestBody:
@@ -1455,7 +1498,7 @@ paths:
       - Relations
       summary: Unlink a document from an application
       security:
-      - JWT: []
+      - CookieAuth: []
       parameters:
       - $ref: "#/components/parameters/ApplicationId"
       - $ref: "#/components/parameters/LinkedDocumentId"
@@ -1485,7 +1528,7 @@ paths:
       - Achievements
       summary: List authenticated user achievements
       security:
-      - JWT: []
+      - CookieAuth: []
       responses:
         "200":
           description: Achievements retrieved successfully.
@@ -1498,11 +1541,12 @@ paths:
 
 components:
   securitySchemes:
-    JWT:
-      type: http
-      scheme: bearer
-      bearerFormat: JWT
-      description: Paste the JWT token returned by POST /api/auth/login.
+    CookieAuth:
+      type: apiKey
+      in: cookie
+      name: jobtrace_auth
+      description: JWT authentication cookie created by POST /api/auth/login.
+        The cookie is HttpOnly, uses SameSite=Lax and is Secure in production.
 
   parameters:
     ApplicationId:
@@ -1577,8 +1621,7 @@ components:
 
   responses:
     Unauthorized:
-      description: Authentication token is missing, malformed, invalid or 
-        expired.
+      description: Authentication cookie is missing, invalid or expired.
       content:
         application/json:
           schema:
@@ -1588,11 +1631,6 @@ components:
               value:
                 success: false
                 message: Authentication token is required.
-                errors: []
-            invalidFormat:
-              value:
-                success: false
-                message: Authentication token format is invalid.
                 errors: []
             invalidOrExpired:
               value:
@@ -1877,9 +1915,6 @@ components:
           properties:
             user:
               $ref: "#/components/schemas/User"
-            token:
-              type: string
-              example: jwt-token-value
 
     ExportResponse:
       type: object

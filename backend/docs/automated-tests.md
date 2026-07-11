@@ -17,19 +17,19 @@ npm test
 - Run the complete test suite with detailed output for each test case:
 
 ```bash
-npm test:verbose
+npm run test:verbose
 ```
 
 - Run the tests in watch mode during development:
 
 ```bash
-npm test:watch
+npm run test:watch
 ```
 
 - Run the complete test suite and generate a coverage report:
 
 ```bash
-npm test:coverage
+npm run test:coverage
 ```
 
 ## Test stack
@@ -71,13 +71,20 @@ The automated test suite covers the main backend features.
 - Email verification.
 - Login before email verification rejection.
 - Login with verified account.
+- Authentication cookie creation.
+- JWT exclusion from login responses.
 - Invalid credentials rejection.
-- Current authenticated user retrieval.
+- Current authenticated user retrieval with the authentication cookie.
+- Logout.
+- Authentication cookie deletion.
+- Logout without an authentication cookie.
 - Forgot password flow.
 - Reset password flow.
+- Authentication cookie creation after password reset.
 - User data export.
 - Account deletion.
-- JWT-protected route rejection without token.
+- Authentication cookie deletion after account deletion.
+- Cookie-protected route rejection without authentication.
 
 ### Profile and settings
 
@@ -87,8 +94,9 @@ The automated test suite covers the main backend features.
 - User settings update.
 - Invalid settings rejection.
 - Authenticated password update.
+- Authentication cookie creation after password update.
 - Invalid current password rejection.
-- Protected profile routes without token.
+- Protected profile routes without authentication.
 
 ### Applications
 
@@ -100,7 +108,7 @@ The automated test suite covers the main backend features.
 - Invalid application data rejection.
 - Unknown application handling.
 - Application history retrieval.
-- Protected application routes without token.
+- Protected application routes without authentication.
 
 ### Tags
 
@@ -112,7 +120,7 @@ The automated test suite covers the main backend features.
 - Duplicate tag rejection.
 - Invalid tag color rejection.
 - Unknown tag handling.
-- Protected tag routes without token.
+- Protected tag routes without authentication.
 
 ### Contacts
 
@@ -125,7 +133,7 @@ The automated test suite covers the main backend features.
 - Invalid contact LinkedIn URL rejection.
 - Empty update payload rejection.
 - Unknown contact handling.
-- Protected contact routes without token.
+- Protected contact routes without authentication.
 
 ### Documents
 
@@ -140,7 +148,7 @@ The automated test suite covers the main backend features.
 - Invalid document type rejection.
 - Invalid file type rejection.
 - Unknown document handling.
-- Protected document routes without token.
+- Protected document routes without authentication.
 
 ### Relations between resources
 
@@ -156,20 +164,19 @@ The automated test suite covers the main backend features.
 - Validate missing relation identifiers.
 - Validate missing relation links.
 - Validate relation history entries.
-- Protected relation routes without token.
+- Protected relation routes without authentication.
 
 ### Achievements
 
 - Default locked achievements retrieval.
 - First application achievement.
-- Follow-up planned achievement.
-- Five applications achievement.
+- First follow-up achievement.
+- Ten applications achievement.
 - First tag achievement.
 - First contact achievement.
 - First document achievement.
-- Organized application achievement.
 - User-scoped achievements.
-- Protected achievements route without token.
+- Protected achievements route without authentication.
 
 ## Latest validation result
 
@@ -177,21 +184,32 @@ The latest complete automated validation passed successfully:
 
 ```bash
 Test Files  10 passed (10)
-Tests       140 passed (140)
+Tests       142 passed (142)
 ```
 
 The latest coverage result was:
 
 ```bash
-Statements  81.66%
-Branches    73.36%
-Functions   94.83%
-Lines       81.66%
+Statements  81.94%
+Branches    73.47%
+Functions   94.95%
+Lines       81.94%
 ```
 
 ## Notes
 
-The tests use dedicated test users and clean the test database before each test case.
+The authentication tests verify that the JWT is stored in an HTTP cookie instead of being returned in the JSON response.
+
+The authentication cookie is validated with the following properties:
+
+* `HttpOnly`.
+* `SameSite=Lax`.
+* `Path=/`.
+* `Secure` in production.
+
+The logout tests verify that the authentication cookie is cleared by the backend.
+
+The account deletion tests also verify that the authentication cookie is cleared after the user account is deleted.
 
 Uploaded document files are cleaned during the tests while preserving the tracked `.gitkeep` file inside the upload directory.
 

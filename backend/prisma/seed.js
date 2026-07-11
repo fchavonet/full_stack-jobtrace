@@ -1,3 +1,6 @@
+import console from "node:console";
+import process from "node:process";
+
 import bcrypt from "bcrypt";
 import crypto from "crypto";
 import dotenv from "dotenv";
