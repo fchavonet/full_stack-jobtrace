@@ -18,9 +18,6 @@ import { useToast } from "../hooks/useToast";
 
 import { getNumberValue, getProfileFromResponse, getProfileInitials, getTextValue, } from "../utils/profile/profile.utils";
 
-// Constants
-const AUTH_TOKEN_STORAGE_KEY = "jobtrace_token";
-
 const defaultProfileForm = {
   firstName: "",
   lastName: "",
@@ -365,17 +362,10 @@ function SettingsPage() {
   }
 
   async function handleExportData() {
-    const token = localStorage.getItem(AUTH_TOKEN_STORAGE_KEY);
-
-    if (!token) {
-      showToast("Session introuvable.", "error");
-      return;
-    }
-
     setExportSubmitting(true);
 
     try {
-      const data = await exportCurrentUserData(token);
+      const data = await exportCurrentUserData();
 
       downloadJsonFile(data);
       showToast("Export des données téléchargé.", "success");
@@ -387,13 +377,6 @@ function SettingsPage() {
   }
 
   async function handleDeleteAccount() {
-    const token = localStorage.getItem(AUTH_TOKEN_STORAGE_KEY);
-
-    if (!token) {
-      showToast("Session introuvable.", "error");
-      return;
-    }
-
     if (deleteConfirmation !== "SUPPRIMER") {
       showToast("Veuillez saisir SUPPRIMER pour confirmer.", "error");
       return;
@@ -402,9 +385,9 @@ function SettingsPage() {
     setDeleteSubmitting(true);
 
     try {
-      await deleteCurrentUser(token);
+      await deleteCurrentUser();
+      await logout();
 
-      logout();
       showToast("Compte supprimé.", "success");
       navigate("/");
     } catch {
