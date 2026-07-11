@@ -1,3 +1,5 @@
+import { getApplicationStatusIsFinal } from "../applications/display.utils";
+
 const MONTH_FORMATTER = new Intl.DateTimeFormat("fr-FR", {
   month: "long",
   year: "numeric",
@@ -37,6 +39,26 @@ export function getDateOnly(value) {
   return String(value).slice(0, 10);
 }
 
+function getDateIsBefore(referenceDate, dateToCheck) {
+  if (!referenceDate || !dateToCheck) {
+    return false;
+  }
+
+  return String(dateToCheck).slice(0, 10) < String(referenceDate).slice(0, 10);
+}
+
+function getStatusDisablesFollowUp(status) {
+  if (status === "interview") {
+    return true;
+  }
+
+  if (getApplicationStatusIsFinal(status)) {
+    return true;
+  }
+
+  return false;
+}
+
 export function formatCalendarMonth(date) {
   const label = MONTH_FORMATTER.format(date);
 
@@ -70,9 +92,12 @@ export function buildCalendarEvents(applications) {
   const events = [];
 
   applications.forEach(function (application) {
+    const applicationStatusIsFinal = getApplicationStatusIsFinal(application.status);
     const sentAt = getDateOnly(application.sentAt);
     const followUpAt = getDateOnly(application.followUpAt);
     const interviewAt = getDateOnly(application.interviewAt);
+    const followUpIsRelevant = followUpAt && !interviewAt && !getStatusDisablesFollowUp(application.status) && !getDateIsBefore(sentAt, followUpAt);
+    const interviewIsRelevant = interviewAt && !applicationStatusIsFinal && !getDateIsBefore(sentAt, interviewAt);
 
     if (sentAt) {
       events.push({
@@ -85,7 +110,7 @@ export function buildCalendarEvents(applications) {
       });
     }
 
-    if (followUpAt) {
+    if (followUpIsRelevant) {
       events.push({
         id: application.id + "-follow-up",
         applicationId: application.id,
@@ -96,7 +121,7 @@ export function buildCalendarEvents(applications) {
       });
     }
 
-    if (interviewAt) {
+    if (interviewIsRelevant) {
       events.push({
         id: application.id + "-interview",
         applicationId: application.id,

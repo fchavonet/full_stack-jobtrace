@@ -1,4 +1,4 @@
-import { Plus, Search } from "lucide-react";
+import { CirclePlus } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import {
@@ -8,10 +8,17 @@ import {
   listDocuments,
   uploadDocument,
 } from "../api/documents.api";
+
 import DocumentCard from "../components/documents/DocumentCard";
 import DocumentModal from "../components/documents/DocumentModal";
 import DocumentPreviewModal from "../components/documents/DocumentPreviewModal";
+import LoadingCard from "../components/ui/LoadingCard";
+import PageHeader from "../components/ui/PageHeader";
+import Search from "../components/ui/Search";
+import { SectionCard } from "../components/ui/Cards";
+
 import { useToast } from "../hooks/useToast";
+
 import { getListFromResponse } from "../utils/common/apiResponse.utils";
 import {
   canPreviewDocument,
@@ -22,6 +29,20 @@ import {
   revokeUrl,
   validateDocumentFile,
 } from "../utils/documents/document.utils";
+
+function DocumentsEmptyCard({ title, description }) {
+  return (
+    <SectionCard
+      className="text-center"
+      centered={true}
+      contentClassName="hidden"
+      title={title}
+      description={description}
+    >
+      <div />
+    </SectionCard>
+  );
+}
 
 function DocumentsPage() {
   const { showToast } = useToast();
@@ -312,80 +333,51 @@ function DocumentsPage() {
   }
 
   return (
-    <section className="w-full min-w-0">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-4xl font-bold">
-            Documents
-          </h1>
+    <section className="w-full min-w-0 flex flex-col justify-start items-stretch gap-6">
+      <PageHeader
+        title="Documents"
+        description="Retrouvez vos CV, lettres de motivation et fichiers liés à vos candidatures."
+        actions={
+          <button
+            className="btn btn-primary w-full md:w-auto flex flex-row justify-center items-center gap-2 text-primary-content cursor-pointer"
+            type="button"
+            onClick={openDocumentModal}
+          >
+            <CirclePlus className="w-5 h-5" />
+            Nouveau document
+          </button>
+        }
+      />
 
-          <p className="text-base-content/70">
-            Retrouvez vos CV, lettres de motivation et fichiers associés.
-          </p>
-        </div>
-
-        <button
-          className="btn btn-primary text-white"
-          type="button"
-          onClick={openDocumentModal}
-        >
-          <Plus className="h-5 w-5" />
-          Nouveau document
-        </button>
-      </div>
-
-      <div className="mt-6 rounded-2xl bg-base-100 p-4 shadow-sm sm:p-6">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-          <label className="input input-bordered flex w-full items-center gap-2 lg:max-w-xl">
-            <Search className="h-4 w-4 text-base-content/40" />
-
-            <input
-              className="grow"
-              type="search"
-              value={searchValue}
-              onChange={handleSearchChange}
-              placeholder="Rechercher un document..."
-            />
-          </label>
-
-          <p className="text-sm text-base-content/60">
-            {displayedDocuments.length} document(s) affiché(s) sur {documents.length}
-          </p>
-        </div>
-      </div>
+      <Search
+        title="Documents enregistrés"
+        description="Recherchez un CV, une lettre de motivation ou un fichier associé à vos candidatures."
+        resultLabel={displayedDocuments.length + " / " + documents.length}
+        value={searchValue}
+        onChange={handleSearchChange}
+        placeholder="Rechercher un document..."
+      />
 
       {loading && (
-        <div className="mt-6 rounded-2xl bg-base-100 p-6 shadow-sm">
-          <span className="loading loading-spinner loading-md" />
-        </div>
+        <LoadingCard />
       )}
 
       {!loading && documents.length === 0 && (
-        <div className="mt-6 rounded-2xl bg-base-100 p-6 text-center shadow-sm">
-          <h2 className="text-lg font-semibold">
-            Aucun document pour le moment
-          </h2>
-
-          <p className="mt-1 text-sm text-base-content/60">
-            Ajoutez votre premier document.
-          </p>
-        </div>
+        <DocumentsEmptyCard
+          title="Aucun document pour le moment"
+          description="Ajoutez votre premier document."
+        />
       )}
 
       {!loading && documents.length > 0 && displayedDocuments.length === 0 && (
-        <div className="mt-6 rounded-2xl bg-base-100 p-6 text-center shadow-sm">
-          <h2 className="text-lg font-semibold">
-            Aucun résultat
-          </h2>
-
-          <p className="mt-1 text-sm text-base-content/60">
-            Modifiez votre recherche pour afficher des documents.
-          </p>
-        </div>
+        <DocumentsEmptyCard
+          title="Aucun résultat"
+          description="Modifiez votre recherche pour afficher des documents."
+        />
       )}
 
       {!loading && displayedDocuments.length > 0 && (
-        <div className="mt-6 grid w-full min-w-0 gap-4 md:grid-cols-2 xl:grid-cols-3">
+        <div className="w-full grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           {displayedDocuments.map(function (doc) {
             return (
               <DocumentCard

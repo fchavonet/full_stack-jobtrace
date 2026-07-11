@@ -183,10 +183,10 @@ Tests       140 passed (140)
 The latest coverage result was:
 
 ```bash
-Statements  81.65%
-Branches    73.27%
-Functions   95.26%
-Lines       81.65%
+Statements  81.66%
+Branches    73.36%
+Functions   94.83%
+Lines       81.66%
 ```
 
 ## Notes

@@ -2,6 +2,7 @@ import request from "supertest";
 import { afterAll, beforeEach, describe, expect, test } from "vitest";
 
 import app from "../src/app.js";
+import env from "../src/config/env.js";
 
 import {
   cleanDatabase,
@@ -25,6 +26,24 @@ const AUTH_REQUIRED_RESPONSE = {
 function expectAuthenticationRequired(response) {
   expect(response.status).toBe(401);
   expect(response.body).toEqual(AUTH_REQUIRED_RESPONSE);
+}
+
+function expectAuthenticationCookie(response) {
+  const cookies = response.headers["set-cookie"];
+
+  expect(cookies).toEqual(expect.any(Array));
+  expect(cookies.length).toBeGreaterThan(0);
+
+  const authCookie = cookies.find(function (cookie) {
+    return cookie.startsWith(`${env.authCookieName}=`);
+  });
+
+  expect(authCookie).toEqual(expect.any(String));
+  expect(authCookie).toContain("HttpOnly");
+  expect(authCookie).toContain("SameSite=Lax");
+  expect(authCookie).toContain("Path=/");
+
+  return authCookie;
 }
 
 function expectDefaultProfileFields(profile, email) {
@@ -243,7 +262,9 @@ describe("Profile routes", function () {
     expect(loginResponse.status).toBe(200);
     expect(loginResponse.body.success).toBe(true);
     expect(loginResponse.body.message).toBe("User logged in successfully.");
-    expect(loginResponse.body.data.token).toEqual(expect.any(String));
+    expect(loginResponse.body.data.token).toBeUndefined();
+
+    expectAuthenticationCookie(loginResponse);
   });
 
   test("PATCH /api/profile/password - Should reject invalid current password", async function () {

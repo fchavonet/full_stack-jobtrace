@@ -1,7 +1,9 @@
-import { X } from "lucide-react";
 import { useState } from "react";
 
 import DocumentUploadFields from "./DocumentUploadFields";
+
+import { SectionCard } from "../ui/Cards";
+import Modal from "../ui/Modal";
 
 function DocumentModal({ submitting, onClose, onSubmitDocument }) {
   const [type, setType] = useState("resume");
@@ -31,7 +33,7 @@ function DocumentModal({ submitting, onClose, onSubmitDocument }) {
     });
   }
 
-  function handleClose() {
+  function handleClose() { 
     if (submitting) {
       return;
     }
@@ -40,68 +42,55 @@ function DocumentModal({ submitting, onClose, onSubmitDocument }) {
   }
 
   return (
-    <div className="modal modal-open">
-      <div className="modal-box w-full max-w-2xl rounded-none p-4 sm:rounded-2xl">
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <h2 className="text-xl font-semibold">
-              Nouveau document
-            </h2>
-
-            <p className="text-sm text-base-content/70">
-              Ajoutez un document à votre espace candidat.
-            </p>
-          </div>
-
+    <Modal
+      as="form"
+      isOpen={true}
+      title="Nouveau document"
+      description="Ajoutez un document à votre espace candidat."
+      onClose={handleClose}
+      closeDisabled={submitting}
+      closeAriaLabel="Fermer le formulaire"
+      maxWidthClassName="max-w-5xl"
+      onSubmit={handleSubmit}
+      footer={
+        <>
           <button
-            className="btn btn-ghost btn-sm btn-square"
+            className="btn btn-ghost w-full lg:w-auto cursor-pointer"
             type="button"
             onClick={handleClose}
-            aria-label="Fermer"
+            disabled={submitting}
           >
-            <X size={18} />
+            Annuler
           </button>
-        </div>
 
-        <form className="mt-4" onSubmit={handleSubmit}>
-          <fieldset className="fieldset w-full rounded-xl border border-base-300 bg-base-200 p-4">
-            <DocumentUploadFields
-              documentType={type}
-              disabled={submitting}
-              includeOtherType={true}
-              showHelp={true}
-              onDocumentTypeChange={handleTypeChange}
-              onDocumentFileChange={handleFileChange}
-            />
-          </fieldset>
+          <button
+            className="btn btn-primary w-full lg:w-auto text-primary-content cursor-pointer"
+            type="submit"
+            disabled={submitting}
+          >
+            {submitting && (
+              <span className="loading loading-spinner loading-sm" />
+            )}
 
-          <div className="mt-4 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-            <button
-              className="btn btn-ghost"
-              type="button"
-              onClick={handleClose}
-              disabled={submitting}
-            >
-              Annuler
-            </button>
-
-            <button
-              className="btn btn-primary text-white"
-              type="submit"
-              disabled={submitting}
-            >
-              {submitting && (
-                <span className="loading loading-spinner loading-sm" />
-              )}
-
-              Enregistrer
-            </button>
-          </div>
-        </form>
-      </div>
-
-      <div className="modal-backdrop backdrop-blur-xs" onClick={handleClose} />
-    </div>
+            Enregistrer
+          </button>
+        </>
+      }
+    >
+      <SectionCard
+        title="Fichier à importer"
+        description="Choisissez le type de document et le fichier à ajouter."
+      >
+        <DocumentUploadFields
+          documentType={type}
+          disabled={submitting}
+          includeOtherType={true}
+          showHelp={true}
+          onDocumentTypeChange={handleTypeChange}
+          onDocumentFileChange={handleFileChange}
+        />
+      </SectionCard>
+    </Modal>
   );
 }
 

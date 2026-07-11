@@ -1,288 +1,277 @@
-import {
-  Award,
-  BriefcaseBusiness,
-  CalendarClock,
-  CheckCircle2,
-  ExternalLink,
-  Flag,
-  ListTodo,
-  PlusCircle,
-  Target,
-} from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
+import { PlusCircle } from "lucide-react";
+
+import { JOB_BOARD_LINKS } from "../constants/jobBoards.constants";
 
 import { listApplications } from "../api/applications.api";
 import { getUserProfile } from "../api/profile.api";
+
+import { ItemCard, MetricCard, ProgressItemCard, SectionCard } from "../components/ui/Cards";
+import LoadingCard from "../components/ui/LoadingCard";
+import PageHeader from "../components/ui/PageHeader";
+
 import { useAuth } from "../hooks/useAuth";
 import { useToast } from "../hooks/useToast";
-import {
-  getApplicationStatusBadgeClassName,
-  getApplicationStatusLabel,
-} from "../utils/applications/display.utils";
-import { getListFromResponse } from "../utils/common/apiResponse.utils";
-import {
-  JOB_SEARCH_LINKS,
-  formatDashboardDate,
-  getApplicationCompany,
-  getApplicationDashboardLink,
-  getApplicationFollowUpAt,
-  getApplicationInterviewAt,
-  getApplicationPosition,
-  getApplicationSentAt,
-  getApplicationStatus,
-  getApplicationTitle,
-  getDailyObjectiveSummary,
-  getDashboardDisplayName,
-  getLatestApplications,
-  getUpcomingFollowUps,
-  getUpcomingInterviews,
-} from "../utils/dashboard/dashboardHome.utils";
-import { getProfileFromResponse } from "../utils/profile/profile.utils";
-import {
-  getPercentLabel,
-  getProgressWidth,
-  getStatisticsSummary,
-} from "../utils/statistics/statistics.utils";
 
+import { getApplicationStatusBadgeClassName, getApplicationStatusLabel } from "../utils/applications/display.utils";
+import { getListFromResponse } from "../utils/common/apiResponse.utils";
+import * as dashboardHome from "../utils/dashboard/dashboardHome.utils";
+import { getProfileFromResponse } from "../utils/profile/profile.utils";
+import { getPercentLabel, getProgressWidth, getStatisticsSummary } from "../utils/statistics/statistics.utils";
+
+// Header
 function DashboardHeader() {
   return (
-    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-      <div>
-        <h1 className="text-4xl font-bold">
-          Tableau de bord
-        </h1>
-
-        <p className="text-base-content/70">
-          Retrouvez vos candidatures, vos prochaines échéances et vos indicateurs principaux.
-        </p>
-      </div>
-
-      <Link className="btn btn-primary text-white" to="/dashboard/applications?new=1">
-        <PlusCircle className="h-5 w-5" />
-        Nouvelle candidature
-      </Link>
-    </div>
+    <PageHeader
+      title="Tableau de bord"
+      description="Gardez une vue d’ensemble sur votre recherche d’emploi."
+      actions={
+        <Link className="btn btn-primary w-full md:w-auto flex flex-row justify-center items-center gap-2 text-primary-content cursor-pointer" to="/dashboard/applications?new=1">
+          <PlusCircle className="w-5 h-5" />
+          Nouvelle candidature
+        </Link>
+      }
+    />
   );
 }
 
-function DashboardStatCard({ icon, label, value, helper }) {
+// Welcome section
+function getDashboardThemeLabel(theme) {
+  if (theme === "dark") {
+    return "Sombre";
+  }
+
+  return "Clair";
+}
+
+function getDashboardDailyGoal(profile) {
+  if (profile.dailyGoal) {
+    return String(profile.dailyGoal);
+  }
+
+  return "5";
+}
+
+function getDashboardFollowUpDelay(profile) {
+  if (profile.followUpDelayDays) {
+    return profile.followUpDelayDays + " jour(s)";
+  }
+
+  return "15 jour(s)";
+}
+
+function WelcomeSettingItem({ label, value, field }) {
   return (
-    <div className="min-w-0 rounded-2xl bg-base-100 p-5 shadow-sm">
-      <div className="flex items-start justify-between gap-4">
-        <div className="min-w-0">
-          <p className="text-sm text-base-content/60">
-            {label}
-          </p>
-
-          <p className="mt-2 text-3xl font-black">
-            {value}
-          </p>
-
-          <p className="mt-1 text-xs text-base-content/50">
-            {helper}
-          </p>
-        </div>
-
-        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-          {icon}
-        </div>
-      </div>
-    </div>
+    <ItemCard
+      as={Link}
+      interactive
+      title={label}
+      subtitle={value}
+      to={"/dashboard/settings?section=preferences&field=" + field}
+    />
   );
 }
 
-function WelcomeCard({ displayName }) {
+function WelcomeCard({ displayName, profile }) {
   return (
-    <div className="min-w-0 rounded-2xl bg-base-100 p-6 shadow-sm">
-      <p className="text-sm font-medium text-primary">
+    <article className="w-full min-w-0 p-4 md:p-6 rounded-2xl bg-base-100 shadow-sm">
+      <h2 className="text-lg font-semibold text-primary">
         Bienvenue
-      </p>
-
-      <h2 className="mt-2 break-words text-3xl font-black lg:text-4xl">
-        {displayName}
       </h2>
 
-      <p className="mt-3 max-w-3xl text-sm leading-6 text-base-content/60">
-        Suivez votre recherche d’emploi en un coup d’œil depuis votre espace personnel.
+      <p className="text-2xl md:text-4xl font-black text-base-content break-words">
+        {displayName}
       </p>
-    </div>
-  );
-}
 
-function ObjectiveCompactCard({ objective }) {
-  return (
-    <div className="min-w-0 rounded-2xl bg-base-100 p-6 shadow-sm">
-      <div className="flex items-start justify-between gap-4">
-        <div className="min-w-0">
-          <div className="flex items-center gap-2">
-            <Target className="h-6 w-6 text-primary" />
+      <p className="mt-1 text-sm text-base-content/60">
+        Vos réglages actuels pour organiser votre suivi.
+      </p>
 
-            <h2 className="text-xl font-bold">
-              Objectif du jour
-            </h2>
-          </div>
+      <div className="w-full mt-6 grid grid-cols-1 md:grid-cols-3 gap-3">
+        <WelcomeSettingItem
+          label="Thème"
+          value={getDashboardThemeLabel(profile.theme)}
+          field="theme"
+        />
 
-          <p className="mt-4 text-4xl font-black">
-            {objective.completedToday} / {objective.dailyGoal}
-          </p>
+        <WelcomeSettingItem
+          label="Objectif quotidien"
+          value={getDashboardDailyGoal(profile) + " candidature(s)"}
+          field="dailyGoal"
+        />
 
-          <p className="mt-1 text-sm text-base-content/60">
-            {objective.remaining} candidature(s) restante(s)
-          </p>
-        </div>
-
-        <Link className="btn btn-sm btn-outline" to="/dashboard/achievements">
-          Voir
-        </Link>
-      </div>
-
-      <div className="mt-6 h-4 overflow-hidden rounded-full bg-base-200">
-        <div
-          className="h-full rounded-full bg-primary"
-          style={{ width: getProgressWidth(objective.completedToday, objective.dailyGoal) }}
+        <WelcomeSettingItem
+          label="Délai de relance"
+          value={getDashboardFollowUpDelay(profile)}
+          field="followUpDelayDays"
         />
       </div>
-    </div>
+    </article>
   );
 }
 
+// Daily objective section
+function ObjectiveCompactCard({ objective }) {
+  return (
+    <SectionCard
+      className="h-full flex flex-col"
+      contentClassName="flex-1 flex flex-col"
+      title="Objectif journalier"
+      description="Votre progression en cours."
+    >
+      <Link className="h-full flex flex-col" to="/dashboard/achievements">
+        <ProgressItemCard
+          className="h-full flex flex-col justify-between hover:bg-base-300 cursor-pointer"
+          title="Progression du jour"
+          subtitle={objective.remaining + " candidature(s) restante(s)"}
+          value={objective.completedToday + " / " + objective.dailyGoal}
+          valueClassName="text-2xl md:text-4xl"
+          progressWidth={getProgressWidth(
+            objective.completedToday,
+            objective.dailyGoal
+          )}
+        />
+      </Link>
+    </SectionCard>
+  );
+}
+
+// Follow-up actions section
 function EmptyListMessage({ label }) {
   return (
-    <div className="rounded-2xl bg-base-200 p-4">
+    <ItemCard>
       <p className="text-sm text-base-content/60">
         {label}
       </p>
-    </div>
+    </ItemCard>
   );
 }
 
-function TodoEntry({ entry, dateGetter }) {
+function getTodoBadgeClassName(type) {
+  if (type === "interview") {
+    return getApplicationStatusBadgeClassName("interview");
+  }
+
+  return "badge badge-warning text-warning-content";
+}
+
+function getTodoBadgeLabel(type) {
+  if (type === "interview") {
+    return "Entretien";
+  }
+
+  return "À relancer";
+}
+
+function getTodoDateClassName(type) {
+  if (type === "interview") {
+    return "text-xs font-semibold text-primary";
+  }
+
+  return "text-xs font-semibold text-warning";
+}
+
+function TodoEntry({ entry, dateGetter, type }) {
   const application = entry.application;
 
   return (
-    <Link
-      className="flex min-w-0 items-center justify-between gap-4 rounded-2xl bg-base-200 p-4 transition hover:bg-base-300"
-      to={getApplicationDashboardLink(application)}
-    >
-      <div className="min-w-0">
-        <p className="truncate font-semibold">
-          {getApplicationCompany(application)}
-        </p>
+    <ItemCard
+      as={Link}
+      interactive
+      title={dashboardHome.getApplicationCompany(application)}
+      subtitle={dashboardHome.getApplicationPosition(application)}
+      to={dashboardHome.getApplicationDashboardLink(application)}
 
-        <p className="mt-1 truncate text-sm text-base-content/50">
-          {getApplicationPosition(application)}
-        </p>
-      </div>
+      rightElement={
+        <div className="shrink-0 flex flex-col justify-center items-end gap-1">
+          <span className={getTodoBadgeClassName(type)}>
+            {getTodoBadgeLabel(type)}
+          </span>
 
-      <span className="shrink-0 rounded-full bg-primary/10 px-3 py-1 text-sm font-bold text-primary">
-        {formatDashboardDate(dateGetter(application))}
-      </span>
-    </Link>
+          <span className={getTodoDateClassName(type)}>
+            {dashboardHome.formatDashboardDate(dateGetter(application))}
+          </span>
+        </div>
+      }
+    />
   );
 }
 
-function TodoColumn({ title, entries, emptyLabel, dateGetter }) {
+function TodoColumn({ entries, emptyLabel, dateGetter, type }) {
   return (
-    <div className="min-w-0">
-      <h3 className="font-bold">
-        {title}
-      </h3>
+    <div className="w-full min-w-0 flex flex-col justify-start items-stretch gap-2">
+      {entries.length === 0 && (
+        <EmptyListMessage label={emptyLabel} />
+      )}
 
-      <div className="mt-4 space-y-3">
-        {entries.length === 0 && (
-          <EmptyListMessage label={emptyLabel} />
-        )}
-
-        {entries.length > 0 && entries.map(function (entry) {
-          return (
-            <TodoEntry
-              dateGetter={dateGetter}
-              entry={entry}
-              key={entry.application.id}
-            />
-          );
-        })}
-      </div>
+      {entries.length > 0 && entries.map(function (entry) {
+        return (
+          <TodoEntry
+            key={entry.application.id}
+            entry={entry}
+            dateGetter={dateGetter}
+            type={type}
+          />
+        );
+      })}
     </div>
   );
 }
 
 function TodoCard({ followUps, interviews }) {
   return (
-    <div className="min-w-0 rounded-2xl bg-base-100 p-6 shadow-sm">
-      <div className="flex items-center gap-2">
-        <ListTodo className="h-6 w-6 text-primary" />
-
-        <h2 className="text-xl font-bold">
-          À faire
-        </h2>
-      </div>
-
-      <p className="mt-2 text-sm text-base-content/60">
-        Les prochaines actions à traiter sur vos candidatures.
-      </p>
-
-      <div className="mt-6 grid gap-6 lg:grid-cols-2">
+    <SectionCard
+      title="À faire"
+      description="Vos prochaines actions de suivi."
+    >
+      <div className="w-full grid grid-cols-1 lg:grid-cols-2 gap-2">
         <TodoColumn
-          dateGetter={getApplicationFollowUpAt}
-          emptyLabel="Aucune relance prévue."
           entries={followUps}
-          title="Prochaines relances"
+          emptyLabel="Aucune relance prévue."
+          dateGetter={dashboardHome.getApplicationFollowUpAt}
+          type="followUp"
         />
 
         <TodoColumn
-          dateGetter={getApplicationInterviewAt}
-          emptyLabel="Aucun entretien prévu."
           entries={interviews}
-          title="Prochains entretiens"
+          emptyLabel="Aucun entretien prévu."
+          dateGetter={dashboardHome.getApplicationInterviewAt}
+          type="interview"
         />
       </div>
-    </div>
+    </SectionCard>
   );
 }
 
+// Latest applications section
 function LatestApplicationRow({ application }) {
-  const status = getApplicationStatus(application);
+  const status = dashboardHome.getApplicationStatus(application);
 
   return (
-    <Link
-      className="flex min-w-0 items-center justify-between gap-4 rounded-2xl bg-base-200 p-4 transition hover:bg-base-300"
-      to={getApplicationDashboardLink(application)}
-    >
-      <div className="min-w-0">
-        <p className="truncate font-semibold">
-          {getApplicationTitle(application)}
-        </p>
+    <ItemCard
+      as={Link}
+      interactive
+      title={dashboardHome.getApplicationTitle(application)}
+      subtitle={"Envoyée le " + dashboardHome.formatDashboardDate(dashboardHome.getApplicationSentAt(application))}
+      to={dashboardHome.getApplicationDashboardLink(application)}
 
-        <p className="mt-1 truncate text-sm text-base-content/50">
-          Envoyée le {formatDashboardDate(getApplicationSentAt(application))}
-        </p>
-      </div>
-
-      <span className={getApplicationStatusBadgeClassName(status)}>
-        {getApplicationStatusLabel(status)}
-      </span>
-    </Link>
+      rightElement={
+        <span className={getApplicationStatusBadgeClassName(status)}>
+          {getApplicationStatusLabel(status)}
+        </span>
+      }
+    />
   );
 }
 
 function LatestApplicationsCard({ applications }) {
   return (
-    <div className="min-w-0 rounded-2xl bg-base-100 p-6 shadow-sm">
-      <div className="flex items-center gap-2">
-        <CalendarClock className="h-6 w-6 text-primary" />
-
-        <h2 className="text-xl font-bold">
-          Dernières candidatures
-        </h2>
-      </div>
-
-      <p className="mt-2 text-sm text-base-content/60">
-        Les cinq candidatures les plus récemment ajoutées.
-      </p>
-
-      <div className="mt-6 space-y-3">
+    <SectionCard
+      title="Dernières candidatures"
+      description="Vos cinq dernières candidatures."
+    >
+      <div className="w-full flex flex-col justify-start items-stretch gap-2">
         {applications.length === 0 && (
           <EmptyListMessage label="Aucune candidature récente." />
         )}
@@ -290,60 +279,57 @@ function LatestApplicationsCard({ applications }) {
         {applications.length > 0 && applications.map(function (application) {
           return (
             <LatestApplicationRow
-              application={application}
               key={application.id}
+              application={application}
             />
           );
         })}
       </div>
-    </div>
+    </SectionCard>
   );
 }
 
+// Job boards section
 function JobLinksCard() {
   return (
-    <div className="rounded-2xl bg-base-100 p-6 shadow-sm">
-      <div className="flex items-center gap-2">
-        <BriefcaseBusiness className="h-6 w-6 text-primary" />
-
-        <h2 className="text-xl font-bold">
-          Sites emploi utiles
-        </h2>
-      </div>
-
-      <p className="mt-2 text-sm text-base-content/60">
-        Accès rapide aux principales plateformes de recherche d’emploi en France.
-      </p>
-
-      <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6">
-        {JOB_SEARCH_LINKS.map(function (link) {
+    <SectionCard
+      title="Sites emploi utiles"
+      description="Votre accès rapide aux principales plateformes de recherche d’emploi en France."
+    >
+      <div className="w-full grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6 gap-4">
+        {JOB_BOARD_LINKS.map(function (link) {
           return (
-            <a
-              className="flex min-w-0 items-center justify-between gap-3 rounded-2xl bg-base-200 p-4 transition hover:bg-base-300"
-              href={link.url}
+            <ItemCard
               key={link.key}
-              rel="noreferrer"
+              as="a"
+              interactive
+              title={link.label}
+              subtitle={link.description}
+              href={link.url}
               target="_blank"
-            >
-              <div className="min-w-0">
-                <p className="truncate font-bold">
-                  {link.label}
-                </p>
+              rel="noreferrer"
 
-                <p className="mt-1 truncate text-xs text-base-content/50">
-                  {link.description}
-                </p>
-              </div>
-
-              <ExternalLink className="h-4 w-4 shrink-0 text-primary" />
-            </a>
+              rightElement={
+                <span className="h-10 shrink-0 flex flex-row justify-end items-center rounded-lg">
+                  <img
+                    className="h-full w-auto max-w-28 object-contain"
+                    width="112"
+                    height="40"
+                    src={link.logo}
+                    alt={"Logo " + link.label}
+                    loading="lazy"
+                    decoding="async"
+                  />                </span>
+              }
+            />
           );
         })}
       </div>
-    </div>
+    </SectionCard>
   );
 }
 
+// Page container
 function DashboardPage() {
   const { user } = useAuth();
   const { showToast } = useToast();
@@ -379,78 +365,74 @@ function DashboardPage() {
   }, [applications]);
 
   const objective = useMemo(function () {
-    return getDailyObjectiveSummary(applications, profile);
+    return dashboardHome.getDailyObjectiveSummary(applications, profile);
   }, [applications, profile]);
 
   const followUps = useMemo(function () {
-    return getUpcomingFollowUps(applications, 5);
+    return dashboardHome.getUpcomingFollowUps(applications, 5);
   }, [applications]);
 
   const interviews = useMemo(function () {
-    return getUpcomingInterviews(applications, 5);
+    return dashboardHome.getUpcomingInterviews(applications, 5);
   }, [applications]);
 
   const latestApplications = useMemo(function () {
-    return getLatestApplications(applications, 5);
+    return dashboardHome.getLatestApplications(applications, 5);
   }, [applications]);
 
   const displayName = useMemo(function () {
-    return getDashboardDisplayName(profile, user);
+    return dashboardHome.getDashboardDisplayName(profile, user);
   }, [profile, user]);
 
   if (loading) {
     return (
-      <section>
+      <section className="w-full min-w-0 flex flex-col justify-start items-stretch gap-6">
         <DashboardHeader />
-
-        <div className="mt-6 rounded-2xl bg-base-100 p-6 shadow-sm">
-          <span className="loading loading-spinner loading-md" />
-        </div>
+        <LoadingCard />
       </section>
     );
   }
 
   return (
-    <section className="space-y-6">
+    <section className="w-full min-w-0 flex flex-col justify-start items-stretch gap-6">
       <DashboardHeader />
 
-      <div className="grid gap-6 xl:grid-cols-[1.6fr_0.9fr]">
-        <WelcomeCard displayName={displayName} />
+      <div className="w-full grid grid-cols-1 xl:grid-cols-[1.6fr_0.9fr] gap-6">
+        <WelcomeCard
+          displayName={displayName}
+          profile={profile}
+        />
 
         <ObjectiveCompactCard objective={objective} />
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <DashboardStatCard
-          helper={summary.active + " candidature(s) active(s)"}
-          icon={<BriefcaseBusiness className="h-6 w-6" />}
+      <div className="w-full grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+        <MetricCard
           label="Total candidatures"
           value={summary.total}
+          helper={summary.active + " candidature(s) active(s)"}
         />
 
-        <DashboardStatCard
-          helper={summary.interviewRate + " % du total"}
-          icon={<Award className="h-6 w-6" />}
+        <MetricCard
           label="Total entretiens"
           value={summary.interviews}
+          helper={summary.interviewRate + " % du total"}
         />
 
-        <DashboardStatCard
-          helper={getPercentLabel(summary.rejected, summary.total) + " du total"}
-          icon={<Flag className="h-6 w-6" />}
+        <MetricCard
           label="Total refusées"
           value={summary.rejected}
+          helper={getPercentLabel(summary.rejected, summary.total) + " du total"}
         />
 
-        <DashboardStatCard
-          helper={summary.successRate + " % de réussite"}
-          icon={<CheckCircle2 className="h-6 w-6" />}
+        <MetricCard
           label="Total acceptées"
           value={summary.accepted}
+          helper={summary.successRate + " % de réussite"}
         />
       </div>
 
-      <div className="grid gap-6 xl:grid-cols-[1.25fr_0.75fr]">
+      <div className="w-full grid grid-cols-1 xl:grid-cols-[1.25fr_0.75fr] gap-6">
         <TodoCard
           followUps={followUps}
           interviews={interviews}

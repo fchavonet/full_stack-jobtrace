@@ -265,7 +265,7 @@ export function getApplicationTitle(application) {
   }
 
   if (application.company && application.position) {
-    return application.company + " — " + application.position;
+    return application.company + " - " + application.position;
   }
 
   if (application.company) {
@@ -307,7 +307,7 @@ export function formatDashboardDate(value) {
   const date = getDateFromValue(value);
 
   if (!date) {
-    return "—";
+    return "-";
   }
 
   return new Intl.DateTimeFormat("fr-FR", {

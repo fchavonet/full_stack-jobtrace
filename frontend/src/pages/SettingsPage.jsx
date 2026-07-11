@@ -1,26 +1,24 @@
+import { useEffect, useRef, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 
 import { deleteCurrentUser, exportCurrentUserData } from "../api/auth.api";
-import {
-  getUserProfile,
-  updateUserPassword,
-  updateUserProfile,
-} from "../api/profile.api";
+import { getUserProfile, updateUserPassword, updateUserProfile, } from "../api/profile.api";
 import { updateUserSettings } from "../api/settings.api";
+
 import PasswordRequirements from "../components/auth/PasswordRequirements";
-import LegalModal from "../components/legal/LegalModal";
+import LegalModal from "../components/settings/LegalModal";
+import { SectionCard } from "../components/ui/Cards";
+import LoadingCard from "../components/ui/LoadingCard";
+import PageHeader from "../components/ui/PageHeader";
+
 import { useAuth } from "../hooks/useAuth";
 import { useTheme } from "../hooks/useTheme";
 import { useToast } from "../hooks/useToast";
-import {
-  getNumberValue,
-  getProfileFromResponse,
-  getProfileInitials,
-  getTextValue,
-} from "../utils/profile/profile.utils";
 
+import { getNumberValue, getProfileFromResponse, getProfileInitials, getTextValue, } from "../utils/profile/profile.utils";
+
+// Constants
 const AUTH_TOKEN_STORAGE_KEY = "jobtrace_token";
 
 const defaultProfileForm = {
@@ -41,6 +39,7 @@ const defaultPasswordForm = {
   confirmPassword: "",
 };
 
+// Password helpers
 function isPasswordValid(password) {
   const hasLength = password.length >= 6;
   const hasLowercase = /[a-z]/.test(password);
@@ -55,6 +54,14 @@ function arePasswordsMatching(passwordForm) {
     passwordForm.newPassword === passwordForm.confirmPassword
     && passwordForm.confirmPassword.length > 0
   );
+}
+
+function getPasswordInputType(showPassword) {
+  if (showPassword) {
+    return "text";
+  }
+
+  return "password";
 }
 
 function getNewPasswordInputClassName(password) {
@@ -85,6 +92,7 @@ function getConfirmPasswordInputClassName(passwordForm) {
   return className;
 }
 
+// File helpers
 function downloadJsonFile(data) {
   const formattedData = JSON.stringify(data, null, 2);
   const blob = new Blob([formattedData], {
@@ -104,8 +112,27 @@ function downloadJsonFile(data) {
   URL.revokeObjectURL(url);
 }
 
+// Settings navigation helpers
+function getSettingsFieldRef(field, refs) {
+  if (field === "theme") {
+    return refs.themeInputRef;
+  }
+
+  if (field === "dailyGoal") {
+    return refs.dailyGoalInputRef;
+  }
+
+  if (field === "followUpDelayDays") {
+    return refs.followUpDelayInputRef;
+  }
+
+  return null;
+}
+
+// Page container
 function SettingsPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { logout } = useAuth();
   const { showToast } = useToast();
   const { setTheme } = useTheme();
@@ -125,6 +152,11 @@ function SettingsPage() {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [deleteConfirmation, setDeleteConfirmation] = useState("");
   const [legalModalType, setLegalModalType] = useState(null);
+
+  const preferencesSectionRef = useRef(null);
+  const themeInputRef = useRef(null);
+  const dailyGoalInputRef = useRef(null);
+  const followUpDelayInputRef = useRef(null);
 
   useEffect(function () {
     async function loadUserProfile() {
@@ -155,6 +187,39 @@ function SettingsPage() {
 
     loadUserProfile();
   }, [showToast, setTheme]);
+
+  useEffect(function () {
+    if (loading) {
+      return;
+    }
+
+    const searchParams = new URLSearchParams(location.search);
+    const section = searchParams.get("section");
+    const field = searchParams.get("field");
+
+    if (section !== "preferences") {
+      return;
+    }
+
+    if (preferencesSectionRef.current) {
+      preferencesSectionRef.current.scrollIntoView({
+        block: "start",
+        behavior: "auto",
+      });
+    }
+
+    const fieldRef = getSettingsFieldRef(field, {
+      themeInputRef,
+      dailyGoalInputRef,
+      followUpDelayInputRef,
+    });
+
+    if (fieldRef && fieldRef.current) {
+      fieldRef.current.focus({
+        preventScroll: true,
+      });
+    }
+  }, [loading, location.search]);
 
   function handleProfileChange(event) {
     const { name, value } = event.target;
@@ -351,64 +416,51 @@ function SettingsPage() {
 
   if (loading) {
     return (
-      <section>
-        <h1 className="text-3xl font-bold">
-          Paramètres
-        </h1>
+      <section className="w-full min-w-0 flex flex-col justify-start items-stretch">
+        <PageHeader title="Paramètres" />
 
-        <div className="mt-6 rounded-2xl bg-base-100 p-6 shadow-sm">
-          <span className="loading loading-spinner loading-md" />
+        <div className="w-full mt-6">
+          <LoadingCard />
         </div>
       </section>
     );
   }
 
   return (
-    <section>
-      <div>
-        <h1 className="text-4xl font-bold">
-          Paramètres
-        </h1>
+    <section className="w-full min-w-0 flex flex-col justify-start items-stretch">
+      <PageHeader
+        title="Paramètres"
+        description="Gérez votre profil, vos préférences et vos données."
+      />
 
-        <p className="text-base-content/70">
-          Gérez votre profil, vos préférences et vos données.
-        </p>
-      </div>
-
-      <div className="mt-4 flex flex-col gap-6">
-        {/* Profile settings */}
-        <form
-          className="rounded-2xl bg-base-100 p-6 shadow-sm"
+      <div className="w-full mt-6 flex flex-col justify-start items-stretch gap-6">
+        <SectionCard
+          as="form"
+          title="Profil"
+          description="Personnalisez les informations de votre profil."
           onSubmit={handleProfileSubmit}
         >
-          <div>
-            <h2 className="text-xl font-semibold">
-              Profil
-            </h2>
-
-            <p className="text-sm text-base-content/60">
-              Personnalisez les informations de votre profil.
-            </p>
-          </div>
-
-          <div className="mt-6 grid gap-6 sm:grid-cols-[220px_1fr] sm:items-start">
-            <div className="h-full min-h-56 overflow-hidden rounded-xl bg-primary">
+          <div className="w-full grid gap-6 sm:grid-cols-[220px_1fr] sm:items-start">
+            <div className="w-full h-full min-h-56 overflow-hidden rounded-xl bg-primary">
               {profileForm.avatarUrl && (
                 <img
-                  className="h-full min-h-56 w-full object-cover"
+                  className="w-full h-full min-h-56 object-cover"
+                  width="220"
+                  height="224"
                   src={profileForm.avatarUrl}
                   alt="Avatar utilisateur"
-                />
-              )}
+                  loading="lazy"
+                  decoding="async"
+                />)}
 
               {!profileForm.avatarUrl && (
-                <div className="flex h-full min-h-56 w-full items-center justify-center text-6xl font-bold text-primary-content">
+                <div className="w-full h-full min-h-56 flex flex-row justify-center items-center text-6xl font-bold text-primary-content">
                   {getProfileInitials(profileForm)}
                 </div>
               )}
             </div>
 
-            <div className="grid gap-4">
+            <div className="w-full grid gap-4">
               <label className="form-control w-full">
                 <span className="label mb-1">
                   Prénom
@@ -419,7 +471,7 @@ function SettingsPage() {
                   name="firstName"
                   type="text"
                   autoComplete="off"
-                  placeholder=""
+                  placeholder="Entrer votre prénom"
                   value={profileForm.firstName}
                   onChange={handleProfileChange}
                 />
@@ -435,7 +487,7 @@ function SettingsPage() {
                   name="lastName"
                   type="text"
                   autoComplete="off"
-                  placeholder=""
+                  placeholder="Entrer votre nom"
                   value={profileForm.lastName}
                   onChange={handleProfileChange}
                 />
@@ -458,7 +510,7 @@ function SettingsPage() {
               </label>
 
               <button
-                className="btn btn-primary mt-4 w-full text-white"
+                className="btn btn-primary w-full mt-4 text-primary-content"
                 type="submit"
                 disabled={profileSubmitting}
               >
@@ -470,94 +522,91 @@ function SettingsPage() {
               </button>
             </div>
           </div>
-        </form>
+        </SectionCard>
 
-        {/* Preferences settings */}
-        <form
-          className="w-full min-w-0 rounded-2xl bg-base-100 p-4 shadow-sm sm:p-6"
-          onSubmit={handleSettingsSubmit}
-        >
-          <div>
-            <h2 className="text-xl font-semibold">
-              Préférences
-            </h2>
-
-            <p className="text-sm text-base-content/60">
-              Configurez vos paramètres.
-            </p>
-          </div>
-
-          <div className="mt-4 grid min-w-0 gap-4">
-            <label className="form-control w-full min-w-0">
-              <span className="label mb-1">
-                Thème
-              </span>
-
-              <select
-                className="select select-bordered w-full min-w-0"
-                name="theme"
-                value={settingsForm.theme}
-                onChange={handleSettingsChange}
-              >
-                <option value="light">
-                  Clair
-                </option>
-
-                <option value="dark">
-                  Sombre
-                </option>
-              </select>
-            </label>
-
-            <label className="form-control w-full min-w-0">
-              <span className="label mb-1">
-                Objectif quotidien
-              </span>
-
-              <input
-                className="input input-bordered w-full"
-                name="dailyGoal"
-                type="number"
-                min="1"
-                value={settingsForm.dailyGoal}
-                onChange={handleSettingsChange}
-                placeholder="5"
-              />
-            </label>
-
-            <label className="form-control w-full min-w-0">
-              <span className="label mb-1">
-                Délai de relance
-              </span>
-
-              <input
-                className="input input-bordered w-full"
-                name="followUpDelayDays"
-                type="number"
-                min="1"
-                value={settingsForm.followUpDelayDays}
-                onChange={handleSettingsChange}
-                placeholder="15"
-              />
-            </label>
-          </div>
-
-          <button
-            className="btn btn-primary mt-8 w-full text-white"
-            type="submit"
-            disabled={settingsSubmitting}
+        <div className="w-full min-w-0" ref={preferencesSectionRef}>
+          <SectionCard
+            as="form"
+            title="Préférences"
+            description="Configurez vos paramètres."
+            onSubmit={handleSettingsSubmit}
           >
-            {settingsSubmitting && (
-              <span className="loading loading-spinner loading-sm" />
-            )}
+            <div className="w-full min-w-0 grid gap-4">
+              <label className="form-control w-full min-w-0">
+                <span className="label mb-1">
+                  Thème
+                </span>
 
-            Enregistrer les préférences
-          </button>
-        </form>
+                <select
+                  ref={themeInputRef}
+                  className="select select-bordered w-full min-w-0"
+                  name="theme"
+                  value={settingsForm.theme}
+                  onChange={handleSettingsChange}
+                >
+                  <option value="light">
+                    Clair
+                  </option>
 
-        {/* Password settings */}
-        <form
-          className="rounded-2xl bg-base-100 p-6 shadow-sm"
+                  <option value="dark">
+                    Sombre
+                  </option>
+                </select>
+              </label>
+
+              <label className="form-control w-full min-w-0">
+                <span className="label mb-1">
+                  Objectif quotidien
+                </span>
+
+                <input
+                  ref={dailyGoalInputRef}
+                  className="input input-bordered w-full"
+                  name="dailyGoal"
+                  type="number"
+                  min="1"
+                  value={settingsForm.dailyGoal}
+                  onChange={handleSettingsChange}
+                  placeholder="5"
+                />
+              </label>
+
+              <label className="form-control w-full min-w-0">
+                <span className="label mb-1">
+                  Délai de relance
+                </span>
+
+                <input
+                  ref={followUpDelayInputRef}
+                  className="input input-bordered w-full"
+                  name="followUpDelayDays"
+                  type="number"
+                  min="1"
+                  value={settingsForm.followUpDelayDays}
+                  onChange={handleSettingsChange}
+                  placeholder="15"
+                />
+              </label>
+            </div>
+
+            <button
+              className="btn btn-primary w-full mt-8 text-primary-content"
+              type="submit"
+              disabled={settingsSubmitting}
+            >
+              {settingsSubmitting && (
+                <span className="loading loading-spinner loading-sm" />
+              )}
+
+              Enregistrer les préférences
+            </button>
+          </SectionCard>
+        </div>
+
+        <SectionCard
+          as="form"
+          title="Sécurité"
+          description="Modifiez votre mot de passe de connexion."
           onSubmit={handlePasswordSubmit}
         >
           <input
@@ -568,17 +617,8 @@ function SettingsPage() {
             value=""
             readOnly
           />
-          <div>
-            <h2 className="text-xl font-semibold">
-              Sécurité
-            </h2>
 
-            <p className="text-sm text-base-content/60">
-              Modifiez votre mot de passe de connexion.
-            </p>
-          </div>
-
-          <div className="mt-6 grid gap-4">
+          <div className="w-full grid gap-4">
             <label className="form-control w-full">
               <div className="label">
                 <span className="label-text">
@@ -590,7 +630,7 @@ function SettingsPage() {
                 <input
                   className={getNewPasswordInputClassName(passwordForm.newPassword)}
                   name="newPassword"
-                  type={showNewPassword ? "text" : "password"}
+                  type={getPasswordInputType(showNewPassword)}
                   value={passwordForm.newPassword}
                   onChange={handlePasswordChange}
                   placeholder="Entrer votre nouveau mot de passe"
@@ -599,17 +639,17 @@ function SettingsPage() {
                 />
 
                 <button
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-base-content/60 hover:text-base-content"
+                  className="absolute top-1/2 right-3 -translate-y-1/2 text-base-content/60 hover:text-base-content cursor-pointer"
                   type="button"
                   onClick={toggleNewPasswordVisibility}
                   aria-label="Afficher ou masquer le nouveau mot de passe"
                 >
                   {showNewPassword && (
-                    <EyeOff className="h-4 w-4" />
+                    <EyeOff className="w-4 h-4" />
                   )}
 
                   {!showNewPassword && (
-                    <Eye className="h-4 w-4" />
+                    <Eye className="w-4 h-4" />
                   )}
                 </button>
               </div>
@@ -628,7 +668,7 @@ function SettingsPage() {
               <input
                 className={getConfirmPasswordInputClassName(passwordForm)}
                 name="confirmPassword"
-                type={showNewPassword ? "text" : "password"}
+                type={getPasswordInputType(showNewPassword)}
                 value={passwordForm.confirmPassword}
                 onChange={handlePasswordChange}
                 placeholder="Confirmer votre nouveau mot de passe"
@@ -649,7 +689,7 @@ function SettingsPage() {
               <input
                 className="input input-bordered w-full pr-10"
                 name="currentPassword"
-                type={showCurrentPassword ? "text" : "password"}
+                type={getPasswordInputType(showCurrentPassword)}
                 value={passwordForm.currentPassword}
                 onChange={handlePasswordChange}
                 placeholder="Entrer votre mot de passe actuel"
@@ -658,24 +698,24 @@ function SettingsPage() {
               />
 
               <button
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-base-content/60 hover:text-base-content"
+                className="absolute top-1/2 right-3 -translate-y-1/2 text-base-content/60 hover:text-base-content cursor-pointer"
                 type="button"
                 onClick={toggleCurrentPasswordVisibility}
                 aria-label="Afficher ou masquer le mot de passe actuel"
               >
                 {showCurrentPassword && (
-                  <EyeOff className="h-4 w-4" />
+                  <EyeOff className="w-4 h-4" />
                 )}
 
                 {!showCurrentPassword && (
-                  <Eye className="h-4 w-4" />
+                  <Eye className="w-4 h-4" />
                 )}
               </button>
             </div>
           </label>
 
           <button
-            className="btn btn-primary mt-8 w-full text-white"
+            className="btn btn-primary w-full mt-8 text-primary-content"
             type="submit"
             disabled={passwordSubmitting}
           >
@@ -685,22 +725,14 @@ function SettingsPage() {
 
             Modifier le mot de passe
           </button>
-        </form>
+        </SectionCard>
 
-        {/* Account settings */}
-        <div className="rounded-2xl bg-base-100 p-6 shadow-sm">
-          <div>
-            <h2 className="text-xl font-semibold">
-              Compte
-            </h2>
-
-            <p className="text-sm text-base-content/60">
-              Gérez votre compte JobTrace.
-            </p>
-          </div>
-
-          <div className="mt-6 grid items-stretch gap-4 lg:grid-cols-2">
-            <div className="flex h-full flex-col rounded-xl border border-base-300 p-4">
+        <SectionCard
+          title="Compte"
+          description="Gérez votre compte JobTrace."
+        >
+          <div className="w-full grid items-stretch gap-4 lg:grid-cols-2">
+            <div className="w-full h-full p-4 flex flex-col rounded-xl border border-base-300">
               <div>
                 <h3 className="font-semibold">
                   Export des données
@@ -711,7 +743,7 @@ function SettingsPage() {
                 </p>
 
                 <button
-                  className="link link-primary mt-1 text-left text-sm"
+                  className="link link-primary mt-1 text-left text-sm cursor-pointer"
                   type="button"
                   onClick={openPrivacyModal}
                 >
@@ -735,7 +767,7 @@ function SettingsPage() {
               </div>
             </div>
 
-            <div className="flex h-full flex-col rounded-xl border border-error/40 bg-error/5 p-4">
+            <div className="w-full h-full p-4 flex flex-col rounded-xl border border-error/40 bg-error/5">
               <div>
                 <h3 className="font-semibold text-error">
                   Suppression du compte
@@ -746,11 +778,11 @@ function SettingsPage() {
                 </p>
 
                 <button
-                  className="link link-error mt-1 block text-left text-sm"
+                  className="link link-error mt-1 block text-left text-sm cursor-pointer"
                   type="button"
                   onClick={openDeleteModal}
                 >
-                  Comprendre les conséquences de la suppression.
+                  Comprendre les conséquences de la suppression du compte.
                 </button>
               </div>
 
@@ -766,7 +798,7 @@ function SettingsPage() {
                 </label>
 
                 <button
-                  className="btn btn-error mt-4 w-full text-white"
+                  className="btn btn-error w-full mt-4 text-primar-content"
                   type="button"
                   disabled={deleteSubmitting}
                   onClick={handleDeleteAccount}
@@ -780,10 +812,14 @@ function SettingsPage() {
               </div>
             </div>
           </div>
-        </div>
+        </SectionCard>
       </div>
 
-      <LegalModal type={legalModalType} onClose={closeLegalModal} />
+      <LegalModal
+        type={legalModalType}
+        onClose={closeLegalModal}
+        onOpenPrivacyModal={openPrivacyModal}
+      />
     </section>
   );
 }

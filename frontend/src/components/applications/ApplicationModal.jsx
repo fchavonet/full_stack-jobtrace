@@ -1,29 +1,18 @@
-import { X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 import { listDocuments } from "../../api/documents.api";
-import {
-  APPLICATION_ALLOWED_TAG_OPTIONS,
-  APPLICATION_CONTACT_NOTES_MAX_LENGTH,
-  APPLICATION_MAX_TAGS,
-  APPLICATION_NOTES_MAX_LENGTH,
-} from "../../constants/application.constants";
+import { APPLICATION_ALLOWED_TAG_OPTIONS, APPLICATION_CONTACT_NOTES_MAX_LENGTH, APPLICATION_MAX_TAGS, APPLICATION_NOTES_MAX_LENGTH } from "../../constants/application.constants";
+import { SectionCard } from "../ui/Cards";
+import Modal from "../ui/Modal";
 import { useToast } from "../../hooks/useToast";
-import {
-  getErrorMessage,
-  getListFromResponse,
-} from "../../utils/common/apiResponse.utils";
 import { createApplicationWithRelations } from "../../utils/applications/creation.utils";
-import {
-  getFollowUpDelayDays,
-  getFollowUpInputValue,
-  getFormUsesAutomaticFollowUpDate,
-  getTodayInputValue,
-} from "../../utils/applications/dates.utils";
+import { getFollowUpDelayDays, getFollowUpInputValue, getFormUsesAutomaticFollowUpDate, getTodayInputValue } from "../../utils/applications/dates.utils";
+import { getApplicationStatusIsFinal } from "../../utils/applications/display.utils";
+import { getTagIsAlreadySelected } from "../../utils/applications/relations.utils";
+import { getErrorMessage, getListFromResponse } from "../../utils/common/apiResponse.utils";
+import { normalizeValue } from "../../utils/common/string.utils";
 import { getContactLabel } from "../../utils/contacts/contact.utils";
 import { getDocumentLabel } from "../../utils/documents/document.utils";
-import { getTagIsAlreadySelected } from "../../utils/applications/relations.utils";
-import { normalizeValue } from "../../utils/common/string.utils";
 import ApplicationFormContact from "./form-sections/ApplicationFormContact";
 import ApplicationFormDates from "./form-sections/ApplicationFormDates";
 import ApplicationFormDocument from "./form-sections/ApplicationFormDocument";
@@ -48,9 +37,11 @@ const defaultForm = {
 const defaultContactForm = {
   firstName: "",
   lastName: "",
+  position: "",
   email: "",
   phoneNumber: "",
   company: "",
+  linkedinUrl: "",
   notes: "",
 };
 
@@ -69,14 +60,24 @@ function getInitialForm(normalizedFollowUpDelayDays) {
   };
 }
 
-function getModalClassName(isOpen) {
-  let className = "modal";
-
-  if (isOpen) {
-    className = "modal modal-open";
+function getDateIsBefore(referenceDate, dateToCheck) {
+  if (!referenceDate || !dateToCheck) {
+    return false;
   }
 
-  return className;
+  return String(dateToCheck).slice(0, 10) < String(referenceDate).slice(0, 10);
+}
+
+function getStatusDisablesFollowUp(status) {
+  if (status === "interview") {
+    return true;
+  }
+
+  if (getApplicationStatusIsFinal(status)) {
+    return true;
+  }
+
+  return false;
 }
 
 function ApplicationModal({
@@ -97,11 +98,16 @@ function ApplicationModal({
 
   useEffect(function () {
     setForm(function (currentForm) {
+      if (getApplicationStatusIsFinal(currentForm.status)) {
+        return {
+          ...currentForm,
+          followUpAt: "",
+          interviewAt: "",
+        };
+      }
+
       const previousFollowUpDelayDays = previousFollowUpDelayDaysRef.current;
-      const formUsesAutomaticFollowUpDate = getFormUsesAutomaticFollowUpDate(
-        currentForm,
-        previousFollowUpDelayDays,
-      );
+      const formUsesAutomaticFollowUpDate = getFormUsesAutomaticFollowUpDate(currentForm, previousFollowUpDelayDays);
 
       if (!formUsesAutomaticFollowUpDate) {
         return currentForm;
@@ -109,10 +115,7 @@ function ApplicationModal({
 
       return {
         ...currentForm,
-        followUpAt: getFollowUpInputValue(
-          currentForm.sentAt,
-          normalizedFollowUpDelayDays,
-        ),
+        followUpAt: getFollowUpInputValue(currentForm.sentAt, normalizedFollowUpDelayDays),
       };
     });
 
@@ -205,22 +208,59 @@ function ApplicationModal({
         [name]: value,
       };
 
-      if (name === "interviewAt" && value) {
+      if (name === "followUpAt" && getDateIsBefore(nextForm.sentAt, value)) {
         nextForm.followUpAt = "";
       }
 
-      if (name === "interviewAt" && !value) {
-        nextForm.followUpAt = getFollowUpInputValue(
-          nextForm.sentAt,
-          normalizedFollowUpDelayDays,
-        );
+      if (name === "followUpAt" && value && !getDateIsBefore(nextForm.sentAt, value)) {
+        nextForm.status = "follow_up";
       }
 
-      if (name === "sentAt" && !nextForm.interviewAt) {
-        nextForm.followUpAt = getFollowUpInputValue(
-          value,
-          normalizedFollowUpDelayDays,
-        );
+      if (name === "interviewAt" && value && getDateIsBefore(nextForm.sentAt, value)) {
+        nextForm.interviewAt = "";
+        return nextForm;
+      }
+
+      if (name === "interviewAt" && value) {
+        nextForm.followUpAt = "";
+        nextForm.status = "interview";
+      }
+
+      if (name === "interviewAt" && !value) {
+        nextForm.followUpAt = getFollowUpInputValue(nextForm.sentAt, normalizedFollowUpDelayDays);
+
+        if (currentForm.status === "interview") {
+          nextForm.status = "follow_up";
+        }
+      }
+
+      if (name === "sentAt" && nextForm.interviewAt && getDateIsBefore(value, nextForm.interviewAt)) {
+        nextForm.interviewAt = "";
+
+        if (currentForm.status === "interview") {
+          nextForm.status = "follow_up";
+        }
+      }
+
+      if (name === "sentAt" && !nextForm.interviewAt && !getStatusDisablesFollowUp(nextForm.status)) {
+        nextForm.followUpAt = getFollowUpInputValue(value, normalizedFollowUpDelayDays);
+      }
+
+      if (name === "status" && value === "interview") {
+        nextForm.followUpAt = "";
+      }
+
+      if (name === "status" && !getStatusDisablesFollowUp(value) && !nextForm.interviewAt) {
+        nextForm.followUpAt = getFollowUpInputValue(nextForm.sentAt, normalizedFollowUpDelayDays);
+      }
+
+      if (nextForm.status === "interview") {
+        nextForm.followUpAt = "";
+      }
+
+      if (getApplicationStatusIsFinal(nextForm.status)) {
+        nextForm.followUpAt = "";
+        nextForm.interviewAt = "";
       }
 
       return nextForm;
@@ -229,10 +269,7 @@ function ApplicationModal({
 
   function addSelectedTag(tagName) {
     if (selectedTagNames.length >= APPLICATION_MAX_TAGS) {
-      showToast(
-        "Vous pouvez associer jusqu’à " + APPLICATION_MAX_TAGS + " tags par candidature.",
-        "warning",
-      );
+      showToast("Vous pouvez associer jusqu’à " + APPLICATION_MAX_TAGS + " tags par candidature.", "warning");
       return;
     }
 
@@ -391,117 +428,48 @@ function ApplicationModal({
   }
 
   return (
-    <div className={getModalClassName(isOpen)}>
-      <div className="modal-box flex h-full max-h-none w-full max-w-5xl flex-col rounded-none bg-base-100 p-0 shadow-sm sm:h-auto sm:max-h-[92vh] sm:rounded-2xl">
-        <form className="flex min-h-0 flex-1 flex-col" onSubmit={handleSubmit}>
-          <div className="flex items-start justify-between gap-4 border-b border-base-300 p-4 sm:p-6">
-            <div>
-              <h2 className="text-xl font-semibold">
-                Nouvelle candidature
-              </h2>
+    <Modal
+      as="form"
+      isOpen={isOpen}
+      title="Nouvelle candidature"
+      description="Ajoutez les informations utiles que vous avez."
+      onClose={handleClose}
+      closeDisabled={submitting}
+      closeAriaLabel="Fermer le formulaire"
+      maxWidthClassName="max-w-5xl"
+      onSubmit={handleSubmit}
+      footer={
+        <>
+          <button className="btn btn-ghost w-full lg:w-auto cursor-pointer" type="button" onClick={handleClose} disabled={submitting}>
+            Annuler
+          </button>
 
-              <p className="text-sm text-base-content/60">
-                Ajoutez les informations utiles que vous avez.
-              </p>
-            </div>
+          <button className="btn btn-primary w-full lg:w-auto text-primary-content cursor-pointer" type="submit" disabled={submitting}>
+            {submitting && (
+              <span className="loading loading-spinner loading-sm" />
+            )}
 
-            <button
-              className="btn btn-ghost btn-sm btn-circle"
-              type="button"
-              onClick={handleClose}
-              aria-label="Fermer le formulaire"
-            >
-              <X className="h-5 w-5" />
-            </button>
-          </div>
+            Enregistrer la candidature
+          </button>
+        </>
+      }
+    >
+      <div className="grid gap-4">
+        <ApplicationFormInformation form={form} onFieldChange={handleChange} />
 
-          <div className="min-h-0 flex-1 overflow-y-auto bg-base-200 p-4 sm:p-6">
-            <div className="grid gap-4">
-              <ApplicationFormInformation
-                form={form}
-                onFieldChange={handleChange}
-              />
+        <ApplicationFormDates form={form} onFieldChange={handleChange} />
 
-              <ApplicationFormDates
-                form={form}
-                onFieldChange={handleChange}
-              />
+        <SectionCard>
+          <ApplicationFormTags selectedTags={selectedTagNames} allowedTagOptions={APPLICATION_ALLOWED_TAG_OPTIONS} maxTagsPerApplication={APPLICATION_MAX_TAGS} tagSelectValue={tagSelectValue} onTagSelectChange={handleTagSelectChange} onRemoveTag={removeSelectedTag} />
+        </SectionCard>
 
-              <section className="rounded-2xl bg-base-100 p-4 shadow-sm sm:p-6">
-                <ApplicationFormTags
-                  selectedTags={selectedTagNames}
-                  allowedTagOptions={APPLICATION_ALLOWED_TAG_OPTIONS}
-                  maxTagsPerApplication={APPLICATION_MAX_TAGS}
-                  tagSelectValue={tagSelectValue}
-                  onTagSelectChange={handleTagSelectChange}
-                  onRemoveTag={removeSelectedTag}
-                />
-              </section>
+        <ApplicationFormContact contactOptions={contactOptions} contactMode={contactMode} selectedContactId={selectedContactId} contactForm={contactForm} contactNotesMaxLength={APPLICATION_CONTACT_NOTES_MAX_LENGTH} onContactModeChange={handleContactModeChange} onSelectedContactChange={handleSelectedContactChange} onContactFormChange={handleContactFormChange} />
 
-              <ApplicationFormContact
-                contactOptions={contactOptions}
-                contactMode={contactMode}
-                selectedContactId={selectedContactId}
-                contactForm={contactForm}
-                contactNotesMaxLength={APPLICATION_CONTACT_NOTES_MAX_LENGTH}
-                onContactModeChange={handleContactModeChange}
-                onSelectedContactChange={handleSelectedContactChange}
-                onContactFormChange={handleContactFormChange}
-              />
+        <ApplicationFormDocument documentOptions={documentOptions} documentMode={documentMode} selectedDocumentId={selectedDocumentId} documentForm={documentForm} documentsLoading={documentsLoading} documentsError={documentsError} fileInputResetKey={fileInputResetKey} onDocumentModeChange={handleDocumentModeChange} onSelectedDocumentChange={handleSelectedDocumentChange} onDocumentTypeChange={handleDocumentTypeChange} onDocumentFileChange={handleDocumentFileChange} />
 
-              <ApplicationFormDocument
-                documentOptions={documentOptions}
-                documentMode={documentMode}
-                selectedDocumentId={selectedDocumentId}
-                documentForm={documentForm}
-                documentsLoading={documentsLoading}
-                documentsError={documentsError}
-                fileInputResetKey={fileInputResetKey}
-                onDocumentModeChange={handleDocumentModeChange}
-                onSelectedDocumentChange={handleSelectedDocumentChange}
-                onDocumentTypeChange={handleDocumentTypeChange}
-                onDocumentFileChange={handleDocumentFileChange}
-              />
-
-              <ApplicationFormNotes
-                form={form}
-                applicationNotesMaxLength={APPLICATION_NOTES_MAX_LENGTH}
-                onFieldChange={handleChange}
-              />
-            </div>
-          </div>
-
-          <div className="flex flex-col-reverse gap-3 border-t border-base-300 bg-base-100 p-4 sm:flex-row sm:justify-end sm:p-6">
-            <button
-              className="btn btn-ghost"
-              type="button"
-              onClick={handleClose}
-              disabled={submitting}
-            >
-              Annuler
-            </button>
-
-            <button
-              className="btn btn-primary text-white"
-              type="submit"
-              disabled={submitting}
-            >
-              {submitting && (
-                <span className="loading loading-spinner loading-sm" />
-              )}
-
-              Enregistrer la candidature
-            </button>
-          </div>
-        </form>
+        <ApplicationFormNotes form={form} applicationNotesMaxLength={APPLICATION_NOTES_MAX_LENGTH} onFieldChange={handleChange} />
       </div>
-
-      <div
-        className="modal-backdrop"
-        onClick={handleClose}
-        aria-label="Fermer le formulaire"
-      />
-    </div>
+    </Modal>
   );
 }
 

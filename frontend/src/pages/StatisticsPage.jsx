@@ -1,24 +1,20 @@
-import {
-  Award,
-  BarChart3,
-  CalendarClock,
-  CheckCircle2,
-  ClipboardList,
-  Flag,
-  Layers3,
-  MapPinned,
-  PieChart,
-  Target,
-} from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
 import { listApplications } from "../api/applications.api";
+import ApplicationsLocationMap from "../components/statistics/ApplicationsLocationMap";
+import {
+  ItemCard,
+  MetricCard,
+  ProgressItemCard,
+  SectionCard,
+} from "../components/ui/Cards";
+import LoadingCard from "../components/ui/LoadingCard";
+import PageHeader from "../components/ui/PageHeader";
 import { useToast } from "../hooks/useToast";
 import { getListFromResponse } from "../utils/common/apiResponse.utils";
 import {
   getBarHeight,
   getContractTypeRows,
-  getFunnelRows,
   getMaxCount,
   getMonthRows,
   getPercentLabel,
@@ -27,49 +23,13 @@ import {
   getTrackingQualityRows,
 } from "../utils/statistics/statistics.utils";
 
-import ApplicationsLocationMap from "../components/statistics/ApplicationsLocationMap";
-
-function StatCard({ icon, label, value, helper }) {
-  return (
-    <div className="h-full min-w-0 rounded-2xl bg-base-100 p-5 shadow-sm">
-      <div className="flex items-start justify-between gap-4">
-        <div className="min-w-0">
-          <p className="text-sm text-base-content/60">
-            {label}
-          </p>
-
-          <p className="mt-2 text-3xl font-black">
-            {value}
-          </p>
-
-          <p className="mt-1 text-xs text-base-content/50">
-            {helper}
-          </p>
-        </div>
-
-        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-          {icon}
-        </div>
-      </div>
-    </div>
-  );
-}
-
 function EmptyStatisticsState() {
   return (
-    <div className="mt-6 rounded-2xl bg-base-100 p-8 text-center shadow-sm">
-      <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-        <BarChart3 className="h-7 w-7" />
-      </div>
-
-      <h2 className="mt-4 text-xl font-bold">
-        Aucune statistique disponible
-      </h2>
-
-      <p className="mt-2 text-sm text-base-content/60">
-        Les statistiques apparaîtront dès que vous aurez créé vos premières candidatures.
-      </p>
-    </div>
+    <SectionCard
+      title="Aucune statistique disponible"
+      description="Les statistiques apparaîtront dès que vous aurez créé vos premières candidatures."
+      centered
+    />
   );
 }
 
@@ -109,6 +69,22 @@ function getDonutDotClassName(index) {
   return "bg-base-content";
 }
 
+function getInterviewDonutStrokeClassName(index) {
+  if (index === 0) {
+    return "stroke-primary";
+  }
+
+  return "stroke-base-300";
+}
+
+function getInterviewDonutDotClassName(index) {
+  if (index === 0) {
+    return "bg-primary";
+  }
+
+  return "bg-base-300";
+}
+
 function getDonutSegments(rows, total) {
   let previousPercent = 0;
 
@@ -138,192 +114,356 @@ function getDonutDashArray(segment) {
   return segment.percentForChart + " " + remaining;
 }
 
+function getOtherApplicationsCount(summary) {
+  const otherCount = summary.total - summary.interviews;
+
+  if (otherCount < 0) {
+    return 0;
+  }
+
+  return otherCount;
+}
+
+function getInterviewRateRows(summary) {
+  return [
+    {
+      key: "interviews",
+      label: "Entretiens obtenus",
+      count: summary.interviews,
+    },
+    {
+      key: "others",
+      label: "Autres statuts",
+      count: getOtherApplicationsCount(summary),
+    },
+  ];
+}
+
+function getDetailedFunnelRows(summary) {
+  return [
+    {
+      key: "total",
+      label: "Candidatures enregistrées",
+      count: summary.total,
+    },
+    {
+      key: "active",
+      label: "Candidatures actives",
+      count: summary.active,
+    },
+    {
+      key: "followUps",
+      label: "Relances planifiées",
+      count: summary.followUps,
+    },
+    {
+      key: "interviews",
+      label: "Entretiens obtenus",
+      count: summary.interviews,
+    },
+    {
+      key: "accepted",
+      label: "Candidatures acceptées",
+      count: summary.accepted,
+    },
+    {
+      key: "rejected",
+      label: "Candidatures refusées",
+      count: summary.rejected,
+    },
+  ];
+}
+
+function ContractTypeLegendItem({ segment, total }) {
+  return (
+    <ItemCard>
+      <div className="w-full min-w-0 flex flex-row justify-between items-center gap-4">
+        <div className="min-w-0 flex flex-row justify-start items-center gap-2">
+          <span
+            className={
+              "w-4 h-4 shrink-0 rounded-full "
+              + getDonutDotClassName(segment.index)
+            }
+          />
+
+          <h3 className="font-semibold text-base-content truncate">
+            {segment.label}
+          </h3>
+        </div>
+
+        <div className="shrink-0 text-right">
+          <p className="text-sm font-bold text-base-content">
+            {segment.count}
+          </p>
+
+          <p className="text-xs text-base-content/60">
+            {getPercentLabel(segment.count, total)}
+          </p>
+        </div>
+      </div>
+    </ItemCard>
+  );
+}
+
+function ContractTypeDonut({ segments, total }) {
+  return (
+    <div className="relative w-56 h-56 mx-auto">
+      <svg className="w-full h-full" viewBox="0 0 40 40">
+        <circle
+          className="stroke-base-200"
+          cx="20"
+          cy="20"
+          r="16"
+          fill="none"
+          strokeWidth="8"
+        />
+
+        {segments.map(function (segment) {
+          return (
+            <circle
+              className={getDonutStrokeClassName(segment.index)}
+              cx="20"
+              cy="20"
+              r="16"
+              fill="none"
+              pathLength="100"
+              strokeWidth="8"
+              strokeDasharray={getDonutDashArray(segment)}
+              strokeDashoffset={-segment.offset}
+              strokeLinecap="butt"
+              transform="rotate(-90 20 20)"
+              key={segment.key}
+            />
+          );
+        })}
+      </svg>
+
+      <div className="absolute top-0 right-0 bottom-0 left-0 flex flex-col justify-center items-center text-center">
+        <p className="text-4xl font-black text-base-content">
+          {total}
+        </p>
+
+        <p className="text-xs text-base-content/60">
+          candidatures
+        </p>
+      </div>
+    </div>
+  );
+}
+
 function ContractTypeDonutCard({ rows, total }) {
   const segments = getDonutSegments(rows, total);
 
   return (
-    <div className="h-full min-w-0 rounded-2xl bg-base-100 p-6 shadow-sm">
-      <div className="flex items-center gap-2">
-        <PieChart className="h-6 w-6 text-primary" />
+    <SectionCard
+      title="Types de contrat"
+      description="Répartition des candidatures selon le type de contrat ciblé."
+    >
+      <div className="w-full grid grid-cols-1 xl:grid-cols-[16rem_1fr] justify-center items-center gap-6">
+        <ContractTypeDonut segments={segments} total={total} />
 
-        <h2 className="text-xl font-bold">
-          Types de contrat
-        </h2>
-      </div>
-
-      <p className="mt-2 text-sm text-base-content/60">
-        Répartition des candidatures selon le type de contrat ciblé.
-      </p>
-
-      {rows.length === 0 && (
-        <p className="mt-6 text-sm text-base-content/60">
-          Aucun type de contrat renseigné.
-        </p>
-      )}
-
-      {rows.length > 0 && (
-        <div className="mt-6 grid gap-6 lg:grid-cols-[220px_1fr] lg:items-center">
-          <div className="relative mx-auto h-56 w-56">
-            <svg className="h-full w-full" viewBox="0 0 40 40">
-              <circle
-                className="stroke-base-200"
-                cx="20"
-                cy="20"
-                r="16"
-                fill="none"
-                strokeWidth="8"
+        <div className="w-full min-w-0 grid grid-cols-1 md:grid-cols-2 gap-2">
+          {segments.map(function (segment) {
+            return (
+              <ContractTypeLegendItem
+                segment={segment}
+                total={total}
+                key={segment.key}
               />
-
-              {segments.map(function (segment) {
-                return (
-                  <circle
-                    className={getDonutStrokeClassName(segment.index)}
-                    cx="20"
-                    cy="20"
-                    r="16"
-                    fill="none"
-                    pathLength="100"
-                    strokeWidth="8"
-                    strokeDasharray={getDonutDashArray(segment)}
-                    strokeDashoffset={-segment.offset}
-                    strokeLinecap="butt"
-                    transform="rotate(-90 20 20)"
-                    key={segment.key}
-                  />
-                );
-              })}
-            </svg>
-
-            <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-              <p className="text-4xl font-black">
-                {total}
-              </p>
-
-              <p className="text-xs text-base-content/60">
-                candidatures
-              </p>
-            </div>
-          </div>
-
-          <div className="min-w-0 space-y-3">
-            {segments.map(function (segment) {
-              return (
-                <div className="flex items-center justify-between gap-3 rounded-2xl bg-base-200 p-3" key={segment.key}>
-                  <div className="flex min-w-0 items-center gap-3">
-                    <span className={"h-3 w-3 shrink-0 rounded-full " + getDonutDotClassName(segment.index)} />
-
-                    <span className="truncate font-medium">
-                      {segment.label}
-                    </span>
-                  </div>
-
-                  <div className="shrink-0 text-right">
-                    <p className="text-sm font-bold">
-                      {segment.count}
-                    </p>
-
-                    <p className="text-xs text-base-content/50">
-                      {getPercentLabel(segment.count, total)}
-                    </p>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+            );
+          })}
         </div>
-      )}
-    </div>
+      </div>
+    </SectionCard>
+  );
+}
+
+function TrackingQualityItem({ row }) {
+  return (
+    <ProgressItemCard
+      title={row.label}
+      subtitle={row.percent + " % des candidatures"}
+      value={row.count}
+      progressWidth={row.percent + "%"}
+    />
   );
 }
 
 function TrackingQualityCard({ rows }) {
   return (
-    <div className="h-full min-w-0 rounded-2xl bg-base-100 p-6 shadow-sm">
-      <div className="flex items-center gap-2">
-        <ClipboardList className="h-6 w-6 text-primary" />
-
-        <h2 className="text-xl font-bold">
-          Qualité du suivi
-        </h2>
-      </div>
-
-      <p className="mt-2 text-sm text-base-content/60">
-        Ces indicateurs montrent si les candidatures sont suffisamment documentées.
-      </p>
-
-      <div className="mt-6 grid gap-4 sm:grid-cols-2">
+    <SectionCard
+      title="Qualité du suivi"
+      description="Ces indicateurs montrent si les candidatures sont suffisamment documentées."
+      className="h-full"
+    >
+      <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-4">
         {rows.map(function (row) {
           return (
-            <div className="min-w-0 rounded-2xl border border-base-300 p-4" key={row.key}>
-              <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0">
-                  <p className="text-sm text-base-content/60">
-                    {row.label}
-                  </p>
-
-                  <p className="mt-1 text-2xl font-black">
-                    {row.percent} %
-                  </p>
-                </div>
-
-                <span className="badge badge-primary text-white">
-                  {row.count}
-                </span>
-              </div>
-
-              <progress
-                className="progress progress-secondary mt-4 h-2 w-full"
-                value={row.percent}
-                max="100"
-              />
-            </div>
+            <TrackingQualityItem row={row} key={row.key} />
           );
         })}
+      </div>
+    </SectionCard>
+  );
+}
+
+function InterviewRateLegendItem({ segment, total }) {
+  return (
+    <ItemCard>
+      <div className="w-full min-w-0 flex flex-row justify-between items-center gap-4">
+        <div className="min-w-0 flex flex-row justify-start items-center gap-2">
+          <span
+            className={
+              "w-4 h-4 shrink-0 rounded-full "
+              + getInterviewDonutDotClassName(segment.index)
+            }
+          />
+
+          <h3 className="text-sm font-semibold text-base-content truncate">
+            {segment.label}
+          </h3>
+        </div>
+
+        <div className="shrink-0 text-right">
+          <p className="text-sm font-bold text-base-content">
+            {segment.count}
+          </p>
+
+          <p className="text-xs text-base-content/60">
+            {getPercentLabel(segment.count, total)}
+          </p>
+        </div>
+      </div>
+    </ItemCard>
+  );
+}
+
+function InterviewRateDonut({ segments, rate }) {
+  return (
+    <div className="relative w-48 h-48 mx-auto">
+      <svg className="w-full h-full" viewBox="0 0 40 40">
+        <circle
+          className="stroke-base-200"
+          cx="20"
+          cy="20"
+          r="16"
+          fill="none"
+          strokeWidth="8"
+        />
+
+        {segments.map(function (segment) {
+          return (
+            <circle
+              className={getInterviewDonutStrokeClassName(segment.index)}
+              cx="20"
+              cy="20"
+              r="16"
+              fill="none"
+              pathLength="100"
+              strokeWidth="8"
+              strokeDasharray={getDonutDashArray(segment)}
+              strokeDashoffset={-segment.offset}
+              strokeLinecap="butt"
+              transform="rotate(-90 20 20)"
+              key={segment.key}
+            />
+          );
+        })}
+      </svg>
+
+      <div className="absolute top-0 right-0 bottom-0 left-0 flex flex-col justify-center items-center text-center">
+        <p className="text-4xl font-black text-base-content">
+          {rate} %
+        </p>
+
+        <p className="text-xs text-base-content/60">
+          entretien
+        </p>
       </div>
     </div>
   );
 }
 
+function InterviewRateDonutCard({ summary }) {
+  const rows = getInterviewRateRows(summary);
+  const segments = getDonutSegments(rows, summary.total);
+
+  return (
+    <SectionCard
+      title="Taux d’entretien"
+      description="Part des candidatures ayant obtenu un entretien."
+      className="h-full"
+    >
+      <div className="w-full grid grid-cols-1 md:grid-cols-[12rem_minmax(0,1fr)] justify-center items-center gap-6">
+        <InterviewRateDonut
+          segments={segments}
+          rate={summary.interviewRate}
+        />
+
+        <div className="w-full min-w-0 flex flex-col justify-start items-stretch gap-2">
+          {segments.map(function (segment) {
+            return (
+              <InterviewRateLegendItem
+                segment={segment}
+                total={summary.total}
+                key={segment.key}
+              />
+            );
+          })}
+        </div>
+      </div>
+    </SectionCard>
+  );
+}
+
+function FunnelItem({ row, total }) {
+  return (
+    <ProgressItemCard
+      title={row.label}
+      subtitle={getPercentLabel(row.count, total)}
+      value={row.count}
+      progressWidth={getProgressWidth(row.count, total)}
+    />
+  );
+}
+
 function FunnelCard({ rows, total }) {
   return (
-    <div className="h-full min-w-0 rounded-2xl bg-base-100 p-6 shadow-sm">
-      <div className="flex items-center gap-2">
-        <Target className="h-6 w-6 text-primary" />
-
-        <h2 className="text-xl font-bold">
-          Tunnel de suivi
-        </h2>
-      </div>
-
-      <p className="mt-2 text-sm text-base-content/60">
-        Une lecture simple du passage entre candidature, relance, entretien et réussite.
-      </p>
-
-      <div className="mt-6 grid gap-4 sm:grid-cols-2">
+    <SectionCard
+      title="Tunnel de suivi"
+      description="Une lecture simple du passage entre candidature, relance, entretien et réussite."
+      className="h-full flex flex-col"
+      contentClassName="flex-1 flex flex-col"
+    >
+      <div className="w-full flex-1 grid grid-cols-1 md:grid-cols-2 gap-4">
         {rows.map(function (row) {
           return (
-            <div className="min-w-0 rounded-2xl border border-base-300 bg-base-100 p-4" key={row.key}>
-              <p className="text-sm text-base-content/60">
-                {row.label}
-              </p>
-
-              <p className="mt-2 text-3xl font-black">
-                {row.count}
-              </p>
-
-              <p className="mt-1 text-xs text-base-content/50">
-                {getPercentLabel(row.count, total)}
-              </p>
-
-              <div className="mt-4 h-3 overflow-hidden rounded-full bg-base-200">
-                <div
-                  className="h-full rounded-full bg-primary"
-                  style={{ width: getProgressWidth(row.count, total) }}
-                />
-              </div>
-            </div>
+            <FunnelItem row={row} total={total} key={row.key} />
           );
         })}
+      </div>
+    </SectionCard>
+  );
+}
+
+function MonthlyActivityBar({ row, maxCount }) {
+  return (
+    <div className="min-w-0 h-full flex flex-col justify-start items-stretch gap-2">
+      <div className="w-full min-h-32 md:min-h-44 xl:min-h-0 flex-1 p-2 flex flex-row justify-center items-end rounded-xl bg-base-200 overflow-hidden">
+        <div
+          className="w-full rounded-lg bg-primary"
+          style={{ height: getBarHeight(row.count, maxCount) }}
+        />
+      </div>
+
+      <div className="shrink-0 text-center">
+        <p className="text-base font-black text-base-content">
+          {row.count}
+        </p>
+
+        <p className="text-xs text-base-content/60 truncate">
+          {row.label}
+        </p>
       </div>
     </div>
   );
@@ -333,70 +473,24 @@ function MonthlyActivityCard({ rows }) {
   const maxCount = getMaxCount(rows);
 
   return (
-    <div className="flex h-full min-w-0 flex-col rounded-2xl bg-base-100 p-6 shadow-sm">
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-        <div className="min-w-0">
-          <div className="flex items-center gap-2">
-            <CalendarClock className="h-6 w-6 text-primary" />
-
-            <h2 className="text-xl font-bold">
-              Suivi sur 6 mois
-            </h2>
-          </div>
-
-          <p className="mt-2 text-sm text-base-content/60">
-            Volume mensuel basé sur la date d’envoi des candidatures.
-          </p>
-        </div>
-
-        <span className="badge badge-primary shrink-0 text-white">
-          6 derniers mois
-        </span>
-      </div>
-
-      <div className="mt-6 grid flex-1 grid-cols-3 gap-3 sm:grid-cols-6">
+    <SectionCard
+      title="Suivi sur 6 mois"
+      description="Volume mensuel basé sur la date d’envoi des candidatures."
+      className="h-full flex flex-col"
+      contentClassName="flex-1 flex flex-col"
+    >
+      <div className="w-full min-h-0 flex-1 grid grid-cols-3 md:grid-cols-6 gap-4">
         {rows.map(function (row) {
           return (
-            <div className="flex min-w-0 flex-col gap-3" key={row.key}>
-              <div className="flex h-40 items-end overflow-hidden rounded-2xl bg-base-200 p-1 sm:h-52 xl:h-60">
-                <div
-                  className="w-full rounded-xl bg-primary"
-                  style={{ height: getBarHeight(row.count, maxCount) }}
-                />
-              </div>
-
-              <div className="text-center">
-                <p className="text-base font-black sm:text-lg">
-                  {row.count}
-                </p>
-
-                <p className="truncate text-xs text-base-content/50">
-                  {row.label}
-                </p>
-              </div>
-            </div>
+            <MonthlyActivityBar
+              row={row}
+              maxCount={maxCount}
+              key={row.key}
+            />
           );
         })}
       </div>
-    </div>
-  );
-}
-
-function MapFutureCard() {
-  return (
-    <div className="rounded-2xl border border-dashed border-base-300 bg-base-100 p-6 shadow-sm">
-      <div className="flex items-center gap-2">
-        <MapPinned className="h-6 w-6 text-primary" />
-
-        <h2 className="text-xl font-bold">
-          Carte des candidatures
-        </h2>
-      </div>
-
-      <p className="mt-2 text-sm text-base-content/60">
-        À faire dans un commit séparé : afficher les villes où vous avez postulé.
-      </p>
-    </div>
+    </SectionCard>
   );
 }
 
@@ -411,7 +505,9 @@ function StatisticsPage() {
       try {
         const applicationsResponse = await listApplications();
 
-        setApplications(getListFromResponse(applicationsResponse, "applications"));
+        setApplications(
+          getListFromResponse(applicationsResponse, "applications")
+        );
       } catch {
         showToast("Impossible de charger les statistiques.", "error");
       } finally {
@@ -439,34 +535,28 @@ function StatisticsPage() {
   }, [summary]);
 
   const funnelRows = useMemo(function () {
-    return getFunnelRows(summary);
+    return getDetailedFunnelRows(summary);
   }, [summary]);
 
   if (loading) {
     return (
-      <section>
-        <h1 className="text-4xl font-bold">
-          Statistiques
-        </h1>
+      <section className="w-full min-w-0 flex flex-col justify-start items-stretch gap-6">
+        <PageHeader
+          title="Statistiques"
+          description="Analysez le volume, la progression et la qualité de suivi de vos candidatures."
+        />
 
-        <div className="mt-6 rounded-2xl bg-base-100 p-6 shadow-sm">
-          <span className="loading loading-spinner loading-md" />
-        </div>
+        <LoadingCard />
       </section>
     );
   }
 
   return (
-    <section>
-      <div>
-        <h1 className="text-4xl font-bold">
-          Statistiques
-        </h1>
-
-        <p className="text-base-content/70">
-          Analysez le volume, la progression et la qualité de suivi de vos candidatures.
-        </p>
-      </div>
+    <section className="w-full min-w-0 flex flex-col justify-start items-stretch gap-6">
+      <PageHeader
+        title="Statistiques"
+        description="Analysez le volume, la progression et la qualité de suivi de vos candidatures."
+      />
 
       {applications.length === 0 && (
         <EmptyStatisticsState />
@@ -474,51 +564,52 @@ function StatisticsPage() {
 
       {applications.length > 0 && (
         <>
-          <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-            <StatCard
-              icon={<Layers3 className="h-6 w-6" />}
+          <div className="w-full grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+            <MetricCard
               label="Total candidatures"
               value={summary.total}
               helper={summary.active + " candidature(s) active(s)"}
             />
 
-            <StatCard
-              icon={<Award className="h-6 w-6" />}
+            <MetricCard
               label="Total entretiens"
               value={summary.interviews}
               helper={summary.interviewRate + " % du total"}
             />
 
-            <StatCard
-              icon={<Flag className="h-6 w-6" />}
+            <MetricCard
               label="Total refusées"
               value={summary.rejected}
-              helper={getPercentLabel(summary.rejected, summary.total) + " du total"}
+              helper={
+                getPercentLabel(summary.rejected, summary.total) + " du total"
+              }
             />
 
-            <StatCard
-              icon={<CheckCircle2 className="h-6 w-6" />}
+            <MetricCard
               label="Total acceptées"
               value={summary.accepted}
               helper={summary.successRate + " % de réussite"}
             />
           </div>
 
-          <div className="mt-6 grid gap-6 xl:grid-cols-2">
-            <ContractTypeDonutCard rows={contractTypeRows} total={summary.total} />
-
+          <div className="w-full grid grid-cols-1 xl:grid-cols-2 gap-6">
             <TrackingQualityCard rows={qualityRows} />
+
+            <InterviewRateDonutCard summary={summary} />
           </div>
 
-          <div className="mt-6 grid gap-6 xl:grid-cols-2">
+          <ContractTypeDonutCard
+            rows={contractTypeRows}
+            total={summary.total}
+          />
+
+          <div className="w-full grid grid-cols-1 xl:grid-cols-2 gap-6">
             <FunnelCard rows={funnelRows} total={summary.total} />
 
             <MonthlyActivityCard rows={monthRows} />
           </div>
 
-          <div className="mt-6">
-            <ApplicationsLocationMap applications={applications} />
-          </div>
+          <ApplicationsLocationMap applications={applications} />
         </>
       )}
     </section>

@@ -1,3 +1,10 @@
+import env from "../config/env.js";
+
+import {
+  getAuthCookieClearOptions,
+  getAuthCookieOptions
+} from "../config/authCookie.js";
+
 import {
   deleteUserAccount,
   exportUserData,
@@ -56,17 +63,35 @@ async function login(request, response, next) {
   try {
     const result = await loginUser(request.body);
 
+    response.cookie(
+      env.authCookieName,
+      result.token,
+      getAuthCookieOptions()
+    );
+
     response.status(200).json({
       success: true,
       message: "User logged in successfully.",
       data: {
-        user: result.user,
-        token: result.token
+        user: result.user
       }
     });
   } catch (error) {
     next(error);
   }
+}
+
+function logout(request, response) {
+  response.clearCookie(
+    env.authCookieName,
+    getAuthCookieClearOptions()
+  );
+
+  response.status(200).json({
+    success: true,
+    message: "User logged out successfully.",
+    data: {}
+  });
 }
 
 async function getMe(request, response, next) {
@@ -131,6 +156,11 @@ async function deleteAccount(request, response, next) {
   try {
     await deleteUserAccount(request.user.id);
 
+    response.clearCookie(
+      env.authCookieName,
+      getAuthCookieClearOptions()
+    );
+
     response.status(200).json({
       success: true,
       message: "Account deleted successfully.",
@@ -148,6 +178,7 @@ export {
   getAuthStatus,
   getMe,
   login,
+  logout,
   register,
   resetPassword,
   verifyEmail

@@ -1,7 +1,9 @@
 import { ContactFormFields, ContactNotesField } from "../../contacts/ContactFormFields";
 
 const applicationContactPlaceholders = {
+  position: "Ex : CEO",
   company: "Reprend l’entreprise si vide",
+  linkedinUrl: "https://www.linkedin.com/in/bruce-wayne",
 };
 
 function ApplicationFormContact({

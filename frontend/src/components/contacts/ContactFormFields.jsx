@@ -11,6 +11,14 @@ function getContactFieldAutocomplete(name, browserAutocomplete) {
     return "family-name";
   }
 
+  if (name === "company") {
+    return "organization";
+  }
+
+  if (name === "position") {
+    return "organization-title";
+  }
+
   if (name === "email") {
     return "email";
   }
@@ -19,8 +27,8 @@ function getContactFieldAutocomplete(name, browserAutocomplete) {
     return "tel";
   }
 
-  if (name === "company") {
-    return "organization";
+  if (name === "linkedinUrl") {
+    return "url";
   }
 
   return "off";
@@ -87,6 +95,38 @@ export function ContactFormFields({
 
       <label className="form-control w-full">
         <span className="label mb-1">
+          Entreprise
+        </span>
+
+        <input
+          className="input input-bordered w-full"
+          name="company"
+          type="text"
+          autoComplete={getContactFieldAutocomplete("company", browserAutocomplete)}
+          value={form.company}
+          onChange={onFieldChange}
+          placeholder={getFieldPlaceholder(placeholders, "company")}
+        />
+      </label>
+
+      <label className="form-control w-full">
+        <span className="label mb-1">
+          Poste
+        </span>
+
+        <input
+          className="input input-bordered w-full"
+          name="position"
+          type="text"
+          autoComplete={getContactFieldAutocomplete("position", browserAutocomplete)}
+          value={form.position}
+          onChange={onFieldChange}
+          placeholder={getFieldPlaceholder(placeholders, "position")}
+        />
+      </label>
+
+      <label className="form-control w-full">
+        <span className="label mb-1">
           Email
         </span>
 
@@ -119,17 +159,17 @@ export function ContactFormFields({
 
       <label className="form-control w-full md:col-span-2">
         <span className="label mb-1">
-          Entreprise
+          LinkedIn
         </span>
 
         <input
           className="input input-bordered w-full"
-          name="company"
-          type="text"
-          autoComplete={getContactFieldAutocomplete("company", browserAutocomplete)}
-          value={form.company}
+          name="linkedinUrl"
+          type="url"
+          autoComplete={getContactFieldAutocomplete("linkedinUrl", browserAutocomplete)}
+          value={form.linkedinUrl}
           onChange={onFieldChange}
-          placeholder={getFieldPlaceholder(placeholders, "company")}
+          placeholder={getFieldPlaceholder(placeholders, "linkedinUrl")}
         />
       </label>
     </div>

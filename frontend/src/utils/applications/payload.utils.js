@@ -1,3 +1,5 @@
+import { getApplicationStatusIsFinal } from "./display.utils";
+
 function addTextField(payload, fieldName, value) {
   const trimmedValue = String(value || "").trim();
 
@@ -26,12 +28,52 @@ function addSalaryField(payload, value) {
   }
 }
 
+function getDateIsBefore(referenceDate, dateToCheck) {
+  if (!referenceDate || !dateToCheck) {
+    return false;
+  }
+
+  return String(dateToCheck).slice(0, 10) < String(referenceDate).slice(0, 10);
+}
+
+function getStatusDisablesFollowUp(status) {
+  if (status === "interview") {
+    return true;
+  }
+
+  if (getApplicationStatusIsFinal(status)) {
+    return true;
+  }
+
+  return false;
+}
+
 function getSafeFollowUpAt(form) {
+  if (getStatusDisablesFollowUp(form.status)) {
+    return "";
+  }
+
   if (form.interviewAt) {
     return "";
   }
 
+  if (getDateIsBefore(form.sentAt, form.followUpAt)) {
+    return "";
+  }
+
   return form.followUpAt;
+}
+
+function getSafeInterviewAt(form) {
+  if (getApplicationStatusIsFinal(form.status)) {
+    return "";
+  }
+
+  if (getDateIsBefore(form.sentAt, form.interviewAt)) {
+    return "";
+  }
+
+  return form.interviewAt;
 }
 
 export function buildApplicationPayload(form) {
@@ -48,7 +90,7 @@ export function buildApplicationPayload(form) {
   addTextField(payload, "notes", form.notes);
   addSalaryField(payload, form.salary);
   addDateField(payload, "followUpAt", getSafeFollowUpAt(form));
-  addDateField(payload, "interviewAt", form.interviewAt);
+  addDateField(payload, "interviewAt", getSafeInterviewAt(form));
 
   return payload;
 }
@@ -58,9 +100,11 @@ export function buildContactPayload(contactForm, applicationCompany) {
 
   addTextField(payload, "firstName", contactForm.firstName);
   addTextField(payload, "lastName", contactForm.lastName);
+  addTextField(payload, "position", contactForm.position);
   addTextField(payload, "email", contactForm.email);
   addTextField(payload, "phoneNumber", contactForm.phoneNumber);
   addTextField(payload, "company", contactForm.company);
+  addTextField(payload, "linkedinUrl", contactForm.linkedinUrl);
   addTextField(payload, "notes", contactForm.notes);
 
   if (!payload.company) {
@@ -80,9 +124,11 @@ export function hasNewContactValue(contactForm) {
   return (
     contactForm.firstName.trim().length > 0
     || contactForm.lastName.trim().length > 0
+    || contactForm.position.trim().length > 0
     || contactForm.email.trim().length > 0
     || contactForm.phoneNumber.trim().length > 0
     || contactForm.company.trim().length > 0
+    || contactForm.linkedinUrl.trim().length > 0
     || contactForm.notes.trim().length > 0
   );
 }

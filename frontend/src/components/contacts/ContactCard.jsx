@@ -1,6 +1,216 @@
-import { Mail, Pencil, Phone, Trash2 } from "lucide-react";
+import { Link as LinkIcon, Mail, Pencil, Phone, Trash2 } from "lucide-react";
+
+import { ItemCard, SectionCard } from "../ui/Cards";
 
 import { getContactName } from "../../utils/contacts/contact.utils";
+
+const contactNotesPreviewMaxLength = 300;
+
+function getContactSubtitle(contact) {
+  if (contact.position && contact.company) {
+    return contact.position + " chez " + contact.company;
+  }
+
+  if (contact.position) {
+    return contact.position;
+  }
+
+  if (contact.company) {
+    return contact.company;
+  }
+
+  return "Informations professionnelles non renseignées";
+}
+
+function getEmailHref(email) {
+  if (!email) {
+    return "";
+  }
+
+  const trimmedEmail = email.trim();
+
+  if (!trimmedEmail) {
+    return "";
+  }
+
+  return "mailto:" + trimmedEmail;
+}
+
+function getPhoneHref(phoneNumber) {
+  if (!phoneNumber) {
+    return "";
+  }
+
+  const cleanedPhoneNumber = phoneNumber.replace(/[^\d+]/g, "");
+
+  if (!cleanedPhoneNumber) {
+    return "";
+  }
+
+  return "tel:" + cleanedPhoneNumber;
+}
+
+function getLinkedInHref(linkedinUrl) {
+  if (!linkedinUrl) {
+    return "";
+  }
+
+  let href = linkedinUrl.trim();
+
+  if (!href) {
+    return "";
+  }
+
+  if (!href.startsWith("http://") && !href.startsWith("https://")) {
+    href = "https://" + href;
+  }
+
+  if (!href.includes("linkedin.com")) {
+    return "";
+  }
+
+  return href;
+}
+
+function getContactNotesPreview(notes) {
+  if (!notes) {
+    return "";
+  }
+
+  const trimmedNotes = notes.trim();
+
+  if (trimmedNotes.length <= contactNotesPreviewMaxLength) {
+    return trimmedNotes;
+  }
+
+  return trimmedNotes.slice(0, contactNotesPreviewMaxLength).trim() + "...";
+}
+
+function ContactInfoRow({
+  icon: Icon,
+  value,
+  fallback,
+  href = "",
+  external = false,
+}) {
+  return (
+    <div className="w-full min-w-0 flex flex-row justify-start items-center gap-2">
+      <Icon className="w-4 h-4 shrink-0 text-primary" />
+
+      {href && external && (
+        <a
+          className="min-w-0 text-sm text-base-content/70 hover:underline truncate cursor-pointer"
+          href={href}
+          target="_blank"
+          rel="noreferrer"
+        >
+          {value}
+        </a>
+      )}
+
+      {href && !external && (
+        <a
+          className="min-w-0 text-sm text-base-content/70 hover:underline truncate cursor-pointer"
+          href={href}
+        >
+          {value}
+        </a>
+      )}
+
+      {!href && (
+        <span className="min-w-0 text-sm text-base-content/50 truncate">
+          {fallback}
+        </span>
+      )}
+    </div>
+  );
+}
+
+function ContactInformationsBlock({ contact }) {
+  return (
+    <ItemCard>
+      <h3 className="text-sm font-semibold text-base-content">
+        Informations
+      </h3>
+
+      <div className="w-full mt-3 flex flex-col justify-start items-stretch gap-2">
+        <ContactInfoRow
+          icon={Mail}
+          value={contact.email}
+          fallback="Email non renseigné"
+          href={getEmailHref(contact.email)}
+        />
+
+        <ContactInfoRow
+          icon={Phone}
+          value={contact.phoneNumber}
+          fallback="Téléphone non renseigné"
+          href={getPhoneHref(contact.phoneNumber)}
+        />
+
+        <ContactInfoRow
+          icon={LinkIcon}
+          value="LinkedIn"
+          fallback="LinkedIn non renseigné"
+          href={getLinkedInHref(contact.linkedinUrl)}
+          external={true}
+        />
+      </div>
+    </ItemCard>
+  );
+}
+
+function ContactNotesBlock({ notes }) {
+  const notesPreview = getContactNotesPreview(notes);
+
+  return (
+    <ItemCard className="min-h-36">
+      <h3 className="text-sm font-semibold text-base-content">
+        Notes
+      </h3>
+
+      {notesPreview && (
+        <p className="mt-3 text-sm text-base-content/70 whitespace-pre-wrap">
+          {notesPreview}
+        </p>
+      )}
+
+      {!notesPreview && (
+        <p className="mt-3 text-sm text-base-content/50">
+          Aucune note renseignée.
+        </p>
+      )}
+    </ItemCard>
+  );
+}
+
+function ContactCardActions({
+  contact,
+  onEditContact,
+  onDeleteContact,
+}) {
+  return (
+    <div className="shrink-0 flex flex-row justify-end items-center gap-1">
+      <button
+        className="btn btn-ghost btn-sm btn-square cursor-pointer"
+        type="button"
+        onClick={function () { onEditContact(contact); }}
+        aria-label="Modifier le contact"
+      >
+        <Pencil className="w-4 h-4" />
+      </button>
+
+      <button
+        className="btn btn-ghost btn-sm btn-square text-error cursor-pointer"
+        type="button"
+        onClick={function () { onDeleteContact(contact); }}
+        aria-label="Supprimer le contact"
+      >
+        <Trash2 className="w-4 h-4" />
+      </button>
+    </div>
+  );
+}
 
 function ContactCard({
   contact,
@@ -8,71 +218,24 @@ function ContactCard({
   onDeleteContact,
 }) {
   return (
-    <article className="flex h-80 flex-col rounded-2xl bg-base-100 p-4 shadow-sm sm:p-5">
-      <div className="flex items-start justify-between gap-4">
-        <div className="min-w-0">
-          <h2 className="truncate text-lg font-semibold">
-            {getContactName(contact)}
-          </h2>
+    <SectionCard
+      as="article"
+      className="h-full min-h-80"
+      contentClassName="flex flex-col justify-start items-stretch gap-4"
+      title={getContactName(contact)}
+      description={getContactSubtitle(contact)}
+      rightElement={
+        <ContactCardActions
+          contact={contact}
+          onEditContact={onEditContact}
+          onDeleteContact={onDeleteContact}
+        />
+      }
+    >
+      <ContactInformationsBlock contact={contact} />
 
-          <p className="truncate text-sm text-base-content/60">
-            {contact.company || "Entreprise non renseignée"}
-          </p>
-        </div>
-
-        <div className="flex shrink-0 gap-1">
-          <button
-            className="btn btn-ghost btn-sm btn-square"
-            type="button"
-            onClick={function () { onEditContact(contact); }}
-            aria-label="Modifier le contact"
-          >
-            <Pencil className="h-4 w-4" />
-          </button>
-
-          <button
-            className="btn btn-ghost btn-sm btn-square text-error"
-            type="button"
-            onClick={function () { onDeleteContact(contact); }}
-            aria-label="Supprimer le contact"
-          >
-            <Trash2 className="h-4 w-4" />
-          </button>
-        </div>
-      </div>
-
-      <div className="mt-4 grid gap-2 text-sm">
-        <div className="flex min-w-0 items-center gap-2 text-base-content/70">
-          <Mail className="h-4 w-4 shrink-0 text-primary" />
-
-          <span className="truncate">
-            {contact.email || "Email non renseigné"}
-          </span>
-        </div>
-
-        <div className="flex min-w-0 items-center gap-2 text-base-content/70">
-          <Phone className="h-4 w-4 shrink-0 text-primary" />
-
-          <span className="truncate">
-            {contact.phoneNumber || "Téléphone non renseigné"}
-          </span>
-        </div>
-      </div>
-
-      <div className="mt-4 min-h-0 flex-1 overflow-y-auto rounded-xl border border-base-300 bg-base-200/50 p-3 text-sm text-base-content/70">
-        {contact.notes && (
-          <p className="whitespace-pre-wrap">
-            {contact.notes}
-          </p>
-        )}
-
-        {!contact.notes && (
-          <p className="text-base-content/50">
-            Aucune note renseignée.
-          </p>
-        )}
-      </div>
-    </article>
+      <ContactNotesBlock notes={contact.notes} />
+    </SectionCard>
   );
 }
 

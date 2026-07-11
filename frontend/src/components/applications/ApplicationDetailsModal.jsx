@@ -1,90 +1,96 @@
-import { BriefcaseBusiness, FileText, History, LinkIcon, Users, X } from "lucide-react";
 import { useState } from "react";
+import { BriefcaseBusiness, FileText, History, LinkIcon, Users, X } from "lucide-react";
 
-import {
-  linkContactToApplication,
-  linkDocumentToApplication,
-  linkTagToApplication,
-  unlinkContactFromApplication,
-  unlinkDocumentFromApplication,
-  unlinkTagFromApplication,
-} from "../../api/relations.api";
 import { listContacts } from "../../api/contacts.api";
 import { listDocuments } from "../../api/documents.api";
+import { linkContactToApplication, linkDocumentToApplication, linkTagToApplication, unlinkContactFromApplication, unlinkDocumentFromApplication, unlinkTagFromApplication } from "../../api/relations.api";
 import { createTag, listTags } from "../../api/tags.api";
-import {
-  APPLICATION_ALLOWED_TAG_OPTIONS,
-  APPLICATION_MAX_TAGS,
-  APPLICATION_NOTES_MAX_LENGTH,
-} from "../../constants/application.constants";
+import { APPLICATION_ALLOWED_TAG_OPTIONS, APPLICATION_MAX_TAGS, APPLICATION_NOTES_MAX_LENGTH } from "../../constants/application.constants";
+import ContactSummaryCard from "../contacts/ContactSummaryCard";
+import DocumentSummaryCard from "../documents/DocumentSummaryCard";
+import Badge from "../ui/Badge";
+import Modal from "../ui/Modal";
+import { ItemCard, SectionCard } from "../ui/Cards";
 import { useToast } from "../../hooks/useToast";
-import {
-  getApplicationContractTypeLabel,
-  getApplicationStatusBadgeClassName,
-  getApplicationStatusLabel,
-} from "../../utils/applications/display.utils";
-import {
-  getErrorMessage,
-  getListFromResponse,
-  getResponseEntity,
-} from "../../utils/common/apiResponse.utils";
 import { getFollowUpDelayDays } from "../../utils/applications/dates.utils";
+import { buildAnnouncementUpdatePayload, getApplicationFollowUpDateLabel, getEditFormFromApplication, getEmptyApplicationEditForm, getNextApplicationEditForm } from "../../utils/applications/detailsForm.utils";
+import { getApplicationContractTypeLabel, getApplicationStatusIsFinal, getApplicationStatusLabel } from "../../utils/applications/display.utils";
 import { getHistoryActionLabel } from "../../utils/applications/history.utils";
+import { getApplicationInterviewAt } from "../../utils/applications/table.utils";
+import { getAllowedTagName, getApplicationContacts, getApplicationDocuments, getApplicationTags, getAvailableContactOptions, getAvailableDocumentOptions, getContactId, getDocumentId, getExistingTagId, getTagId, getTagIsAlreadySelected, getTagsFromApiResponse } from "../../utils/applications/relations.utils";
+import { getErrorMessage, getListFromResponse, getResponseEntity } from "../../utils/common/apiResponse.utils";
+import { formatDate, formatDateTime, formatSalary } from "../../utils/common/format.utils";
 import { getContactLabel } from "../../utils/contacts/contact.utils";
-import {
-  getDocumentLabel,
-  getDocumentTypeLabel,
-} from "../../utils/documents/document.utils";
-import {
-  getAllowedTagName,
-  getApplicationContacts,
-  getApplicationDocuments,
-  getApplicationTags,
-  getAvailableContactOptions,
-  getAvailableDocumentOptions,
-  getContactId,
-  getDocumentId,
-  getExistingTagId,
-  getTagId,
-  getTagIsAlreadySelected,
-  getTagsFromApiResponse,
-} from "../../utils/applications/relations.utils";
-import {
-  formatDate,
-  formatDateTime,
-  formatFileSize,
-  formatSalary,
-} from "../../utils/common/format.utils";
-import {
-  buildAnnouncementUpdatePayload,
-  getApplicationFollowUpDateLabel,
-  getEditFormFromApplication,
-  getEmptyApplicationEditForm,
-  getNextApplicationEditForm,
-} from "../../utils/applications/detailsForm.utils";
+import { getDocumentLabel } from "../../utils/documents/document.utils";
 import ApplicationFormDates from "./form-sections/ApplicationFormDates";
 import ApplicationFormInformation from "./form-sections/ApplicationFormInformation";
 import ApplicationFormNotes from "./form-sections/ApplicationFormNotes";
 import ApplicationFormTags from "./form-sections/ApplicationFormTags";
 
-function getModalClassName(isOpen) {
-  let className = "modal";
+function getTabClassName(activeTab, tabName) {
+  let className = "tab min-w-0 flex-1 px-0 flex flex-row justify-center items-center font-medium text-base-content/60 border-base-300 hover:text-base-content md:min-w-32 md:px-6 cursor-pointer";
 
-  if (isOpen) {
-    className = "modal modal-open";
+  if (activeTab === tabName) {
+    className = "tab tab-active min-w-0 flex-1 px-0 flex flex-row justify-center items-center font-semibold text-base-content border-base-300 !bg-base-200 md:min-w-32 md:px-6 cursor-pointer";
   }
 
   return className;
 }
 
-function getTabClassName(activeTab, tabName) {
-  let className = "tab min-w-0 flex-1 justify-center border-base-300 px-0 font-medium text-base-content/60 hover:text-base-content sm:min-w-32 sm:px-6";
-
-  if (activeTab === tabName) {
-    className = "tab tab-active min-w-0 flex-1 justify-center border-base-300 !bg-base-200 px-0 font-semibold text-base-content sm:min-w-32 sm:px-6";
+function getApplicationStatusBadgeColor(status) {
+  if (status === "sent") {
+    return "info";
   }
 
-  return className;
+  if (status === "follow_up") {
+    return "warning";
+  }
+
+  if (status === "interview") {
+    return "primary";
+  }
+
+  if (status === "rejected") {
+    return "error";
+  }
+
+  if (status === "accepted") {
+    return "success";
+  }
+
+  return "base";
+}
+
+function getApplicationInterviewDateLabel(application) {
+  if (getApplicationStatusIsFinal(application.status)) {
+    return "-";
+  }
+
+  return formatDate(getApplicationInterviewAt(application));
+}
+
+function getHistoryItemTimestamp(historyItem) {
+  if (!historyItem || !historyItem.createdAt) {
+    return 0;
+  }
+
+  const date = new Date(historyItem.createdAt);
+
+  if (Number.isNaN(date.getTime())) {
+    return 0;
+  }
+
+  return date.getTime();
+}
+
+function getSortedHistory(history) {
+  const sortedHistory = [...history];
+
+  sortedHistory.sort(function (firstHistoryItem, secondHistoryItem) {
+    return getHistoryItemTimestamp(secondHistoryItem) - getHistoryItemTimestamp(firstHistoryItem);
+  });
+
+  return sortedHistory;
 }
 
 function isTagAlreadyExistsError(error) {
@@ -129,17 +135,25 @@ async function createOrGetTagId(tagName) {
   throw new Error("Le tag existe peut-être déjà, mais son identifiant est introuvable.");
 }
 
-function InfoItem({ label, value }) {
+function InfoItem({ label, value, children }) {
   return (
-    <div className="rounded-xl border border-base-300 bg-base-200/50 p-3">
-      <p className="text-xs font-medium uppercase tracking-wide text-base-content/50">
+    <ItemCard className="border border-base-300 bg-base-200/50">
+      <p className="text-xs font-medium tracking-wide uppercase text-base-content/50">
         {label}
       </p>
 
-      <p className="mt-1 text-sm font-medium">
-        {value}
-      </p>
-    </div>
+      {children && (
+        <div className="mt-2">
+          {children}
+        </div>
+      )}
+
+      {!children && (
+        <p className="mt-2 text-sm font-medium text-base-content">
+          {value}
+        </p>
+      )}
+    </ItemCard>
   );
 }
 
@@ -319,10 +333,7 @@ function ApplicationDetailsModal({
     }
 
     if (tags.length >= APPLICATION_MAX_TAGS) {
-      showToast(
-        "Vous pouvez associer jusqu’à " + APPLICATION_MAX_TAGS + " tags par candidature.",
-        "warning",
-      );
+      showToast("Vous pouvez associer jusqu’à " + APPLICATION_MAX_TAGS + " tags par candidature.", "warning");
       return;
     }
 
@@ -472,35 +483,36 @@ function ApplicationDetailsModal({
 
   function renderTabs() {
     return (
-      <div className="mt-5 -mb-px">
-        <div className="tabs tabs-lift w-full" role="tablist">
+      <div className="w-full overflow-x-auto">
+        <div className="tabs tabs-lift w-full min-w-full" role="tablist">
           <button className={getTabClassName(activeTab, "announcement")} type="button" role="tab" onClick={showAnnouncementTab} aria-label="Annonce">
-            <BriefcaseBusiness className="h-6 w-6 sm:hidden" />
+            <BriefcaseBusiness className="w-6 h-6 md:hidden" />
 
-            <span className="hidden sm:inline">
+            <span className="hidden md:inline">
               Annonce
             </span>
           </button>
 
           <button className={getTabClassName(activeTab, "contacts")} type="button" role="tab" onClick={showContactsTab} disabled={isEditingAnnouncement} aria-label="Contacts">
-            <Users className="h-6 w-6 sm:hidden" />
+            <Users className="w-6 h-6 md:hidden" />
 
-            <span className="hidden sm:inline">
+            <span className="hidden md:inline">
               Contacts
             </span>
           </button>
 
           <button className={getTabClassName(activeTab, "documents")} type="button" role="tab" onClick={showDocumentsTab} disabled={isEditingAnnouncement} aria-label="Documents">
-            <FileText className="w-6 h-6 sm:hidden" />
+            <FileText className="w-6 h-6 md:hidden" />
 
-            <span className="hidden sm:inline">
+            <span className="hidden md:inline">
               Documents
             </span>
           </button>
 
           <button className={getTabClassName(activeTab, "history")} type="button" role="tab" onClick={showHistoryTab} disabled={isEditingAnnouncement} aria-label="Historique">
-            <History className="w-6 h-6 sm:hidden" />
-            <span className="hidden sm:inline">
+            <History className="w-6 h-6 md:hidden" />
+
+            <span className="hidden md:inline">
               Historique
             </span>
           </button>
@@ -509,29 +521,57 @@ function ApplicationDetailsModal({
     );
   }
 
+  function renderCustomHeader() {
+    return (
+      <div className="bg-base-100 border-b border-base-300">
+        <div className="p-4 lg:p-6 pb-4 flex flex-row justify-between items-start gap-4">
+          <div className="min-w-0 flex-1">
+            <h2
+              className="text-xl font-semibold text-base-content truncate"
+              title={application.position}
+            >
+              {application.position}
+            </h2>
+
+            <p className="mt-1 text-sm text-base-content/60 truncate">
+              {application.company}
+            </p>
+          </div>
+
+          <button
+            className="btn btn-ghost btn-sm btn-circle shrink-0 cursor-pointer"
+            type="button"
+            onClick={handleClose}
+            disabled={updating || tagsUpdating || relationsUpdating}
+            aria-label="Fermer le détail"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        <div className="px-4 lg:px-6 -mb-px">
+          {renderTabs()}
+        </div>
+      </div>
+    );
+  }
+
   function renderStatusInfoItem() {
     return (
-      <div className="p-4 rounded-xl border border-base-300 bg-base-200/50">
-        <p className="text-xs font-medium tracking-wide uppercase text-base-content/50">
-          Statut
-        </p>
-
-        <span className={getApplicationStatusBadgeClassName(application.status)}>
-          {getApplicationStatusLabel(application.status)}
-        </span>
-      </div>
+      <InfoItem label="Statut">
+        <Badge
+          label={getApplicationStatusLabel(application.status)}
+          color={getApplicationStatusBadgeColor(application.status)}
+        />
+      </InfoItem>
     );
   }
 
   function renderAnnouncementReadOnly() {
     return (
       <div className="grid gap-4">
-        <section className="p-4 sm:p-6 rounded-2xl bg-base-100 shadow-sm ">
-          <h3 className="font-semibold">
-            Informations de l’annonce
-          </h3>
-
-          <div className="mt-5 grid gap-4 md:grid-cols-2">
+        <SectionCard title="Informations de l’annonce">
+          <div className="grid gap-4 md:grid-cols-2">
             <InfoItem label="Entreprise" value={application.company} />
             <InfoItem label="Poste" value={application.position} />
             <InfoItem label="Contrat" value={getApplicationContractTypeLabel(application.contractType)} />
@@ -540,54 +580,42 @@ function ApplicationDetailsModal({
             <InfoItem label="Salaire" value={formatSalary(application.salary)} />
           </div>
 
-          <div className="mt-3">
+          <div className="mt-4">
             {application.link && (
-              <div className="p-4 rounded-xl border border-base-300 bg-base-200/50">
-                <p className="text-xs font-medium tracking-wide uppercase text-base-content/50">
-                  Lien
-                </p>
-
-                <div className="mt-1 flex items-center gap-2 text-sm font-medium">
+              <InfoItem label="Lien">
+                <div className="flex flex-row justify-start items-center gap-2 text-sm font-medium">
                   <LinkIcon className="w-4 h-4 text-primary" />
 
                   <a className="link link-primary truncate" href={application.link} target="_blank" rel="noreferrer">
                     Ouvrir l’annonce...
                   </a>
                 </div>
-              </div>
+              </InfoItem>
             )}
 
             {!application.link && (
               <InfoItem label="Lien" value="Non renseigné" />
             )}
           </div>
-        </section>
+        </SectionCard>
 
-        <section className="p-4 sm:p-6 rounded-2xl bg-base-100 shadow-sm">
-          <h3 className="font-semibold">
-            Dates
-          </h3>
-
-          <div className="mt-5 grid md:grid-cols-3 gap-4">
+        <SectionCard title="Dates">
+          <div className="grid gap-4 md:grid-cols-3">
             <InfoItem label="Envoi" value={formatDate(application.sentAt)} />
             <InfoItem label="Relance" value={getApplicationFollowUpDateLabel(application)} />
-            <InfoItem label="Entretien" value={formatDate(application.interviewAt)} />
+            <InfoItem label="Entretien" value={getApplicationInterviewDateLabel(application)} />
           </div>
-        </section>
+        </SectionCard>
 
-        <section className="p-4 sm:p-6 rounded-2xl bg-base-100 shadow-sm ">
+        <SectionCard>
           <ApplicationFormTags selectedTags={getApplicationTags(application)} allowedTagOptions={APPLICATION_ALLOWED_TAG_OPTIONS} maxTagsPerApplication={APPLICATION_MAX_TAGS} tagSelectValue={tagSelectValue} disabled={tagsUpdating} onTagSelectChange={handleTagSelectChange} onRemoveTag={handleRemoveTag} />
-        </section>
+        </SectionCard>
 
-        <section className="p-4 sm:p-6 rounded-2xl bg-base-100 shadow-sm ">
-          <h3 className="font-semibold">
-            Notes
-          </h3>
-
-          <p className="min-h-32 mt-4 p-4 text-sm whitespace-pre-wrap text-base-content/70 rounded-xl border border-base-300 bg-base-200/50">
+        <SectionCard title="Notes">
+          <p className="min-h-32 p-4 text-sm whitespace-pre-wrap text-base-content/70 rounded-xl border border-base-300 bg-base-200/50">
             {application.notes || "Aucune note renseignée."}
           </p>
-        </section>
+        </SectionCard>
       </div>
     );
   }
@@ -599,9 +627,9 @@ function ApplicationDetailsModal({
 
         <ApplicationFormDates form={editForm} onFieldChange={handleFieldChange} />
 
-        <section className="p-4 sm:p-6 rounded-2xl bg-base-100 shadow-sm">
+        <SectionCard>
           <ApplicationFormTags selectedTags={getApplicationTags(application)} allowedTagOptions={APPLICATION_ALLOWED_TAG_OPTIONS} maxTagsPerApplication={APPLICATION_MAX_TAGS} tagSelectValue={tagSelectValue} disabled={tagsUpdating} onTagSelectChange={handleTagSelectChange} onRemoveTag={handleRemoveTag} />
-        </section>
+        </SectionCard>
 
         <ApplicationFormNotes form={editForm} applicationNotesMaxLength={APPLICATION_NOTES_MAX_LENGTH} onFieldChange={handleFieldChange} />
       </div>
@@ -613,18 +641,9 @@ function ApplicationDetailsModal({
     const contactOptions = getAvailableContactOptions(availableContacts, application);
 
     return (
-      <section className="rounded-2xl bg-base-100 p-4 shadow-sm sm:p-6">
-        <h3 className="font-semibold">
-          Contacts associés
-        </h3>
-
-        <div className="mt-4 flex flex-col gap-4 sm:flex-row">
-          <select
-            className="select select-bordered w-full"
-            value={selectedContactId}
-            onChange={handleSelectedContactChange}
-            disabled={contactsLoading || relationsUpdating || contactOptions.length === 0}
-          >
+      <SectionCard title="Contacts associés">
+        <div className="flex flex-col md:flex-row gap-4">
+          <select className="select select-bordered w-full" value={selectedContactId} onChange={handleSelectedContactChange} disabled={contactsLoading || relationsUpdating || contactOptions.length === 0}>
             <option value="">
               Ajouter un contact existant
             </option>
@@ -632,18 +651,13 @@ function ApplicationDetailsModal({
             {contactOptions.map(function (contact) {
               return (
                 <option key={contact.id} value={contact.id}>
-                  {getContactLabel(contact)}
+                  {getContactLabel(contact, true)}
                 </option>
               );
             })}
           </select>
 
-          <button
-            className="btn btn-primary text-white"
-            type="button"
-            onClick={handleAddContact}
-            disabled={contactsLoading || relationsUpdating || !selectedContactId}
-          >
+          <button className="btn btn-primary w-full md:w-auto text-primary-content cursor-pointer" type="button" onClick={handleAddContact} disabled={contactsLoading || relationsUpdating || !selectedContactId}>
             {relationsUpdating && (
               <span className="loading loading-spinner loading-sm" />
             )}
@@ -653,13 +667,13 @@ function ApplicationDetailsModal({
         </div>
 
         {contactsLoading && (
-          <p className="mt-3 text-sm text-base-content/60">
+          <p className="mt-4 text-sm text-base-content/60">
             Chargement des contacts...
           </p>
         )}
 
         {contacts.length === 0 && (
-          <p className="mt-4 rounded-xl border border-dashed border-base-300 p-4 text-sm text-base-content/60">
+          <p className="mt-4 p-4 text-sm text-base-content/60 rounded-xl border border-dashed border-base-300">
             Aucun contact associé.
           </p>
         )}
@@ -670,53 +684,20 @@ function ApplicationDetailsModal({
               const contactId = getContactId(contact);
 
               return (
-                <div className="rounded-xl border border-base-300 bg-base-200/50 p-4" key={contactId}>
-                  <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                    <div>
-                      <p className="font-medium">
-                        {getContactLabel(contact)}
-                      </p>
-
-                      <div className="mt-2 grid gap-1 text-sm text-base-content/60">
-                        <p>
-                          Email : {contact.email || "Non renseigné"}
-                        </p>
-
-                        <p>
-                          Téléphone : {contact.phoneNumber || "Non renseigné"}
-                        </p>
-
-                        <p>
-                          Entreprise : {contact.company || "Non renseignée"}
-                        </p>
-
-                        <p>
-                          Rôle : {contact.role || "Non renseigné"}
-                        </p>
-                      </div>
-
-                      {contact.notes && (
-                        <p className="mt-2 text-sm text-base-content/70">
-                          {contact.notes}
-                        </p>
-                      )}
-                    </div>
-
-                    <button
-                      className="btn btn-ghost btn-sm text-error"
-                      type="button"
-                      onClick={function () { handleRemoveContact(contact); }}
-                      disabled={relationsUpdating}
-                    >
+                <ContactSummaryCard
+                  contact={contact}
+                  key={contactId}
+                  rightElement={
+                    <button className="btn btn-ghost btn-sm text-error cursor-pointer" type="button" onClick={function () { handleRemoveContact(contact); }} disabled={relationsUpdating}>
                       Retirer
                     </button>
-                  </div>
-                </div>
+                  }
+                />
               );
             })}
           </div>
         )}
-      </section>
+      </SectionCard>
     );
   }
 
@@ -725,18 +706,9 @@ function ApplicationDetailsModal({
     const documentOptions = getAvailableDocumentOptions(availableDocuments, application);
 
     return (
-      <section className="rounded-2xl bg-base-100 p-4 shadow-sm sm:p-6">
-        <h3 className="font-semibold">
-          Documents associés
-        </h3>
-
-        <div className="mt-4 flex flex-col gap-4 sm:flex-row">
-          <select
-            className="select select-bordered w-full"
-            value={selectedDocumentId}
-            onChange={handleSelectedDocumentChange}
-            disabled={documentsLoading || relationsUpdating || documentOptions.length === 0}
-          >
+      <SectionCard title="Documents associés">
+        <div className="flex flex-col md:flex-row gap-4">
+          <select className="select select-bordered w-full" value={selectedDocumentId} onChange={handleSelectedDocumentChange} disabled={documentsLoading || relationsUpdating || documentOptions.length === 0}>
             <option value="">
               Ajouter un document existant
             </option>
@@ -750,12 +722,7 @@ function ApplicationDetailsModal({
             })}
           </select>
 
-          <button
-            className="btn btn-primary text-white"
-            type="button"
-            onClick={handleAddDocument}
-            disabled={documentsLoading || relationsUpdating || !selectedDocumentId}
-          >
+          <button className="btn btn-primary w-full md:w-auto text-primary-content cursor-pointer" type="button" onClick={handleAddDocument} disabled={documentsLoading || relationsUpdating || !selectedDocumentId}>
             {relationsUpdating && (
               <span className="loading loading-spinner loading-sm" />
             )}
@@ -765,13 +732,13 @@ function ApplicationDetailsModal({
         </div>
 
         {documentsLoading && (
-          <p className="mt-3 text-sm text-base-content/60">
+          <p className="mt-4 text-sm text-base-content/60">
             Chargement des documents...
           </p>
         )}
 
         {documents.length === 0 && (
-          <p className="mt-4 rounded-xl border border-dashed border-base-300 p-4 text-sm text-base-content/60">
+          <p className="mt-4 p-4 text-sm text-base-content/60 rounded-xl border border-dashed border-base-300">
             Aucun document associé.
           </p>
         )}
@@ -782,119 +749,92 @@ function ApplicationDetailsModal({
               const documentId = getDocumentId(applicationDocument);
 
               return (
-                <div className="rounded-xl border border-base-300 bg-base-200/50 p-4" key={documentId}>
-                  <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                    <div>
-                      <p className="font-medium">
-                        {getDocumentLabel(applicationDocument)}
-                      </p>
-
-                      <div className="mt-2 grid gap-1 text-sm text-base-content/60">
-                        <p>
-                          Type : {getDocumentTypeLabel(applicationDocument.type)}
-                        </p>
-
-                        <p>
-                          Format : {applicationDocument.mimeType || "Non renseigné"}
-                        </p>
-
-                        <p>
-                          Taille : {formatFileSize(applicationDocument.size)}
-                        </p>
-                      </div>
-                    </div>
-
-                    <button
-                      className="btn btn-ghost btn-sm text-error"
-                      type="button"
-                      onClick={function () { handleRemoveDocument(applicationDocument); }}
-                      disabled={relationsUpdating}
-                    >
+                <DocumentSummaryCard
+                  document={applicationDocument}
+                  key={documentId}
+                  rightElement={
+                    <button className="btn btn-ghost btn-sm text-error cursor-pointer" type="button" onClick={function () { handleRemoveDocument(applicationDocument); }} disabled={relationsUpdating}>
                       Retirer
                     </button>
-                  </div>
-                </div>
+                  }
+                />
               );
             })}
           </div>
         )}
-      </section>
+      </SectionCard>
     );
   }
 
   function renderHistoryTab() {
-    return (
-      <section className="rounded-2xl bg-base-100 p-4 shadow-sm sm:p-6">
-        <h3 className="font-semibold">
-          Historique
-        </h3>
+    const sortedHistory = getSortedHistory(history);
 
-        {history.length === 0 && (
-          <p className="mt-3 rounded-xl border border-dashed border-base-300 p-4 text-sm text-base-content/60">
+    return (
+      <SectionCard title="Historique">
+        {sortedHistory.length === 0 && (
+          <p className="p-4 text-sm text-base-content/60 rounded-xl border border-dashed border-base-300">
             Aucun historique disponible.
           </p>
         )}
 
-        {history.length > 0 && (
-          <div className="mt-4 grid gap-2">
-            {history.map(function (historyItem) {
+        {sortedHistory.length > 0 && (
+          <div className="grid gap-2">
+            {sortedHistory.map(function (historyItem) {
               return (
-                <div className="rounded-xl border border-base-300 bg-base-200/50 p-3 text-sm" key={historyItem.id}>
-                  <p className="font-medium">
+                <ItemCard className="border border-base-300 bg-base-200/50" key={historyItem.id}>
+                  <p className="font-medium text-base-content">
                     {getHistoryActionLabel(historyItem.action)}
                   </p>
 
-                  <p className="text-xs text-base-content/60">
+                  <p className="mt-1 text-xs text-base-content/60">
                     {formatDateTime(historyItem.createdAt)}
                   </p>
-                </div>
+                </ItemCard>
               );
             })}
           </div>
         )}
-      </section>
+      </SectionCard>
     );
   }
 
   function renderFooter() {
     if (isEditingAnnouncement) {
       return (
-        <div className="flex flex-col-reverse gap-4 border-t border-base-300 bg-base-100 p-4 sm:flex-row sm:justify-end sm:p-6">
-          <button className="btn btn-ghost" type="button" onClick={cancelEditingAnnouncement} disabled={updating}>
+        <>
+          <button className="btn btn-ghost w-full lg:w-auto cursor-pointer" type="button" onClick={cancelEditingAnnouncement} disabled={updating}>
             Annuler
           </button>
 
-          <button className="btn btn-primary text-white" type="button" onClick={handleAnnouncementSave} disabled={updating}>
+          <button className="btn btn-primary w-full lg:w-auto text-primary-content cursor-pointer" type="button" onClick={handleAnnouncementSave} disabled={updating}>
             {updating && (
               <span className="loading loading-spinner loading-sm" />
             )}
 
             Enregistrer les modifications
           </button>
-        </div>
+        </>
       );
     }
 
     if (activeTab === "announcement") {
       return (
-        <div className="flex flex-col-reverse gap-4 border-t border-base-300 bg-base-100 p-4 sm:flex-row sm:justify-end sm:p-6">
-          <button className="btn btn-ghost" type="button" onClick={handleClose} disabled={updating || tagsUpdating}>
+        <>
+          <button className="btn btn-ghost w-full lg:w-auto cursor-pointer" type="button" onClick={handleClose} disabled={updating || tagsUpdating}>
             Fermer
           </button>
 
-          <button className="btn btn-primary text-white" type="button" onClick={startEditingAnnouncement} disabled={loading || updating || tagsUpdating}>
+          <button className="btn btn-primary w-full lg:w-auto text-primary-content cursor-pointer" type="button" onClick={startEditingAnnouncement} disabled={loading || updating || tagsUpdating}>
             Modifier la candidature
           </button>
-        </div>
+        </>
       );
     }
 
     return (
-      <div className="p-4 sm:p-6 flex sm:flex-row flex-col-reverse sm:justify-end gap-4 border-t border-base-300 bg-base-100">
-        <button className="btn btn-ghost" type="button" onClick={handleClose} disabled={updating || tagsUpdating}>
-          Fermer
-        </button>
-      </div>
+      <button className="btn btn-ghost w-full lg:w-auto cursor-pointer" type="button" onClick={handleClose} disabled={updating || tagsUpdating}>
+        Fermer
+      </button>
     );
   }
 
@@ -924,63 +864,34 @@ function ApplicationDetailsModal({
 
   if (!application) {
     return (
-      <div className={getModalClassName(isOpen)}>
-        <div className="modal-box rounded-2xl">
-          <button className="btn btn-sm btn-circle btn-ghost absolute top-4 right-4" type="button" onClick={handleClose} aria-label="Fermer le détail">
-            <X className="h-6 w-6" />
-          </button>
-
-          <p>
-            Aucune candidature sélectionnée.
-          </p>
-        </div>
-
-        <div className="modal-backdrop" onClick={handleClose} />
-      </div>
+      <Modal isOpen={isOpen} title="Détail de la candidature" onClose={handleClose} closeDisabled={updating || tagsUpdating || relationsUpdating} closeAriaLabel="Fermer le détail">
+        <p className="text-sm text-base-content/70">
+          Aucune candidature sélectionnée.
+        </p>
+      </Modal>
     );
   }
 
   return (
-    <div className={getModalClassName(isOpen)}>
-      <div className="modal-box w -full max-w-5xl max-h-none sm:max-h-[92vh] h-full sm:h-[92vh] p-0 flex  flex-col rounded-none sm:rounded-2xl bg-base-100 shadow-sm  overflow-hidden">
-        <div className="flex min-h-0 flex-1 flex-col">
-          <div className="px-4 sm:px-6 pt-4 sm:pt-6 shrink-0 bg-base-100 ">
-            <div className="flex items-start justify-between gap-4">
-              <div className="min-w-0">
-                <h2 className="truncate text-xl font-semibold">
-                  {application.position}
-                </h2>
-
-                <p className="truncate text-sm text-base-content/60">
-                  {application.company}
-                </p>
-              </div>
-
-              <button className="btn btn-ghost btn-sm btn-circle" type="button" onClick={handleClose} aria-label="Fermer le détail">
-                <X className="w-6 h-6" />
-              </button>
-            </div>
-
-            {renderTabs()}
-          </div>
-
-          <div className="min-h-0 p-4 sm:p-6 flex-1 overflow-y-auto border-t border-base-300 bg-base-200">
-            {loading && (
-              <div className="mb-4 p-4  flex items-center gap-2 text-sm text-base-content/60 rounded-2xl bg-base-100 shadow-sm">
-                <span className="loading loading-sm loading-spinner" />
-                Chargement des détails...
-              </div>
-            )}
-
-            {renderActiveTabContent()}
-          </div>
-
-          {renderFooter()}
+    <Modal
+      isOpen={isOpen}
+      customHeader={renderCustomHeader()}
+      onClose={handleClose}
+      closeDisabled={updating || tagsUpdating || relationsUpdating}
+      closeAriaLabel="Fermer le détail"
+      maxWidthClassName="max-w-5xl"
+      className="lg:!h-[92vh]"
+      footer={renderFooter()}
+    >
+      {loading && (
+        <div className="mb-4 p-4 flex flex-row justify-start items-center gap-2 text-sm text-base-content/60 rounded-2xl bg-base-100 shadow-sm">
+          <span className="loading loading-sm loading-spinner" />
+          Chargement des détails...
         </div>
-      </div>
+      )}
 
-      <div className="modal-backdrop" onClick={handleClose} aria-label="Fermer le détail" />
-    </div>
+      {renderActiveTabContent()}
+    </Modal>
   );
 }
 

@@ -86,7 +86,7 @@ function getApplicationLabel(application) {
   }
 
   if (application.company && application.position) {
-    return application.company + " — " + application.position;
+    return application.company + " - " + application.position;
   }
 
   if (application.company) {

@@ -350,21 +350,17 @@ export function getStatusRows(applications) {
 }
 
 export function getContractTypeRows(applications) {
-  const rows = APPLICATION_CONTRACT_TYPE_OPTIONS.map(function (option) {
+  return APPLICATION_CONTRACT_TYPE_OPTIONS.map(function (option) {
     const count = applications.filter(function (application) {
       return getApplicationContractType(application) === option.value;
     }).length;
 
     return {
-      key: option.value,
+      key: option.value || "empty",
       label: option.label,
       count,
       percent: getPercent(count, applications.length),
     };
-  });
-
-  return rows.filter(function (row) {
-    return row.count > 0;
   });
 }
 

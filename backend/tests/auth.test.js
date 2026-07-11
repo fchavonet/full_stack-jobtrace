@@ -2,6 +2,7 @@ import request from "supertest";
 import { afterAll, beforeEach, describe, expect, test, vi } from "vitest";
 
 import app from "../src/app.js";
+import env from "../src/config/env.js";
 
 import {
   sendEmailVerificationEmail,
@@ -13,6 +14,10 @@ import {
   disconnectDatabase
 } from "./helpers/test-db.js";
 
+import {
+  TEST_AUTH_EMAIL
+} from "./helpers/test-auth.js";
+
 vi.mock("../src/services/email.service.js", function () {
   return {
     sendEmailVerificationEmail: vi.fn(),
@@ -20,8 +25,8 @@ vi.mock("../src/services/email.service.js", function () {
   };
 });
 
-const TEST_EMAIL = "dick.grayson@example.com";
-const UNKNOWN_EMAIL = "unknown@example.com";
+const TEST_EMAIL = TEST_AUTH_EMAIL;
+const UNKNOWN_EMAIL = "unknown@jobtrace.test";
 const TEST_PASSWORD = "Password42";
 const NEW_PASSWORD = "NewPassword42";
 const WRONG_PASSWORD = "WrongPassword1";
@@ -61,6 +66,42 @@ function expectAuthenticationRequired(response) {
   expect(response.body).toEqual(AUTH_REQUIRED_RESPONSE);
 }
 
+function expectAuthenticationCookie(response) {
+  const cookies = response.headers["set-cookie"];
+
+  expect(cookies).toEqual(expect.any(Array));
+  expect(cookies.length).toBeGreaterThan(0);
+
+  const authCookie = cookies.find(function (cookie) {
+    return cookie.startsWith(`${env.authCookieName}=`);
+  });
+
+  expect(authCookie).toEqual(expect.any(String));
+  expect(authCookie).toContain("HttpOnly");
+  expect(authCookie).toContain("SameSite=Lax");
+  expect(authCookie).toContain("Path=/");
+
+  return authCookie;
+}
+
+function expectClearedAuthenticationCookie(response) {
+  const cookies = response.headers["set-cookie"];
+
+  expect(cookies).toEqual(expect.any(Array));
+  expect(cookies.length).toBeGreaterThan(0);
+
+  const authCookie = cookies.find(function (cookie) {
+    return cookie.startsWith(`${env.authCookieName}=`);
+  });
+
+  expect(authCookie).toEqual(expect.any(String));
+  expect(authCookie).toContain("HttpOnly");
+  expect(authCookie).toContain("SameSite=Lax");
+  expect(authCookie).toContain("Path=/");
+
+  return authCookie;
+}
+
 function getLastMockPayload(mockedFunction) {
   const lastCallIndex = mockedFunction.mock.calls.length - 1;
   const lastCall = mockedFunction.mock.calls[lastCallIndex];
@@ -70,13 +111,17 @@ function getLastMockPayload(mockedFunction) {
 }
 
 function getLastEmailVerificationToken() {
-  const payload = getLastMockPayload(sendEmailVerificationEmail);
+  const payload = getLastMockPayload(
+    sendEmailVerificationEmail
+  );
 
   return payload.token;
 }
 
 function getLastPasswordResetToken() {
-  const payload = getLastMockPayload(sendPasswordResetEmail);
+  const payload = getLastMockPayload(
+    sendPasswordResetEmail
+  );
 
   return payload.token;
 }
@@ -93,7 +138,8 @@ async function registerTestUser() {
 }
 
 async function verifyTestUserEmail() {
-  const verificationToken = getLastEmailVerificationToken();
+  const verificationToken =
+    getLastEmailVerificationToken();
 
   const response = await request(app)
     .get("/api/auth/verify-email")
@@ -104,7 +150,9 @@ async function verifyTestUserEmail() {
   return response;
 }
 
-async function loginTestUser(password = TEST_PASSWORD) {
+async function loginTestUser(
+  password = TEST_PASSWORD
+) {
   const response = await request(app)
     .post("/api/auth/login")
     .send({
@@ -115,14 +163,15 @@ async function loginTestUser(password = TEST_PASSWORD) {
   return response;
 }
 
-async function getAuthenticatedToken() {
+async function getAuthenticatedCookie() {
   await registerTestUser();
   await verifyTestUserEmail();
 
   const loginResponse = await loginTestUser();
-  const token = loginResponse.body.data.token;
+  const authCookie =
+    expectAuthenticationCookie(loginResponse);
 
-  return token;
+  return authCookie;
 }
 
 beforeEach(async function () {
@@ -132,6 +181,7 @@ beforeEach(async function () {
 });
 
 afterAll(async function () {
+  await cleanDatabase();
   await disconnectDatabase();
 });
 
@@ -141,12 +191,22 @@ describe("Authentication routes", function () {
 
     expect(response.status).toBe(201);
     expect(response.body.success).toBe(true);
-    expect(response.body.message).toBe("User registered successfully. Please check your email to verify your account.");
+    expect(response.body.message).toBe(
+      "User registered successfully. Please check your email to verify your account."
+    );
 
-    expectDefaultUserFields(response.body.data.user, false);
+    expectDefaultUserFields(
+      response.body.data.user,
+      false
+    );
 
-    expect(sendEmailVerificationEmail).toHaveBeenCalledTimes(1);
-    expect(sendEmailVerificationEmail).toHaveBeenCalledWith({
+    expect(
+      sendEmailVerificationEmail
+    ).toHaveBeenCalledTimes(1);
+
+    expect(
+      sendEmailVerificationEmail
+    ).toHaveBeenCalledWith({
       email: TEST_EMAIL,
       token: expect.any(String)
     });
@@ -175,7 +235,8 @@ describe("Authentication routes", function () {
 
     expect(response.body).toEqual({
       success: false,
-      message: "Email must be verified before login.",
+      message:
+        "Email must be verified before login.",
       errors: []
     });
   });
@@ -187,9 +248,14 @@ describe("Authentication routes", function () {
 
     expect(response.status).toBe(200);
     expect(response.body.success).toBe(true);
-    expect(response.body.message).toBe("Email verified successfully.");
+    expect(response.body.message).toBe(
+      "Email verified successfully."
+    );
 
-    expectDefaultUserFields(response.body.data.user, true);
+    expectDefaultUserFields(
+      response.body.data.user,
+      true
+    );
   });
 
   test("GET /api/auth/verify-email - Should reject invalid token", async function () {
@@ -203,7 +269,8 @@ describe("Authentication routes", function () {
 
     expect(response.body).toEqual({
       success: false,
-      message: "Email verification token is invalid.",
+      message:
+        "Email verification token is invalid.",
       errors: []
     });
   });
@@ -216,14 +283,20 @@ describe("Authentication routes", function () {
 
     expect(response.status).toBe(200);
     expect(response.body.success).toBe(true);
-    expect(response.body.message).toBe("User logged in successfully.");
+    expect(response.body.message).toBe(
+      "User logged in successfully."
+    );
 
     expect(response.body.data.user).toMatchObject({
       email: TEST_EMAIL,
       emailVerified: true
     });
 
-    expect(response.body.data.token).toEqual(expect.any(String));
+    expect(
+      response.body.data.token
+    ).toBeUndefined();
+
+    expectAuthenticationCookie(response);
   });
 
   test("POST /api/auth/login - Should reject invalid credentials", async function () {
@@ -237,32 +310,80 @@ describe("Authentication routes", function () {
       });
 
     expect(response.status).toBe(401);
-    expect(response.body).toEqual(INVALID_CREDENTIALS_RESPONSE);
+    expect(response.body).toEqual(
+      INVALID_CREDENTIALS_RESPONSE
+    );
+  });
+
+  test("POST /api/auth/logout - Should clear authentication cookie", async function () {
+    const authCookie =
+      await getAuthenticatedCookie();
+
+    const response = await request(app)
+      .post("/api/auth/logout")
+      .set("Cookie", authCookie);
+
+    expect(response.status).toBe(200);
+
+    expect(response.body).toEqual({
+      success: true,
+      message: "User logged out successfully.",
+      data: {}
+    });
+
+    expectClearedAuthenticationCookie(response);
+  });
+
+  test("POST /api/auth/logout - Should succeed without authentication cookie", async function () {
+    const response = await request(app)
+      .post("/api/auth/logout");
+
+    expect(response.status).toBe(200);
+
+    expect(response.body).toEqual({
+      success: true,
+      message: "User logged out successfully.",
+      data: {}
+    });
+
+    expectClearedAuthenticationCookie(response);
   });
 
   test("GET /api/auth/me - Should return current authenticated user", async function () {
-    const token = await getAuthenticatedToken();
+    const authCookie =
+      await getAuthenticatedCookie();
 
     const response = await request(app)
       .get("/api/auth/me")
-      .set("Authorization", `Bearer ${token}`);
+      .set("Cookie", authCookie);
 
     expect(response.status).toBe(200);
     expect(response.body.success).toBe(true);
-    expect(response.body.message).toBe("Current user retrieved successfully.");
+    expect(response.body.message).toBe(
+      "Current user retrieved successfully."
+    );
 
     expect(response.body.data.user).toMatchObject({
       email: TEST_EMAIL,
       emailVerified: true
     });
 
-    expect(response.body.data.user.id).toEqual(expect.any(String));
-    expect(response.body.data.user.createdAt).toEqual(expect.any(String));
-    expect(response.body.data.user.updatedAt).toEqual(expect.any(String));
+    expect(
+      response.body.data.user.id
+    ).toEqual(expect.any(String));
+
+    expect(
+      response.body.data.user.createdAt
+    ).toEqual(expect.any(String));
+
+    expect(
+      response.body.data.user.updatedAt
+    ).toEqual(expect.any(String));
   });
 
   test("GET /api/auth/me - Should reject request without authentication token", async function () {
-    const response = await request(app).get("/api/auth/me");
+    const response = await request(app)
+      .get("/api/auth/me");
 
     expectAuthenticationRequired(response);
   });
@@ -280,12 +401,18 @@ describe("Authentication routes", function () {
 
     expect(response.body).toEqual({
       success: true,
-      message: "Password reset request processed successfully.",
+      message:
+        "Password reset request processed successfully.",
       data: {}
     });
 
-    expect(sendPasswordResetEmail).toHaveBeenCalledTimes(1);
-    expect(sendPasswordResetEmail).toHaveBeenCalledWith({
+    expect(
+      sendPasswordResetEmail
+    ).toHaveBeenCalledTimes(1);
+
+    expect(
+      sendPasswordResetEmail
+    ).toHaveBeenCalledWith({
       email: TEST_EMAIL,
       token: expect.any(String)
     });
@@ -302,11 +429,14 @@ describe("Authentication routes", function () {
 
     expect(response.body).toEqual({
       success: true,
-      message: "Password reset request processed successfully.",
+      message:
+        "Password reset request processed successfully.",
       data: {}
     });
 
-    expect(sendPasswordResetEmail).not.toHaveBeenCalled();
+    expect(
+      sendPasswordResetEmail
+    ).not.toHaveBeenCalled();
   });
 
   test("POST /api/auth/reset-password - Should reset forgotten password with valid token", async function () {
@@ -318,7 +448,8 @@ describe("Authentication routes", function () {
         email: TEST_EMAIL
       });
 
-    const resetToken = getLastPasswordResetToken();
+    const resetToken =
+      getLastPasswordResetToken();
 
     const resetResponse = await request(app)
       .post("/api/auth/reset-password")
@@ -337,12 +468,21 @@ describe("Authentication routes", function () {
 
     await verifyTestUserEmail();
 
-    const loginResponse = await loginTestUser(NEW_PASSWORD);
+    const loginResponse =
+      await loginTestUser(NEW_PASSWORD);
 
     expect(loginResponse.status).toBe(200);
     expect(loginResponse.body.success).toBe(true);
-    expect(loginResponse.body.message).toBe("User logged in successfully.");
-    expect(loginResponse.body.data.token).toEqual(expect.any(String));
+
+    expect(loginResponse.body.message).toBe(
+      "User logged in successfully."
+    );
+
+    expect(
+      loginResponse.body.data.token
+    ).toBeUndefined();
+
+    expectAuthenticationCookie(loginResponse);
   });
 
   test("POST /api/auth/reset-password - Should reject invalid token", async function () {
@@ -357,21 +497,26 @@ describe("Authentication routes", function () {
 
     expect(response.body).toEqual({
       success: false,
-      message: "Password reset token is invalid.",
+      message:
+        "Password reset token is invalid.",
       errors: []
     });
   });
 
   test("GET /api/auth/export - Should export authenticated user data without sensitive fields", async function () {
-    const token = await getAuthenticatedToken();
+    const authCookie =
+      await getAuthenticatedCookie();
 
     const response = await request(app)
       .get("/api/auth/export")
-      .set("Authorization", `Bearer ${token}`);
+      .set("Cookie", authCookie);
 
     expect(response.status).toBe(200);
     expect(response.body.success).toBe(true);
-    expect(response.body.message).toBe("User data exported successfully.");
+
+    expect(response.body.message).toBe(
+      "User data exported successfully."
+    );
 
     expect(response.body.data).toMatchObject({
       user: {
@@ -384,34 +529,69 @@ describe("Authentication routes", function () {
       tags: []
     });
 
-    expect(response.body.data.exportedAt).toEqual(expect.any(String));
+    expect(
+      response.body.data.exportedAt
+    ).toEqual(expect.any(String));
 
-    const serializedExport = JSON.stringify(response.body.data);
+    const serializedExport = JSON.stringify(
+      response.body.data
+    );
 
-    expect(serializedExport).not.toContain("passwordHash");
-    expect(serializedExport).not.toContain("password_hash");
-    expect(serializedExport).not.toContain("emailVerifyToken");
-    expect(serializedExport).not.toContain("email_verify_token");
-    expect(serializedExport).not.toContain("emailVerifyExpires");
-    expect(serializedExport).not.toContain("email_verify_expires");
-    expect(serializedExport).not.toContain("resetToken");
-    expect(serializedExport).not.toContain("reset_token");
-    expect(serializedExport).not.toContain("resetTokenExpires");
-    expect(serializedExport).not.toContain("reset_token_expires");
+    expect(serializedExport).not.toContain(
+      "passwordHash"
+    );
+
+    expect(serializedExport).not.toContain(
+      "password_hash"
+    );
+
+    expect(serializedExport).not.toContain(
+      "emailVerifyToken"
+    );
+
+    expect(serializedExport).not.toContain(
+      "email_verify_token"
+    );
+
+    expect(serializedExport).not.toContain(
+      "emailVerifyExpires"
+    );
+
+    expect(serializedExport).not.toContain(
+      "email_verify_expires"
+    );
+
+    expect(serializedExport).not.toContain(
+      "resetToken"
+    );
+
+    expect(serializedExport).not.toContain(
+      "reset_token"
+    );
+
+    expect(serializedExport).not.toContain(
+      "resetTokenExpires"
+    );
+
+    expect(serializedExport).not.toContain(
+      "reset_token_expires"
+    );
   });
 
   test("GET /api/auth/export - Should reject request without authentication token", async function () {
-    const response = await request(app).get("/api/auth/export");
+    const response = await request(app)
+      .get("/api/auth/export");
 
     expectAuthenticationRequired(response);
   });
 
   test("DELETE /api/auth/me - Should delete authenticated user account", async function () {
-    const token = await getAuthenticatedToken();
+    const authCookie =
+      await getAuthenticatedCookie();
 
     const deleteResponse = await request(app)
       .delete("/api/auth/me")
-      .set("Authorization", `Bearer ${token}`);
+      .set("Cookie", authCookie);
 
     expect(deleteResponse.status).toBe(200);
 
@@ -421,14 +601,25 @@ describe("Authentication routes", function () {
       data: {}
     });
 
-    const loginAfterDeletionResponse = await loginTestUser();
+    expectClearedAuthenticationCookie(
+      deleteResponse
+    );
 
-    expect(loginAfterDeletionResponse.status).toBe(401);
-    expect(loginAfterDeletionResponse.body).toEqual(INVALID_CREDENTIALS_RESPONSE);
+    const loginAfterDeletionResponse =
+      await loginTestUser();
+
+    expect(
+      loginAfterDeletionResponse.status
+    ).toBe(401);
+
+    expect(
+      loginAfterDeletionResponse.body
+    ).toEqual(INVALID_CREDENTIALS_RESPONSE);
   });
 
   test("DELETE /api/auth/me - Should reject request without authentication token", async function () {
-    const response = await request(app).delete("/api/auth/me");
+    const response = await request(app)
+      .delete("/api/auth/me");
 
     expectAuthenticationRequired(response);
   });
