@@ -4,11 +4,14 @@ import jwt from "jsonwebtoken";
 import env from "../../src/config/env.js";
 import prisma from "../../src/config/prisma.js";
 
-const TEST_AUTH_EMAIL = "dick.grayson@example.com";
+const TEST_AUTH_EMAIL = "dick.grayson@jobtrace.test";
 const TEST_AUTH_PASSWORD = "Password42";
 
 async function createVerifiedTestUser() {
-  const passwordHash = await bcrypt.hash(TEST_AUTH_PASSWORD, 12);
+  const passwordHash = await bcrypt.hash(
+    TEST_AUTH_PASSWORD,
+    12
+  );
 
   const user = await prisma.user.create({
     data: {
