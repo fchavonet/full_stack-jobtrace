@@ -12,6 +12,7 @@ import {
 import DocumentCard from "../components/documents/DocumentCard";
 import DocumentModal from "../components/documents/DocumentModal";
 import DocumentPreviewModal from "../components/documents/DocumentPreviewModal";
+import ConfirmationModal from "../components/ui/ConfirmationModal";
 import LoadingCard from "../components/ui/LoadingCard";
 import PageHeader from "../components/ui/PageHeader";
 import Search from "../components/ui/Search";
@@ -59,6 +60,7 @@ function DocumentsPage() {
   const [selectedPreviewUrl, setSelectedPreviewUrl] = useState("");
   const [previewLoading, setPreviewLoading] = useState(false);
   const [selectedPreviewFailed, setSelectedPreviewFailed] = useState(false);
+  const [documentToDelete, setDocumentToDelete] = useState(null);
 
   const previewUrlsRef = useRef({});
 
@@ -293,37 +295,50 @@ function DocumentsPage() {
     }
   }
 
-  async function handleDeleteDocument(doc) {
-    const confirmed = window.confirm("Supprimer ce document ?");
+  function handleDeleteDocument(doc) {
+    setDocumentToDelete(doc);
+  }
 
-    if (!confirmed) {
+  function closeDeleteDocumentModal() {
+    if (deletingId) {
       return;
     }
 
-    setDeletingId(doc.id);
+    setDocumentToDelete(null);
+  }
+
+  async function confirmDeleteDocument() {
+    if (!documentToDelete) {
+      return;
+    }
+
+    const documentId = documentToDelete.id;
+
+    setDeletingId(documentId);
 
     try {
-      await deleteDocument(doc.id);
+      await deleteDocument(documentId);
 
-      if (previewUrlsRef.current[doc.id]) {
-        revokeUrl(previewUrlsRef.current[doc.id]);
+      if (previewUrlsRef.current[documentId]) {
+        revokeUrl(previewUrlsRef.current[documentId]);
       }
 
       const nextPreviewUrls = {
         ...previewUrlsRef.current,
       };
 
-      delete nextPreviewUrls[doc.id];
+      delete nextPreviewUrls[documentId];
 
       previewUrlsRef.current = nextPreviewUrls;
       setPreviewUrls(nextPreviewUrls);
 
       setDocuments(function (currentDocuments) {
         return currentDocuments.filter(function (currentDocument) {
-          return currentDocument.id !== doc.id;
+          return currentDocument.id !== documentId;
         });
       });
 
+      setDocumentToDelete(null);
       showToast("Document supprimé.", "success");
     } catch {
       showToast("Impossible de supprimer le document.", "error");
@@ -413,6 +428,17 @@ function DocumentsPage() {
           onDownloadDocument={handleDownloadDocument}
         />
       )}
+
+      <ConfirmationModal
+        isOpen={Boolean(documentToDelete)}
+        title="Supprimer le document"
+        description="Ce document sera définitivement supprimé de votre espace."
+        confirmLabel="OK"
+        cancelLabel="Annuler"
+        submitting={Boolean(deletingId)}
+        onClose={closeDeleteDocumentModal}
+        onConfirm={confirmDeleteDocument}
+      />
     </section>
   );
 }

@@ -11,6 +11,7 @@ import ApplicationsTable from "../components/applications/ApplicationsTable";
 import { SectionCard } from "../components/ui/Cards";
 import LoadingCard from "../components/ui/LoadingCard";
 import { ActiveFilterCard } from "../components/ui/Cards";
+import ConfirmationModal from "../components/ui/ConfirmationModal";
 import PageHeader from "../components/ui/PageHeader";
 import { useToast } from "../hooks/useToast";
 import { getFollowUpDelayDays } from "../utils/applications/dates.utils";
@@ -56,6 +57,8 @@ function ApplicationsPage() {
   const [detailsLoading, setDetailsLoading] = useState(false);
   const [updatingApplication, setUpdatingApplication] = useState(false);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+  const [applicationToDelete, setApplicationToDelete] = useState(null);
+  const [deletingApplication, setDeletingApplication] = useState(false);
 
   const applicationFilterId = searchParams.get("application") || "";
   const hasNewApplicationRequest = searchParams.get("new") === "1";
@@ -220,24 +223,43 @@ function ApplicationsPage() {
     }
   }
 
-  async function handleDeleteApplication(application) {
-    const confirmed = window.confirm("Supprimer cette candidature ?");
+  function handleDeleteApplication(application) {
+    setApplicationToDelete(application);
+  }
 
-    if (!confirmed) {
+  function closeDeleteApplicationModal() {
+    if (deletingApplication) {
       return;
     }
 
-    try {
-      await deleteApplication(application.id);
+    setApplicationToDelete(null);
+  }
 
-      if (selectedApplication && selectedApplication.id === application.id) {
+  async function confirmDeleteApplication() {
+    if (!applicationToDelete) {
+      return;
+    }
+
+    setDeletingApplication(true);
+
+    try {
+      await deleteApplication(applicationToDelete.id);
+
+      if (
+        selectedApplication &&
+        selectedApplication.id === applicationToDelete.id
+      ) {
         closeApplicationDetails();
       }
 
+      setApplicationToDelete(null);
       showToast("Candidature supprimée.", "success");
+
       await reloadApplications();
     } catch {
       showToast("Impossible de supprimer la candidature.", "error");
+    } finally {
+      setDeletingApplication(false);
     }
   }
 
@@ -318,6 +340,17 @@ function ApplicationsPage() {
         onClose={closeApplicationDetails}
         onUpdateApplication={handleUpdateApplication}
         onApplicationChanged={reloadSelectedApplication}
+      />
+
+      <ConfirmationModal
+        isOpen={Boolean(applicationToDelete)}
+        title="Supprimer la candidature"
+        description="Cette candidature et son historique seront définitivement supprimés."
+        confirmLabel="OK"
+        cancelLabel="Annuler"
+        submitting={deletingApplication}
+        onClose={closeDeleteApplicationModal}
+        onConfirm={confirmDeleteApplication}
       />
     </section>
   );

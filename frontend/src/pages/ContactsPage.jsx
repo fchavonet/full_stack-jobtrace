@@ -10,6 +10,7 @@ import {
 
 import ContactCard from "../components/contacts/ContactCard";
 import ContactModal from "../components/contacts/ContactModal";
+import ConfirmationModal from "../components/ui/ConfirmationModal";
 import LoadingCard from "../components/ui/LoadingCard";
 import PageHeader from "../components/ui/PageHeader";
 import Search from "../components/ui/Search";
@@ -43,6 +44,8 @@ function ContactsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedContact, setSelectedContact] = useState(null);
   const [submitting, setSubmitting] = useState(false);
+  const [contactToDelete, setContactToDelete] = useState(null);
+  const [deletingContact, setDeletingContact] = useState(false);
 
   const displayedContacts = useMemo(function () {
     return getFilteredContacts(contacts, searchValue);
@@ -147,26 +150,40 @@ function ContactsPage() {
       setSubmitting(false);
     }
   }
+  function handleDeleteContact(contact) {
+    setContactToDelete(contact);
+  }
 
-  async function handleDeleteContact(contact) {
-    const confirmed = window.confirm("Supprimer ce contact ?");
-
-    if (!confirmed) {
+  function closeDeleteContactModal() {
+    if (deletingContact) {
       return;
     }
 
+    setContactToDelete(null);
+  }
+
+  async function confirmDeleteContact() {
+    if (!contactToDelete) {
+      return;
+    }
+
+    setDeletingContact(true);
+
     try {
-      await deleteContact(contact.id);
+      await deleteContact(contactToDelete.id);
 
       setContacts(function (currentContacts) {
         return currentContacts.filter(function (currentContact) {
-          return currentContact.id !== contact.id;
+          return currentContact.id !== contactToDelete.id;
         });
       });
 
+      setContactToDelete(null);
       showToast("Contact supprimé.", "success");
     } catch {
       showToast("Impossible de supprimer le contact.", "error");
+    } finally {
+      setDeletingContact(false);
     }
   }
 
@@ -239,6 +256,17 @@ function ContactsPage() {
           onSubmitContact={handleSubmitContact}
         />
       )}
+
+      <ConfirmationModal
+        isOpen={Boolean(contactToDelete)}
+        title="Supprimer le contact"
+        description="Ce contact sera définitivement supprimé de votre espace."
+        confirmLabel="OK"
+        cancelLabel="Annuler"
+        submitting={deletingContact}
+        onClose={closeDeleteContactModal}
+        onConfirm={confirmDeleteContact}
+      />
     </section>
   );
 }
