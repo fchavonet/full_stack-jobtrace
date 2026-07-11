@@ -1,5 +1,9 @@
 import env from "../config/env.js";
-import { getAuthCookieOptions } from "../config/authCookie.js";
+
+import {
+  getAuthCookieClearOptions,
+  getAuthCookieOptions
+} from "../config/authCookie.js";
 
 import {
   deleteUserAccount,
@@ -77,6 +81,19 @@ async function login(request, response, next) {
   }
 }
 
+function logout(request, response) {
+  response.clearCookie(
+    env.authCookieName,
+    getAuthCookieClearOptions()
+  );
+
+  response.status(200).json({
+    success: true,
+    message: "User logged out successfully.",
+    data: {}
+  });
+}
+
 async function getMe(request, response, next) {
   try {
     const user = await getCurrentUser(request.user.id);
@@ -139,6 +156,11 @@ async function deleteAccount(request, response, next) {
   try {
     await deleteUserAccount(request.user.id);
 
+    response.clearCookie(
+      env.authCookieName,
+      getAuthCookieClearOptions()
+    );
+
     response.status(200).json({
       success: true,
       message: "Account deleted successfully.",
@@ -156,6 +178,7 @@ export {
   getAuthStatus,
   getMe,
   login,
+  logout,
   register,
   resetPassword,
   verifyEmail

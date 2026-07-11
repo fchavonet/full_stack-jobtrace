@@ -7,6 +7,7 @@ import {
   getAuthStatus,
   getMe,
   login,
+  logout,
   register,
   resetPassword,
   verifyEmail
@@ -28,6 +29,7 @@ router.get("/status", getAuthStatus);
 router.post("/register", validateRegisterPayload, register);
 router.get("/verify-email", validateEmailVerificationPayload, verifyEmail);
 router.post("/login", validateLoginPayload, login);
+router.post("/logout", logout);
 router.get("/me", authMiddleware, getMe);
 router.delete("/me", authMiddleware, deleteAccount);
 router.get("/export", authMiddleware, exportAccount);
