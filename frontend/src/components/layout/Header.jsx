@@ -58,7 +58,7 @@ function Header({
   const authenticatedIcon = getAuthenticatedIcon(authenticatedLinkIcon);
 
   return (
-    <header className="sticky top-0 w-full px-4 md:px-8 text-base-content border-b border-base-300 bg-base-100 z-30">
+    <header className="sticky top-0 w-full px-4 md:px-6 text-base-content border-b border-base-300 bg-base-100 z-30">
       <div className="navbar w-full min-h-[65px] px-0">
         <div className="min-w-0 flex-1 flex flex-row justify-start items-center gap-4">
           <Link
