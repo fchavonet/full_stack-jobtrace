@@ -3,6 +3,7 @@ import express from "express";
 import swaggerUi from "swagger-ui-express";
 import YAML from "yamljs";
 
+import env from "./config/env.js";
 import errorMiddleware from "./middlewares/error.middleware.js";
 import notFoundMiddleware from "./middlewares/notFound.middleware.js";
 
@@ -40,7 +41,7 @@ app.use(
   })
 );
 
-app.use(cors());
+app.use(cors({ origin: env.frontendUrl, credentials: true }));
 app.use(express.json());
 
 app.use("/api/health", healthRoutes);

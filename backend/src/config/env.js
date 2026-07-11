@@ -26,6 +26,8 @@ const env = {
   databaseUrl: process.env.DATABASE_URL || "",
   jwtSecret: process.env.JWT_SECRET || "",
   jwtExpiresIn: process.env.JWT_EXPIRES_IN || "1d",
+  authCookieName: process.env.AUTH_COOKIE_NAME || "jobtrace_auth",
+  authCookieMaxAge: parseNumber(process.env.AUTH_COOKIE_MAX_AGE, 86400000),
   smtpHost: process.env.SMTP_HOST || "",
   smtpPort: parseNumber(process.env.SMTP_PORT, 587),
   smtpUser: process.env.SMTP_USER || "",
