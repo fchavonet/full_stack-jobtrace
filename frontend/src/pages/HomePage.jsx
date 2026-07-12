@@ -91,7 +91,7 @@ function HomePage() {
       <Header onOpenLogin={openLoginModal} onOpenSignup={openSignupModal} />
 
       <main className="relative w-full min-h-0 flex-1 bg-base-200 overflow-y-auto scroll-smooth">
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-80 bg-gradient-to-b from-primary/10 to-transparent" aria-hidden="true" />
+        <div className="absolute inset-x-0 top-0 h-80 bg-gradient-to-b from-primary/10 to-transparent pointer-events-none " aria-hidden="true" />
 
         {/* Hero section */}
         <section className="relative w-full px-6 py-12 flex flex-col justify-center items-center z-10">
@@ -287,7 +287,7 @@ function HomePage() {
         </div>
 
         {/* Call to action section */}
-        <section className="relative w-full px-6 py-12">
+        <section className="relative z-10 w-full px-6 py-12">
           <div className="w-full max-w-6xl mx-auto">
             <div className="w-full p-8 md:p-12 flex flex-col lg:flex-row justify-between items-center gap-6 rounded-2xl bg-primary text-primary-content">
               <div className="w-full max-w-2xl flex flex-col justify-center items-center lg:items-start gap-3 text-center lg:text-left">
@@ -317,12 +317,58 @@ function HomePage() {
           </div>
         </section>
 
-        {/* Closing illustration */}
-        <section className="relative w-full px-6 pt-6 pb-12 md:pt-12 md:pb-16">
-          <div className="w-full max-w-6xl mx-auto flex justify-center items-center">
-            <img className="w-full max-w-xs md:max-w-sm h-auto object-contain" src="../../assets/images/illustrations/interview.svg" alt="" width="420" height="320" aria-hidden="true" />
-          </div>
-        </section>
+        {/* Bottom area */}
+        <div className="relative w-full">
+          <div className="absolute inset-x-0 bottom-0 h-80 bg-gradient-to-t from-primary/10 to-transparent pointer-events-none " aria-hidden="true" />
+
+          {/* Closing illustration */}
+          <section className="relative z-10 w-full px-6 py-12">
+            <div className="w-full max-w-6xl mx-auto flex justify-center items-center">
+              <img className="w-full max-w-xs md:max-w-sm h-auto object-contain" src="/assets/images/illustrations/interview.svg" alt="" width="420" height="320" aria-hidden="true" />
+            </div>
+          </section>
+
+          {/* Footer */}
+          <footer className="relative z-10 w-full px-6 py-12 md:py-6">
+            <div className="w-full max-w-6xl mx-auto">
+              <div className="w-full flex flex-col md:flex-row justify-between items-center gap-6">
+                <div className="flex flex-col justify-center items-center md:items-start gap-2 text-center md:text-left">
+                  <Link className="text-xl font-black text-base-content" to="/" aria-label="Accueil JobTrace">
+                    Job<span className="text-primary">Trace</span>
+                  </Link>
+
+                  <p className="text-sm text-base-content/60">
+                    Reprenez le contrôle de votre recherche d’emploi.
+                  </p>
+                </div>
+
+                <nav className="self-stretch flex flex-wrap justify-center md:justify-end items-end gap-x-6 gap-y-3" aria-label="Liens légaux">
+                  <button className="text-sm text-base-content/60 hover:text-primary cursor-pointer" type="button">
+                    Mentions légales
+                  </button>
+
+                  <button className="text-sm text-base-content/60 hover:text-primary cursor-pointer" type="button">
+                    Politique de confidentialité
+                  </button>
+
+                  <button className="text-sm text-base-content/60 hover:text-primary cursor-pointer" type="button">
+                    Conditions générales d’utilisation
+                  </button>
+                </nav>
+              </div>
+
+              <div className="w-full mt-6 pt-6 flex flex-col sm:flex-row justify-between items-end gap-3 text-center sm:text-left border-t border-base-content/15">
+                <p className="text-xs text-base-content/50">
+                  © {new Date().getFullYear()} JobTrace. Tous droits réservés.
+                </p>
+
+                <p className="text-xs text-base-content/50">
+                  Conçu pour vous accompagner jusqu'au bout.
+                </p>
+              </div>
+            </div>
+          </footer>
+        </div>
       </main>
 
       {isAuthModalOpen && (
