@@ -10,6 +10,10 @@ import { SectionCard } from "../components/ui/Cards";
 
 import { useAuth } from "../hooks/useAuth";
 
+import dashboardScreenshot from "../../assets/images/screenshots/dashboard.webp";
+import jobHuntIllustration from "../../assets/images/illustrations/job_hunt.svg";
+import interviewIllustration from "../../assets/images/illustrations/interview.svg";
+
 const AuthModal = lazy(function () {
   return import("../components/auth/AuthModal.jsx");
 });
@@ -148,7 +152,7 @@ function HomePage() {
               </div>
 
               <div className="order-1 lg:order-2 w-full min-w-0 flex justify-center lg:justify-end">
-                <img className="w-full max-w-md lg:max-w-lg h-auto object-contain" src="/assets/images/illustrations/job_hunt.svg" alt="" width="560" height="420" aria-hidden="true" />
+                <img className="w-full max-w-md lg:max-w-lg h-auto object-contain" src={jobHuntIllustration} alt="" width="560" height="420" aria-hidden="true" />
               </div>
             </div>
           </div>
@@ -156,7 +160,7 @@ function HomePage() {
 
         <section className="relative w-full -mt-4 px-6 py-12 flex justify-center items-center">
           <div className="w-full max-w-4xl rounded-2xl border-4 border-[#e3e3e8] bg-[#e3e3e8]">
-            <img className="w-full h-auto rounded-xl" src="/assets/images/screenshots/dashboard.webp" alt="Aperçu du tableau de bord JobTrace" />
+            <img className="w-full h-auto rounded-xl" src={dashboardScreenshot} alt="Aperçu du tableau de bord JobTrace" />
           </div>
         </section>
 
@@ -342,7 +346,7 @@ function HomePage() {
           {/* Closing illustration */}
           <section className="relative z-10 w-full px-6 py-12">
             <div className="w-full max-w-6xl mx-auto flex justify-center items-center">
-              <img className="w-full max-w-xs md:max-w-sm h-auto object-contain" src="/assets/images/illustrations/interview.svg" alt="" width="420" height="320" aria-hidden="true" />
+              <img className="w-full max-w-xs md:max-w-sm h-auto object-contain" src={interviewIllustration} alt="" width="420" height="320" aria-hidden="true" />
             </div>
           </section>
 
