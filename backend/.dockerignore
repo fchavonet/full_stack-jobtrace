@@ -1,4 +1,12 @@
 node_modules
-.env
 npm-debug.log
+.env
+.env.*
+!.env.example
+.git
+.gitignore
+coverage
 uploads
+tests
+README.md
+.DS_Store
