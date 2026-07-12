@@ -87,14 +87,14 @@ function HomePage() {
   }
 
   return (
-    <div className="h-screen overflow-hidden bg-base-200 text-base-content flex flex-col">
+    <div className="h-screen flex flex-col text-base-content bg-[color-mix(in_oklab,var(--color-primary)_10%,var(--color-base-200))] overflow-hidden">
       <Header onOpenLogin={openLoginModal} onOpenSignup={openSignupModal} />
 
-      <main className="relative w-full min-h-0 flex-1 overflow-y-auto scroll-smooth">
-        <div className="absolute inset-x-0 top-0 h-80 bg-gradient-to-b from-primary/10 to-transparent pointer-events-none" aria-hidden="true" />
+      <main className="relative w-full min-h-0 flex-1 bg-base-200 overflow-y-auto scroll-smooth">
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-80 bg-gradient-to-b from-primary/10 to-transparent" aria-hidden="true" />
 
-        {/* HERO SECTION */}
-        <section className="relative w-full min-h-full px-6 py-12 flex flex-col justify-center items-center z-10">
+        {/* Hero section */}
+        <section className="relative w-full px-6 py-12 flex flex-col justify-center items-center z-10">
           <div className="w-full max-w-6xl mx-auto flex flex-col justify-center items-center gap-6">
             <div className="w-full flex flex-col lg:flex-row justify-center items-center gap-6">
               <div className="order-2 lg:order-1 w-full min-w-0 flex flex-col justify-center items-center lg:items-start gap-6 text-center lg:text-left">
@@ -102,7 +102,7 @@ function HomePage() {
                   Reprenez le contrôle de votre recherche d’emploi.
                 </h1>
 
-                <p className="max-w-2xl text-base md:text-lg leading-relaxed text-base-content/60">
+                <p className="max-w-2xl text-base md:text-lg text-base-content/60">
                   Centralisez vos candidatures, planifiez vos relances et suivez votre progression depuis un espace unique, clair et structuré.
                 </p>
 
@@ -133,16 +133,25 @@ function HomePage() {
                 <img className="w-full max-w-md lg:max-w-lg h-auto object-contain" src="/assets/illustrations/job_hunt.svg" alt="" width="560" height="420" aria-hidden="true" />
               </div>
             </div>
-
-            <div className="w-full rounded-2xl border-4 border-[#e3e3e8] bg-[#e3e3e8] shadow-xl">
-              <img className="w-full h-auto rounded-xl" src="/assets/screenshots/dashboard.webp" alt="Aperçu du tableau de bord JobTrace" />
-            </div>
           </div>
         </section>
 
-        {/* FEATURES SECTION */}
-        <section id="features" className="relative w-full px-6 py-12 scroll-mt-0">
-          <div className="w-full max-w-6xl mx-auto flex flex-col justify-center items-center gap-12">
+        <section className="relative w-full -mt-4 px-6 py-12 flex justify-center items-center">
+          <div className="w-full max-w-4xl rounded-2xl border-4 border-[#e3e3e8] bg-[#e3e3e8]">
+            <img className="w-full h-auto rounded-xl" src="/assets/screenshots/dashboard.webp" alt="Aperçu du tableau de bord JobTrace" />
+          </div>
+        </section>
+
+        {/* Transition section */}
+        <div className="relative w-full px-6 py-6 md:py-12" aria-hidden="true">
+          <div className="w-full max-w-6xl mx-auto flex justify-center">
+            <div className="h-px w-full max-w-2xl bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
+          </div>
+        </div>
+
+        {/* Features section */}
+        <section id="features" className="relative w-full -mt-4 px-6 py-12 scroll-mt-0">
+          <div className="w-full max-w-6xl mx-auto flex flex-col justify-center items-center gap-6">
             <div className="w-full max-w-2xl mx-auto flex flex-col justify-center items-center gap-6 text-center">
               <h2 className="text-2xl md:text-4xl font-black leading-tight tracking-tight text-base-content">
                 Tout ce dont vous avez besoin pour organiser votre recherche.
@@ -153,7 +162,7 @@ function HomePage() {
               </p>
             </div>
 
-            <div className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="w-full mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {features.map(function (feature) {
                 return (
                   <SectionCard key={feature.title} className="h-full" contentClassName="mt-0">
@@ -173,6 +182,99 @@ function HomePage() {
                   </SectionCard>
                 );
               })}
+            </div>
+          </div>
+        </section>
+
+        {/* Transition section */}
+        <div className="relative w-full px-6 py-6 md:py-12" aria-hidden="true">
+          <div className="w-full max-w-6xl mx-auto flex justify-center">
+            <div className="h-px w-full max-w-2xl bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
+          </div>
+        </div>
+
+        {/* FAQ section */}
+        <section className="relative w-full -mt-4 px-6 py-12 flex justify-center items-center">
+          <div className="w-full max-w-6xl mx-auto flex flex-col justify-center items-center gap-6">
+            <div className="w-full max-w-2xl mx-auto flex flex-col justify-center items-center gap-6 text-center">
+              <h2 className="text-2xl md:text-4xl font-black leading-tight tracking-tight text-base-content">
+                Questions fréquentes
+              </h2>
+
+              <p className="max-w-xl text-base md:text-lg leading-relaxed text-base-content/60">
+                Retrouvez les réponses aux principales questions que vous nous avez posé concernant{" "}<span className="font-bold text-base-content">Job<span className="text-primary">Trace</span></span>.
+              </p>
+            </div>
+
+            <div className="w-full max-w-4xl mt-6 flex flex-col justify-start items-stretch gap-2">
+              <div className="collapse collapse-arrow rounded-2xl bg-base-100 shadow-sm">
+                <input type="radio" name="homepage-faq" defaultChecked />
+
+                <div className="collapse-title pr-12 text-lg font-bold text-base-content">
+                  À quoi sert <span className="font-bold text-base-content">Job<span className="text-primary">Trace</span></span> ?
+                </div>
+
+                <div className="collapse-content">
+                  <p className="text-sm text-base-content/60">
+                    <span className="font-bold text-base-content">Job<span className="text-primary">Trace</span></span> vous permet de centraliser vos candidatures, vos contacts, vos documents et vos relances afin de suivre votre recherche d’emploi depuis un espace unique.
+                  </p>
+                </div>
+              </div>
+
+              <div className="collapse collapse-arrow rounded-2xl bg-base-100 shadow-sm">
+                <input type="radio" name="homepage-faq" />
+
+                <div className="collapse-title pr-12 text-lg font-bold text-base-content">
+                  <span className="font-bold text-base-content">Job<span className="text-primary">Trace</span></span> est-il adapté à une recherche de stage ou d’alternance ?
+                </div>
+
+                <div className="collapse-content">
+                  <p className="text-sm leading-relaxed text-base-content/60">
+                    Oui. <span className="font-bold text-base-content">Job<span className="text-primary">Trace</span></span> peut être utilisé pour organiser une recherche d’emploi, de stage ou d’alternance, quel que soit le secteur d’activité.
+                  </p>
+                </div>
+              </div>
+
+              <div className="collapse collapse-arrow rounded-2xl bg-base-100 shadow-sm">
+                <input type="radio" name="homepage-faq" />
+
+                <div className="collapse-title pr-12 text-lg font-bold text-base-content">
+                  Ai-je besoin d'installer un logiciel ?
+                </div>
+
+                <div className="collapse-content">
+                  <p className="text-sm text-base-content/60">
+                    Non. <span className="font-bold text-base-content">Job<span className="text-primary">Trace</span></span> est une application web accessible directement depuis votre navigateur. Il suffit de créer un compte pour commencer à gérer vos candidatures.                  </p>
+                </div>
+              </div>
+
+              <div className="collapse collapse-arrow rounded-2xl bg-base-100 shadow-sm">
+                <input type="radio" name="homepage-faq" />
+
+                <div className="collapse-title pr-12 text-lg font-bold text-base-content">
+                  Dois-je payer pour utiliser <span className="font-bold text-base-content">Job<span className="text-primary">Trace</span></span> ?
+                </div>
+
+                <div className="collapse-content">
+                  <p className="text-sm text-base-content/60">
+                    Non. <span className="font-bold text-base-content">Job<span className="text-primary">Trace</span></span> est actuellement accessible gratuitement. Vous pouvez créer un compte, gérer vos candidatures et profiter de l'ensemble des fonctionnalités disponibles sans abonnement.
+                  </p>
+                </div>
+              </div>
+
+              <div className="collapse collapse-arrow rounded-2xl bg-base-100 shadow-sm">
+                <input type="radio" name="homepage-faq" />
+
+                <div className="collapse-title pr-12 text-lg font-bold text-base-content">
+                  Mes données sont-elles privées ?
+                </div>
+
+                <div className="collapse-content">
+                  <p className="text-sm text-base-content/60">
+                    Oui. Chaque utilisateur accède uniquement à ses propres candidatures, contacts et documents depuis un espace personnel protégé.
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
         </section>
