@@ -34,7 +34,7 @@ const TEST_CONTACT = {
   company: "Wayne Enterprises",
   position: "Chief Executive Officer",
   email: "bruce.wayne@jobtrace.test",
-  phone: "0102030405",
+  phoneNumber: "0102030405",
   linkedinUrl: "https://www.linkedin.com/in/bruce-wayne",
   notes: "Contact de test.",
 };
