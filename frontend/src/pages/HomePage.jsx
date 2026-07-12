@@ -3,6 +3,7 @@ import { BarChart3, CalendarDays, FilePen, FileText, Target, UsersRound, } from 
 import { lazy, Suspense, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 
+import LegalModal from "../components/homepage/LegalModal";
 import Header from "../components/layout/Header";
 import IconBox from "../components/ui/IconBox";
 import { SectionCard } from "../components/ui/Cards";
@@ -49,6 +50,7 @@ const features = [
 function HomePage() {
   const location = useLocation();
   const { isAuthenticated } = useAuth();
+  const [legalModalType, setLegalModalType] = useState("");
 
   function getInitialAuthMode() {
     if (location.state && location.state.authMode) {
@@ -84,6 +86,22 @@ function HomePage() {
   function closeAuthModal() {
     setAuthMode("login");
     setIsAuthModalOpen(false);
+  }
+
+  function openLegalNoticesModal() {
+    setLegalModalType("legal-notices");
+  }
+
+  function openPrivacyModal() {
+    setLegalModalType("privacy");
+  }
+
+  function openTermsModal() {
+    setLegalModalType("terms");
+  }
+
+  function closeLegalModal() {
+    setLegalModalType("");
   }
 
   return (
@@ -343,15 +361,15 @@ function HomePage() {
                 </div>
 
                 <nav className="self-stretch flex flex-wrap justify-center md:justify-end items-end gap-x-6 gap-y-3" aria-label="Liens légaux">
-                  <button className="text-sm text-base-content/60 hover:text-primary cursor-pointer" type="button">
+                  <button className="text-sm text-base-content/60 hover:text-primary cursor-pointer transition-colors" type="button" onClick={openLegalNoticesModal}>
                     Mentions légales
                   </button>
 
-                  <button className="text-sm text-base-content/60 hover:text-primary cursor-pointer" type="button">
+                  <button className="text-sm text-base-content/60 hover:text-primary cursor-pointer transition-colors" type="button" onClick={openPrivacyModal}>
                     Politique de confidentialité
                   </button>
 
-                  <button className="text-sm text-base-content/60 hover:text-primary cursor-pointer" type="button">
+                  <button className="text-sm text-base-content/60 hover:text-primary cursor-pointer transition-colors" type="button" onClick={openTermsModal}>
                     Conditions générales d’utilisation
                   </button>
                 </nav>
@@ -376,6 +394,8 @@ function HomePage() {
           <AuthModal isOpen={isAuthModalOpen} mode={authMode} setMode={setAuthMode} onClose={closeAuthModal} />
         </Suspense>
       )}
+
+      <LegalModal type={legalModalType} onClose={closeLegalModal} />
     </div>
   );
 }
