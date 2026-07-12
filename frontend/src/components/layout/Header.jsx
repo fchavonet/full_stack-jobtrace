@@ -84,7 +84,7 @@ function Header({
             <button
               className="btn btn-square btn-ghost md:hidden cursor-pointer"
               type="button"
-              aria-label="Connexion"
+              aria-label="Se connecter"
               onClick={handleOpenLogin}
             >
               <LogIn className="w-4 h-4" />
@@ -104,7 +104,7 @@ function Header({
               type="button"
               onClick={handleOpenLogin}
             >
-              Connexion
+              Se connecter
             </button>
 
             <button

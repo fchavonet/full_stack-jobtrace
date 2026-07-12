@@ -66,13 +66,6 @@ export const DASHBOARD_NAVIGATION_GROUPS = [
         path: "/dashboard/statistics",
         Icon: BarChart3,
       },
-      {
-        id: "search",
-        label: "Recherche",
-        path: "",
-        Icon: Search,
-        disabled: true,
-      },
     ],
   },
 ];

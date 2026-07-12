@@ -130,7 +130,7 @@ function HomePage() {
               </div>
 
               <div className="order-1 lg:order-2 w-full min-w-0 flex justify-center lg:justify-end">
-                <img className="w-full max-w-md lg:max-w-lg h-auto object-contain" src="/assets/illustrations/job_hunt.svg" alt="" width="560" height="420" aria-hidden="true" />
+                <img className="w-full max-w-md lg:max-w-lg h-auto object-contain" src="/assets/images/illustrations/job_hunt.svg" alt="" width="560" height="420" aria-hidden="true" />
               </div>
             </div>
           </div>
@@ -138,7 +138,7 @@ function HomePage() {
 
         <section className="relative w-full -mt-4 px-6 py-12 flex justify-center items-center">
           <div className="w-full max-w-4xl rounded-2xl border-4 border-[#e3e3e8] bg-[#e3e3e8]">
-            <img className="w-full h-auto rounded-xl" src="/assets/screenshots/dashboard.webp" alt="Aperçu du tableau de bord JobTrace" />
+            <img className="w-full h-auto rounded-xl" src="/assets/images/screenshots/dashboard.webp" alt="Aperçu du tableau de bord JobTrace" />
           </div>
         </section>
 
@@ -276,6 +276,51 @@ function HomePage() {
                 </div>
               </div>
             </div>
+          </div>
+        </section>
+
+        {/* Transition section */}
+        <div className="relative w-full px-6 py-6 md:py-12" aria-hidden="true">
+          <div className="w-full max-w-6xl mx-auto flex justify-center">
+            <div className="h-px w-full max-w-2xl bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
+          </div>
+        </div>
+
+        {/* Call to action section */}
+        <section className="relative w-full px-6 py-12">
+          <div className="w-full max-w-6xl mx-auto">
+            <div className="w-full p-8 md:p-12 flex flex-col lg:flex-row justify-between items-center gap-6 rounded-2xl bg-primary text-primary-content">
+              <div className="w-full max-w-2xl flex flex-col justify-center items-center lg:items-start gap-3 text-center lg:text-left">
+                <h2 className="text-2xl md:text-4xl font-black leading-tight tracking-tight">
+                  Votre prochain emploi commence ici.
+                </h2>
+
+                <p className="max-w-2xl text-base md:text-lg text-primary-content/80">
+                  Créez gratuitement votre espace et centralisez vos candidatures, vos relances, vos contacts et vos documents dans une application pensée pour vous accompagner jusqu’à votre prochaine embauche.
+                </p>
+              </div>
+
+              <div className="w-full lg:w-auto shrink-0 flex justify-center items-center">
+                {!isAuthenticated && (
+                  <button className="btn w-full sm:w-auto border-primary-content bg-primary-content text-primary hover:border-primary-content/90 hover:bg-primary-content/90" type="button" onClick={openSignupModal}>
+                    Créer un compte
+                  </button>
+                )}
+
+                {isAuthenticated && (
+                  <Link className="btn w-full sm:w-auto border-primary-content bg-primary-content text-primary hover:border-primary-content/90 hover:bg-primary-content/90" to="/dashboard">
+                    Accéder au tableau de bord
+                  </Link>
+                )}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Closing illustration */}
+        <section className="relative w-full px-6 pt-6 pb-12 md:pt-12 md:pb-16">
+          <div className="w-full max-w-6xl mx-auto flex justify-center items-center">
+            <img className="w-full max-w-xs md:max-w-sm h-auto object-contain" src="../../assets/images/illustrations/interview.svg" alt="" width="420" height="320" aria-hidden="true" />
           </div>
         </section>
       </main>
