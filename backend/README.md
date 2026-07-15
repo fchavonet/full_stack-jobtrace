@@ -47,7 +47,7 @@ Authentication is based on JSON Web Tokens stored in secure HTTP cookies. The AP
 | `eslint.config.js`     | Configures ESLint rules to maintain code quality and consistency.                   |
 | `docker-entrypoint.sh` | Runs the required initialization commands when the Docker container starts.         |
 | `Dockerfile`           | Defines the Docker image used to run the backend application.                       |
-| `.gitignore`           | Specifies files and folders to be ignored by Git.                                   |
+| `.dockerignore`        | Specifies files and folders to be ignored by Docker.                                |
 | `README.md`            | The README file you are currently reading 😉.                                       |
 
 ## Installation & Usage
@@ -200,13 +200,13 @@ npm run test
 
 ![Swagger](../assets/images/screenshots/backend-swagger-dark.webp)
 
-7. The following screenshots show the results of the automated backend tests and the generated code coverage report.
-
-![Tests](../assets/images/screenshots/backend-tests.webp)
+7. The following screenshot shows the generated frontend code coverage report.
 
 ![Tests coverage](../assets/images/screenshots/backend-tests-coverage.webp)
 
 > For a clearer and more detailed overview of the automated test suite, covered features and latest results, refer to [the backend automated test summary](./docs/automated-tests.md).
+
+You can also test the project online by clicking [here](https://www.jobtrace.fr/).
 
 ## What's Next?
 
