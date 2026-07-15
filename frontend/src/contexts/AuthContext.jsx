@@ -1,38 +1,25 @@
 import { createContext, useEffect, useState } from "react";
 
-import { getCurrentUser, loginUser, registerUser } from "../api/auth.api";
+import {
+  getCurrentUser,
+  loginUser,
+  logoutUser,
+  registerUser,
+} from "../api/auth.api";
 
 const AuthContext = createContext(null);
 
-const TOKEN_STORAGE_KEY = "jobtrace_token";
-
 export function AuthProvider({ children }) {
-  const [token, setToken] = useState(function () {
-    return localStorage.getItem(TOKEN_STORAGE_KEY);
-  });
-
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(function () {
     async function loadCurrentUser() {
-      const storedToken = localStorage.getItem(TOKEN_STORAGE_KEY);
-
-      if (!storedToken) {
-        setUser(null);
-        setLoading(false);
-
-        return;
-      }
-
       try {
-        const response = await getCurrentUser(storedToken);
+        const response = await getCurrentUser();
 
-        setToken(storedToken);
         setUser(response.data.user);
       } catch {
-        localStorage.removeItem(TOKEN_STORAGE_KEY);
-        setToken(null);
         setUser(null);
       } finally {
         setLoading(false);
@@ -43,14 +30,17 @@ export function AuthProvider({ children }) {
   }, []);
 
   async function refreshCurrentUser() {
-    if (!token) {
+    try {
+      const response = await getCurrentUser();
+
+      setUser(response.data.user);
+
+      return response;
+    } catch (error) {
       setUser(null);
 
-      return;
+      throw error;
     }
-
-    const response = await getCurrentUser(token);
-    setUser(response.data.user);
   }
 
   async function register(payload) {
@@ -61,27 +51,24 @@ export function AuthProvider({ children }) {
 
   async function login(payload) {
     const response = await loginUser(payload);
-    const receivedToken = response.data.token;
-    const receivedUser = response.data.user;
 
-    localStorage.setItem(TOKEN_STORAGE_KEY, receivedToken);
-    setToken(receivedToken);
-    setUser(receivedUser);
+    setUser(response.data.user);
 
     return response;
   }
 
-  function logout() {
-    localStorage.removeItem(TOKEN_STORAGE_KEY);
-    setToken(null);
-    setUser(null);
+  async function logout() {
+    try {
+      await logoutUser();
+    } finally {
+      setUser(null);
+    }
   }
 
   const value = {
-    token,
     user,
     loading,
-    isAuthenticated: Boolean(token && user),
+    isAuthenticated: Boolean(user),
     register,
     login,
     logout,

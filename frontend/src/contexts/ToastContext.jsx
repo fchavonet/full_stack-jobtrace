@@ -2,28 +2,35 @@ import { createContext, useCallback, useState } from "react";
 
 const ToastContext = createContext(null);
 
-export function ToastProvider({ children }) {
-  const [toasts, setToasts] = useState([]);
-
-  function createToastId() {
+function createToastId() {
+  if (
+    typeof crypto !== "undefined"
+    && typeof crypto.randomUUID === "function"
+  ) {
     return crypto.randomUUID();
   }
 
-  function getToastClass(type) {
-    if (type === "success") {
-      return "alert-success text-success-content";
-    }
+  return Date.now().toString() + Math.random().toString(16).slice(2);
+}
 
-    if (type === "error") {
-      return "alert-error text-error-content";
-    }
-
-    if (type === "warning") {
-      return "alert-warning text-warning-content";
-    }
-
-    return "alert-info text-info-content";
+function getToastClass(type) {
+  if (type === "success") {
+    return "alert-success text-success-content";
   }
+
+  if (type === "error") {
+    return "alert-error text-error-content";
+  }
+
+  if (type === "warning") {
+    return "alert-warning text-warning-content";
+  }
+
+  return "alert-info text-info-content";
+}
+
+export function ToastProvider({ children }) {
+  const [toasts, setToasts] = useState([]);
 
   const showToast = useCallback(function (message, type = "info") {
     const id = createToastId();

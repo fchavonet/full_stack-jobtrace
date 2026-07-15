@@ -2,14 +2,19 @@ FROM node:22-alpine
 
 WORKDIR /app
 
-COPY package*.json ./
+COPY package.json package-lock.json ./
 COPY prisma ./prisma
 
-RUN npm install
+RUN npm ci
 RUN npx prisma generate
 
-COPY . .
+COPY src ./src
+COPY docs ./docs
+COPY docker-entrypoint.sh ./docker-entrypoint.sh
+
+RUN mkdir -p uploads/documents
+RUN chmod +x ./docker-entrypoint.sh
 
 EXPOSE 4000
 
-CMD ["npm", "run", "dev"]
+ENTRYPOINT ["./docker-entrypoint.sh"]

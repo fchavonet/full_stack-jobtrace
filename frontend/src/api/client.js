@@ -1,5 +1,4 @@
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000/api";
-const AUTH_TOKEN_STORAGE_KEY = "jobtrace_token";
 
 export function getApiUrl() {
   return API_URL;
@@ -7,7 +6,6 @@ export function getApiUrl() {
 
 export async function apiRequest(path, options = {}) {
   const url = API_URL + path;
-  const token = localStorage.getItem(AUTH_TOKEN_STORAGE_KEY);
 
   const headers = {
     ...options.headers,
@@ -17,13 +15,10 @@ export async function apiRequest(path, options = {}) {
     headers["Content-Type"] = "application/json";
   }
 
-  if (options.authenticated && token) {
-    headers.Authorization = "Bearer " + token;
-  }
-
   const response = await fetch(url, {
     ...options,
     headers,
+    credentials: "include",
     body: getRequestBody(options.body),
   });
 
@@ -38,24 +33,21 @@ export async function apiRequest(path, options = {}) {
 
 export async function apiFileRequest(path, options = {}) {
   const url = API_URL + path;
-  const token = localStorage.getItem(AUTH_TOKEN_STORAGE_KEY);
 
   const headers = {
     ...options.headers,
   };
 
-  if (options.authenticated && token) {
-    headers.Authorization = "Bearer " + token;
-  }
-
   const response = await fetch(url, {
     ...options,
     headers,
+    credentials: "include",
     body: getRequestBody(options.body),
   });
 
   if (!response.ok) {
     const data = await getResponseData(response);
+
     throw data;
   }
 
@@ -63,6 +55,7 @@ export async function apiFileRequest(path, options = {}) {
 
   if (contentType.includes("application/json")) {
     const data = await getResponseData(response);
+
     throw data;
   }
 
@@ -76,18 +69,6 @@ export async function apiFileRequest(path, options = {}) {
     blob,
     contentType,
   };
-}
-
-export function apiRequestWithToken(path, token, options = {}) {
-  const headers = {
-    Authorization: "Bearer " + token,
-    ...options.headers,
-  };
-
-  return apiRequest(path, {
-    ...options,
-    headers,
-  });
 }
 
 function getRequestBody(body) {

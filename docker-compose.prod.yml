@@ -2,18 +2,19 @@ services:
   database:
     image: postgres:17-alpine
     container_name: jobtrace-database
+    env_file:
+      - ./.env
     environment:
-      POSTGRES_DB: jobtrace_db
-      POSTGRES_USER: jobtrace_user
-      POSTGRES_PASSWORD: jobtrace_password
-    ports:
-      - "5432:5432"
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
     healthcheck:
       test:
         - CMD-SHELL
-        - pg_isready -U jobtrace_user -d jobtrace_db
+        - pg_isready -U "$${POSTGRES_USER}" -d "$${POSTGRES_DB}"
       interval: 5s
       timeout: 5s
       retries: 10
@@ -23,15 +24,14 @@ services:
       context: ./backend
     container_name: jobtrace-backend
     env_file:
-      - ./backend/.env
+      - ./.env
     environment:
-      DATABASE_URL: postgresql://jobtrace_user:jobtrace_password@database:5432/jobtrace_db
       NODE_ENV: production
       PORT: 4000
-    ports:
-      - "4000:4000"
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@database:5432/${POSTGRES_DB}
     volumes:
       - document_uploads:/app/uploads/documents
+    restart: unless-stopped
     depends_on:
       database:
         condition: service_healthy
@@ -55,7 +55,8 @@ services:
         VITE_API_URL: /api
     container_name: jobtrace-frontend
     ports:
-      - "3000:80"
+      - "127.0.0.1:3000:80"
+    restart: unless-stopped
     depends_on:
       backend:
         condition: service_healthy

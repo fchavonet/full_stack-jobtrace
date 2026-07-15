@@ -1,4 +1,4 @@
-import { apiRequest, apiRequestWithToken } from "./client";
+import { apiRequest } from "./client";
 
 export function registerUser(payload) {
   return apiRequest("/auth/register", {
@@ -20,20 +20,26 @@ export function loginUser(payload) {
   });
 }
 
-export function getCurrentUser(token) {
-  return apiRequestWithToken("/auth/me", token, {
+export function logoutUser() {
+  return apiRequest("/auth/logout", {
+    method: "POST",
+  });
+}
+
+export function getCurrentUser() {
+  return apiRequest("/auth/me", {
     method: "GET",
   });
 }
 
-export function deleteCurrentUser(token) {
-  return apiRequestWithToken("/auth/me", token, {
+export function deleteCurrentUser() {
+  return apiRequest("/auth/me", {
     method: "DELETE",
   });
 }
 
-export function exportCurrentUserData(token) {
-  return apiRequestWithToken("/auth/export", token, {
+export function exportCurrentUserData() {
+  return apiRequest("/auth/export", {
     method: "GET",
   });
 }

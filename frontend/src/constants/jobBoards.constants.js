@@ -1,9 +1,9 @@
-import franceTravailLogo from "../assets/images/logos/job-boards/france_travail.webp";
-import helloworkLogo from "../assets/images/logos/job-boards/hellowork.webp";
-import indeedLogo from "../assets/images/logos/job-boards/indeed.webp";
-import jobijobaLogo from "../assets/images/logos/job-boards/jobijoba.webp";
-import linkedinLogo from "../assets/images/logos/job-boards/linkedin.webp";
-import wttjLogo from "../assets/images/logos/job-boards/wttj.webp";
+import franceTravailLogo from "../../assets/images/logos/job-boards/france_travail.webp";
+import helloworkLogo from "../../assets/images/logos/job-boards/hellowork.webp";
+import indeedLogo from "../../assets/images/logos/job-boards/indeed.webp";
+import jobijobaLogo from "../../assets/images/logos/job-boards/jobijoba.webp";
+import linkedinLogo from "../../assets/images/logos/job-boards/linkedin.webp";
+import wttjLogo from "../../assets/images/logos/job-boards/wttj.webp";
 
 export const JOB_BOARD_LINKS = [
   {

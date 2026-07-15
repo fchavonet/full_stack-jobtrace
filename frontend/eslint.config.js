@@ -5,9 +5,14 @@ import reactRefresh from "eslint-plugin-react-refresh";
 import { defineConfig, globalIgnores } from "eslint/config";
 
 export default defineConfig([
-  globalIgnores(["dist"]),
+  globalIgnores([
+    "coverage",
+    "dist",
+  ]),
   {
-    files: ["**/*.{js,jsx}"],
+    files: [
+      "**/*.{js,jsx}",
+    ],
     extends: [
       js.configs.recommended,
       reactHooks.configs.flat.recommended,
@@ -15,17 +20,42 @@ export default defineConfig([
     ],
     languageOptions: {
       globals: globals.browser,
-      parserOptions: { ecmaFeatures: { jsx: true } },
+      parserOptions: {
+        ecmaFeatures: {
+          jsx: true,
+        },
+      },
     },
     rules: {
-      quotes: ["error", "double"],
-      semi: ["error", "always"],
+      quotes: [
+        "error",
+        "double",
+      ],
+      semi: [
+        "error",
+        "always",
+      ],
       "no-unused-vars": [
         "error",
         {
           varsIgnorePattern: "^[A-Z_]",
         },
       ],
+    },
+  },
+  {
+    files: [
+      "tests/**/*.{js,jsx}",
+      "vite.config.js",
+    ],
+    languageOptions: {
+      globals: {
+        ...globals.browser,
+        ...globals.node,
+      },
+    },
+    rules: {
+      "react-refresh/only-export-components": "off",
     },
   },
 ]);
