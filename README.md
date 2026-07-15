@@ -81,9 +81,7 @@ http://localhost:3000
 
 You can also test the project online by clicking [here](https://www.jobtrace.fr/).
 
-> To better understand the project’s design and development process, you can consult the PDF available in the `docs/` directory at the root of the repository. It contains the project report submitted for the RNCP certification, along with the associated diagrams and supporting resources (written in French).
-<br>
-For more detailed technical information, refer to the dedicated README files located in the `frontend/` and `backend/` directories.
+> To better understand the project’s design and development process, you can consult the PDF available in the `docs/` directory at the root of the repository. It contains the project report submitted for the RNCP certification, along with the associated diagrams and supporting resources (written in French). For more detailed technical information, refer to the dedicated README files located in the `frontend/` and `backend/` directories.
 
 <p align="center">
     <picture>
