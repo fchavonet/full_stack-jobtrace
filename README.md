@@ -82,7 +82,7 @@ http://localhost:3000
 
 You can also test the project online by clicking [here](https://www.jobtrace.fr/).
 
-> To better understand the project’s design and development process, you can consult the PDF available in the `docs/` directory at the root of the repository. It contains the project report submitted for the RNCP certification, along with the associated diagrams and supporting resources (written in French). For more detailed technical information, refer to the dedicated README files located in the `frontend/` and `backend/` directories.
+> To better understand the project’s design and development process, you can consult the [RNCP project report](./docs/rncp/project_report_%28fr%29.pdf), along with the [project diagrams and supporting resources](./docs/). These documents are written in French. For more detailed technical information, refer to the dedicated README files located in the [`frontend/`](./frontend/) and [`backend/`](./backend/) directories.
 
 <p align="center">
     <picture>
@@ -91,101 +91,6 @@ You can also test the project online by clicking [here](https://www.jobtrace.fr/
         <img width="100%" src="./assets/images/screenshots/dashboard-light.webp" alt="Dashboard">
     </picture>
 </p>
-
-<p align="center">
-    <picture>
-        <source media="(prefers-color-scheme: light)" srcset="./assets/images/screenshots/applications-light.webp">
-        <source media="(prefers-color-scheme: dark)" srcset="./assets/images/screenshots/applications-dark.webp">
-        <img width="100%" src="./assets/images/screenshots/applications-light.webp" alt="Applications">
-    </picture>
-</p>
-
-<p align="center">
-    <picture>
-        <source media="(prefers-color-scheme: light)" srcset="./assets/images/screenshots/application_form-light.webp">
-        <source media="(prefers-color-scheme: dark)" srcset="./assets/images/screenshots/application_form-dark.webp">
-        <img width="100%" src="./assets/images/screenshots/application_form-light.webp" alt="Application form">
-    </picture>
-</p>
-
-<p align="center">
-    <picture>
-        <source media="(prefers-color-scheme: light)" srcset="./assets/images/screenshots/calendar-light.webp">
-        <source media="(prefers-color-scheme: dark)" srcset="./assets/images/screenshots/calendar-dark.webp">
-        <img width="100%" src="./assets/images/screenshots/calendar-light.webp" alt="Calendar">
-    </picture>
-</p>
-
-<p align="center">
-    <picture>
-        <source media="(prefers-color-scheme: light)" srcset="./assets/images/screenshots/achievements-light.webp">
-        <source media="(prefers-color-scheme: dark)" srcset="./assets/images/screenshots/achievements-dark.webp">
-        <img width="100%" src="./assets/images/screenshots/achievements-light.webp" alt="Achievements">
-    </picture>
-</p>
-
-<p align="center">
-    <picture>
-        <source media="(prefers-color-scheme: light)" srcset="./assets/images/screenshots/contacts-light.webp">
-        <source media="(prefers-color-scheme: dark)" srcset="./assets/images/screenshots/contacts-dark.webp">
-        <img width="100%" src="./assets/images/screenshots/contacts-light.webp" alt="Contacts">
-    </picture>
-</p>
-
-<p align="center">
-    <picture>
-        <source media="(prefers-color-scheme: light)" srcset="./assets/images/screenshots/documents-light.webp">
-        <source media="(prefers-color-scheme: dark)" srcset="./assets/images/screenshots/documents-dark.webp">
-        <img width="100%" src="./assets/images/screenshots/documents-light.webp" alt="Documents">
-    </picture>
-</p>
-
-<p align="center">
-    <picture>
-        <source media="(prefers-color-scheme: light)" srcset="./assets/images/screenshots/statistics-light.webp">
-        <source media="(prefers-color-scheme: dark)" srcset="./assets/images/screenshots/statistics-dark.webp">
-        <img width="100%" src="./assets/images/screenshots/statistics-light.webp" alt="Statistics">
-    </picture>
-</p>
-
-<p align="center">
-    <picture>
-        <source media="(prefers-color-scheme: light)" srcset="./assets/images/screenshots/settings-light.webp">
-        <source media="(prefers-color-scheme: dark)" srcset="./assets/images/screenshots/settings-dark.webp">
-        <img width="100%" src="./assets/images/screenshots/settings-light.webp" alt="Settings">
-    </picture>
-</p>
-
-<table align="center">
-    <tr>
-        <th align="center" style="text-align: center;">Desktop view</th>
-        <th align="center" style="text-align: center;">Tablet view</th>
-        <th align="center" style="text-align: center;">Mobile view</th>
-    </tr>
-    <tr valign="top">
-        <td align="center">
-            <picture>
-                <source media="(prefers-color-scheme: light)" srcset="./assets/images/screenshots/homepage-desktop-light.webp">
-                <source media="(prefers-color-scheme: dark)" srcset="./assets/images/screenshots/homepage-desktop-dark.webp">
-                <img width="100%" src="./assets/images/screenshots/homepage-desktop-light.webp" alt="Desktop Screenshot">
-            </picture>
-        </td>
-        <td align="center">
-            <picture>
-                <source media="(prefers-color-scheme: light)" srcset="./assets/images/screenshots/homepage-tablet-light.webp">
-                <source media="(prefers-color-scheme: dark)" srcset="./assets/images/screenshots/homepage-tablet-dark.webp">
-                <img width="100%" src="./assets/images/screenshots/homepage-tablet-light.webp" alt="Tablet Screenshot">
-            </picture>
-        </td>
-        <td align="center">
-            <picture>
-                <source media="(prefers-color-scheme: light)" srcset="./assets/images/screenshots/homepage-mobile-light.webp">
-                <source media="(prefers-color-scheme: dark)" srcset="./assets/images/screenshots/homepage-mobile-dark.webp">
-                <img width="100%" src="./assets/images/screenshots/homepage-mobile-light.webp" alt="Mobile Screenshot">
-            </picture>
-        </td>
-    </tr>
-</table>
 
 ## What's Next?
 
