@@ -1,0 +1,79 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="Page-1" id="S9STZmGS_mqGZO5anZC1">
+    <mxGraphModel dx="3918" dy="2404" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="eF66Sm8co9dgjDnXTteP-77" edge="1" parent="1" source="eF66Sm8co9dgjDnXTteP-1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;strokeColor=#462BE2;endArrow=block;endFill=1;" target="eF66Sm8co9dgjDnXTteP-76">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="eF66Sm8co9dgjDnXTteP-1" parent="1" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#462BE2;fontColor=#000000;" value="Code source GitHub" vertex="1">
+          <mxGeometry height="40" width="200" x="-1340" y="125" as="geometry" />
+        </mxCell>
+        <mxCell id="eF66Sm8co9dgjDnXTteP-66" edge="1" parent="1" source="eF66Sm8co9dgjDnXTteP-53" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;strokeColor=#462BE2;endArrow=block;endFill=1;" target="eF66Sm8co9dgjDnXTteP-54">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="eF66Sm8co9dgjDnXTteP-53" parent="1" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#462BE2;fontColor=#000000;" value="Clone du projet sur le VPS" vertex="1">
+          <mxGeometry height="40" width="200" x="-1340" y="285" as="geometry" />
+        </mxCell>
+        <mxCell id="eF66Sm8co9dgjDnXTteP-67" edge="1" parent="1" source="eF66Sm8co9dgjDnXTteP-54" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;strokeColor=#462BE2;endArrow=block;endFill=1;" target="eF66Sm8co9dgjDnXTteP-55">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="eF66Sm8co9dgjDnXTteP-54" parent="1" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#462BE2;fontColor=#000000;" value="Configuration du fichier .env" vertex="1">
+          <mxGeometry height="40" width="200" x="-1340" y="365" as="geometry" />
+        </mxCell>
+        <mxCell id="eF66Sm8co9dgjDnXTteP-68" edge="1" parent="1" source="eF66Sm8co9dgjDnXTteP-55" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;strokeColor=#462BE2;endArrow=block;endFill=1;curved=1;" target="eF66Sm8co9dgjDnXTteP-57">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="eF66Sm8co9dgjDnXTteP-69" edge="1" parent="1" source="eF66Sm8co9dgjDnXTteP-55" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;strokeColor=#462BE2;endArrow=block;endFill=1;curved=1;" target="eF66Sm8co9dgjDnXTteP-58">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="eF66Sm8co9dgjDnXTteP-70" edge="1" parent="1" source="eF66Sm8co9dgjDnXTteP-55" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;strokeColor=#462BE2;endArrow=block;endFill=1;" target="eF66Sm8co9dgjDnXTteP-56">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="eF66Sm8co9dgjDnXTteP-55" parent="1" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#462BE2;fontColor=#000000;" value="Docker Compose de production" vertex="1">
+          <mxGeometry height="40" width="200" x="-1340" y="445" as="geometry" />
+        </mxCell>
+        <mxCell id="eF66Sm8co9dgjDnXTteP-72" edge="1" parent="1" source="eF66Sm8co9dgjDnXTteP-56" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;strokeColor=#462BE2;endArrow=block;endFill=1;" target="eF66Sm8co9dgjDnXTteP-59">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="eF66Sm8co9dgjDnXTteP-56" parent="1" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#462BE2;fontColor=#000000;" value="&lt;b&gt;&lt;font style=&quot;color: rgb(70, 43, 226);&quot;&gt;BACKEND&lt;/font&gt;&lt;/b&gt;&lt;div&gt;&lt;font color=&quot;#462be2&quot;&gt;&lt;b&gt;&lt;br&gt;&lt;/b&gt;&lt;/font&gt;&lt;div&gt;Node.js / Express&lt;/div&gt;&lt;div&gt;Prisma migrate deploy&lt;/div&gt;&lt;div&gt;Volume document_uploads&lt;/div&gt;&lt;div&gt;&amp;nbsp;Healthcheck API&lt;/div&gt;&lt;/div&gt;" vertex="1">
+          <mxGeometry height="120" width="200" x="-1340" y="565" as="geometry" />
+        </mxCell>
+        <mxCell id="eF66Sm8co9dgjDnXTteP-73" edge="1" parent="1" source="eF66Sm8co9dgjDnXTteP-57" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;strokeColor=#462BE2;endArrow=block;endFill=1;curved=1;" target="eF66Sm8co9dgjDnXTteP-59">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="eF66Sm8co9dgjDnXTteP-57" parent="1" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#462BE2;fontColor=#000000;" value="&lt;b&gt;&lt;font style=&quot;color: rgb(70, 43, 226);&quot;&gt;DATABASE&lt;/font&gt;&lt;/b&gt;&lt;div&gt;&lt;b&gt;&lt;font color=&quot;#462be2&quot;&gt;&lt;br&gt;&lt;/font&gt;&lt;/b&gt;&lt;div&gt;PostgreSQL&lt;/div&gt;&lt;div&gt;Volume postgres_data&lt;/div&gt;&lt;div&gt;&amp;nbsp;Healthcheck DB&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;/div&gt;" vertex="1">
+          <mxGeometry height="120" width="200" x="-1580" y="565" as="geometry" />
+        </mxCell>
+        <mxCell id="eF66Sm8co9dgjDnXTteP-71" edge="1" parent="1" source="eF66Sm8co9dgjDnXTteP-58" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;strokeColor=#462BE2;endArrow=block;endFill=1;curved=1;" target="eF66Sm8co9dgjDnXTteP-59">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="eF66Sm8co9dgjDnXTteP-58" parent="1" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#462BE2;fontColor=#000000;" value="&lt;b&gt;&lt;font style=&quot;color: rgb(70, 43, 226);&quot;&gt;FRONTEND&lt;/font&gt;&lt;/b&gt;&lt;div&gt;&lt;font color=&quot;#462be2&quot;&gt;&lt;b&gt;&lt;br&gt;&lt;/b&gt;&lt;/font&gt;&lt;div&gt;React / Vite&lt;/div&gt;&lt;div&gt;Nginx&lt;/div&gt;&lt;div&gt;Healthcheck&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;/div&gt;" vertex="1">
+          <mxGeometry height="120" width="200" x="-1100" y="565" as="geometry" />
+        </mxCell>
+        <mxCell id="eF66Sm8co9dgjDnXTteP-74" edge="1" parent="1" source="eF66Sm8co9dgjDnXTteP-59" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;strokeColor=#462BE2;endArrow=block;endFill=1;" target="eF66Sm8co9dgjDnXTteP-60">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="eF66Sm8co9dgjDnXTteP-59" parent="1" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#462BE2;fontColor=#000000;" value="&lt;b style=&quot;color: rgb(70, 43, 226);&quot;&gt;Validations complémentaires&lt;/b&gt;&lt;div&gt;&lt;br&gt;&lt;div&gt;lint backend / frontend&lt;br&gt;tests backend / frontend&lt;br&gt;&lt;/div&gt;&lt;div&gt;build frontend&lt;/div&gt;&lt;/div&gt;" vertex="1">
+          <mxGeometry height="120" width="200" x="-1340" y="765" as="geometry" />
+        </mxCell>
+        <mxCell id="eF66Sm8co9dgjDnXTteP-75" edge="1" parent="1" source="eF66Sm8co9dgjDnXTteP-60" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;strokeColor=#462BE2;endArrow=block;endFill=1;" target="eF66Sm8co9dgjDnXTteP-64">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="eF66Sm8co9dgjDnXTteP-60" parent="1" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#462BE2;fontColor=#000000;" value="&lt;div&gt;Application accessible en ligne&lt;/div&gt;" vertex="1">
+          <mxGeometry height="40" width="200" x="-1340" y="925" as="geometry" />
+        </mxCell>
+        <mxCell id="eF66Sm8co9dgjDnXTteP-64" parent="1" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#462BE2;fontColor=#000000;" value="&lt;div&gt;Tests fonctionnels&amp;nbsp;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(237, 237, 237));&quot;&gt;post-déploiement&lt;/span&gt;&lt;/div&gt;" vertex="1">
+          <mxGeometry height="40" width="200" x="-1340" y="1005" as="geometry" />
+        </mxCell>
+        <mxCell id="eF66Sm8co9dgjDnXTteP-78" edge="1" parent="1" source="eF66Sm8co9dgjDnXTteP-76" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;strokeColor=#462BE2;endArrow=block;endFill=1;" target="eF66Sm8co9dgjDnXTteP-53">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="eF66Sm8co9dgjDnXTteP-76" parent="1" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#462BE2;fontColor=#000000;" value="Installation des outils nécessaires (vim, git, npm, node...)" vertex="1">
+          <mxGeometry height="40" width="200" x="-1340" y="205" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

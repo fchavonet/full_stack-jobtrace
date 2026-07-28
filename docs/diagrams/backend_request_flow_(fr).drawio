@@ -1,0 +1,103 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="Page-1" id="S9STZmGS_mqGZO5anZC1">
+    <mxGraphModel dx="1959" dy="1348" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="jVN_fMP49LxbA_toFUZn-9" edge="1" parent="1" source="jVN_fMP49LxbA_toFUZn-1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;strokeColor=#462BE2;endArrow=block;endFill=1;" target="jVN_fMP49LxbA_toFUZn-2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="jVN_fMP49LxbA_toFUZn-26" edge="1" parent="1" source="jVN_fMP49LxbA_toFUZn-1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;strokeColor=#462BE2;endArrow=oval;endFill=1;" target="jVN_fMP49LxbA_toFUZn-16">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="jVN_fMP49LxbA_toFUZn-1" parent="1" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#462BE2;fontColor=#000000;" value="Requête HTTP" vertex="1">
+          <mxGeometry height="40" width="120" x="-753" y="285" as="geometry" />
+        </mxCell>
+        <mxCell id="jVN_fMP49LxbA_toFUZn-10" edge="1" parent="1" source="jVN_fMP49LxbA_toFUZn-2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;strokeColor=#462BE2;endArrow=block;endFill=1;" target="jVN_fMP49LxbA_toFUZn-3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="jVN_fMP49LxbA_toFUZn-27" edge="1" parent="1" source="jVN_fMP49LxbA_toFUZn-2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;strokeColor=#462BE2;endArrow=oval;endFill=1;" target="jVN_fMP49LxbA_toFUZn-17">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="jVN_fMP49LxbA_toFUZn-2" parent="1" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#462BE2;fontColor=#000000;" value="Route" vertex="1">
+          <mxGeometry height="40" width="120" x="-753" y="365" as="geometry" />
+        </mxCell>
+        <mxCell id="jVN_fMP49LxbA_toFUZn-11" edge="1" parent="1" source="jVN_fMP49LxbA_toFUZn-3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;strokeColor=#462BE2;endArrow=block;endFill=1;" target="jVN_fMP49LxbA_toFUZn-5">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="jVN_fMP49LxbA_toFUZn-25" edge="1" parent="1" source="jVN_fMP49LxbA_toFUZn-3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;strokeColor=#462BE2;endArrow=oval;endFill=1;" target="jVN_fMP49LxbA_toFUZn-18">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="jVN_fMP49LxbA_toFUZn-3" parent="1" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#462BE2;fontColor=#000000;" value="Middleware" vertex="1">
+          <mxGeometry height="40" width="120" x="-753" y="445" as="geometry" />
+        </mxCell>
+        <mxCell id="jVN_fMP49LxbA_toFUZn-13" edge="1" parent="1" source="jVN_fMP49LxbA_toFUZn-4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;strokeColor=#462BE2;endArrow=block;endFill=1;" target="jVN_fMP49LxbA_toFUZn-6">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="jVN_fMP49LxbA_toFUZn-29" edge="1" parent="1" source="jVN_fMP49LxbA_toFUZn-4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;strokeColor=#462BE2;endArrow=oval;endFill=1;" target="jVN_fMP49LxbA_toFUZn-21">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="jVN_fMP49LxbA_toFUZn-4" parent="1" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#462BE2;fontColor=#000000;" value="Controller" vertex="1">
+          <mxGeometry height="40" width="120" x="-753" y="605" as="geometry" />
+        </mxCell>
+        <mxCell id="jVN_fMP49LxbA_toFUZn-12" edge="1" parent="1" source="jVN_fMP49LxbA_toFUZn-5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;strokeColor=#462BE2;endArrow=block;endFill=1;" target="jVN_fMP49LxbA_toFUZn-4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="jVN_fMP49LxbA_toFUZn-28" edge="1" parent="1" source="jVN_fMP49LxbA_toFUZn-5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;strokeColor=#462BE2;endArrow=oval;endFill=1;" target="jVN_fMP49LxbA_toFUZn-20">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="jVN_fMP49LxbA_toFUZn-5" parent="1" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#462BE2;fontColor=#000000;" value="Validator" vertex="1">
+          <mxGeometry height="40" width="120" x="-753" y="525" as="geometry" />
+        </mxCell>
+        <mxCell id="jVN_fMP49LxbA_toFUZn-14" edge="1" parent="1" source="jVN_fMP49LxbA_toFUZn-6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;strokeColor=#462BE2;endArrow=block;endFill=1;" target="jVN_fMP49LxbA_toFUZn-7">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="jVN_fMP49LxbA_toFUZn-30" edge="1" parent="1" source="jVN_fMP49LxbA_toFUZn-6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;strokeColor=#462BE2;endArrow=oval;endFill=1;" target="jVN_fMP49LxbA_toFUZn-22">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="jVN_fMP49LxbA_toFUZn-6" parent="1" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#462BE2;fontColor=#000000;" value="Service métier" vertex="1">
+          <mxGeometry height="40" width="120" x="-753" y="685" as="geometry" />
+        </mxCell>
+        <mxCell id="jVN_fMP49LxbA_toFUZn-15" edge="1" parent="1" source="jVN_fMP49LxbA_toFUZn-7" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;strokeColor=#462BE2;endArrow=block;endFill=1;" target="jVN_fMP49LxbA_toFUZn-8">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="jVN_fMP49LxbA_toFUZn-33" edge="1" parent="1" source="jVN_fMP49LxbA_toFUZn-7" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;strokeColor=#462BE2;endArrow=oval;endFill=1;" target="jVN_fMP49LxbA_toFUZn-23">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="jVN_fMP49LxbA_toFUZn-7" parent="1" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#462BE2;fontColor=#000000;" value="Prisma" vertex="1">
+          <mxGeometry height="40" width="120" x="-753" y="765" as="geometry" />
+        </mxCell>
+        <mxCell id="jVN_fMP49LxbA_toFUZn-32" edge="1" parent="1" source="jVN_fMP49LxbA_toFUZn-8" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;strokeColor=#462BE2;endArrow=oval;endFill=1;" target="jVN_fMP49LxbA_toFUZn-24">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="jVN_fMP49LxbA_toFUZn-8" parent="1" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#462BE2;fontColor=#000000;" value="PostgreSQL" vertex="1">
+          <mxGeometry height="40" width="120" x="-753" y="845" as="geometry" />
+        </mxCell>
+        <mxCell id="jVN_fMP49LxbA_toFUZn-16" parent="1" style="text;whiteSpace=wrap;html=1;align=right;verticalAlign=middle;fontStyle=2" value="Demande envoyée par le frontend vers l’API." vertex="1">
+          <mxGeometry height="40" width="250" x="-323" y="285" as="geometry" />
+        </mxCell>
+        <mxCell id="jVN_fMP49LxbA_toFUZn-17" parent="1" style="text;whiteSpace=wrap;html=1;align=right;verticalAlign=middle;fontStyle=2" value="Définit l’endpoint appelé et exécute les traitements déclarés dans l’ordre." vertex="1">
+          <mxGeometry height="40" width="400" x="-473" y="365" as="geometry" />
+        </mxCell>
+        <mxCell id="jVN_fMP49LxbA_toFUZn-18" parent="1" style="text;whiteSpace=wrap;html=1;align=right;verticalAlign=middle;fontStyle=2" value="Exécute les traitements préalables, notamment l’authentification et le téléversement de fichiers." vertex="1">
+          <mxGeometry height="40" width="520" x="-593" y="445" as="geometry" />
+        </mxCell>
+        <mxCell id="jVN_fMP49LxbA_toFUZn-20" parent="1" style="text;whiteSpace=wrap;html=1;align=right;verticalAlign=middle;fontStyle=2" value="Contrôle, nettoie et normalise les données envoyées avant leur traitement." vertex="1">
+          <mxGeometry height="40" width="410" x="-483" y="525" as="geometry" />
+        </mxCell>
+        <mxCell id="jVN_fMP49LxbA_toFUZn-21" parent="1" style="text;whiteSpace=wrap;html=1;align=right;verticalAlign=middle;fontStyle=2" value="Récupère les données de la requête, appelle le service métier et prépare la réponse HTTP." vertex="1">
+          <mxGeometry height="40" width="500" x="-573" y="605" as="geometry" />
+        </mxCell>
+        <mxCell id="jVN_fMP49LxbA_toFUZn-22" parent="1" style="text;whiteSpace=wrap;html=1;align=right;verticalAlign=middle;fontStyle=2" value="Applique les règles métier, contrôle l’accès aux ressources et orchestre les opérations." vertex="1">
+          <mxGeometry height="40" width="470" x="-543" y="685" as="geometry" />
+        </mxCell>
+        <mxCell id="jVN_fMP49LxbA_toFUZn-23" parent="1" style="text;whiteSpace=wrap;html=1;align=right;verticalAlign=middle;fontStyle=2" value="Assure l’accès aux données via l’ORM." vertex="1">
+          <mxGeometry height="40" width="220" x="-293" y="765" as="geometry" />
+        </mxCell>
+        <mxCell id="jVN_fMP49LxbA_toFUZn-24" parent="1" style="text;whiteSpace=wrap;html=1;align=right;verticalAlign=middle;fontStyle=2" value="Stocke durablement les données relationnelles de l’application." vertex="1">
+          <mxGeometry height="40" width="350" x="-423" y="845" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
