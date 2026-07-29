@@ -27,6 +27,23 @@ async function removeStoredFile(filePath) {
   }
 }
 
+async function removeUserStoredFiles(userId) {
+  const documents = await prisma.document.findMany({
+    where: {
+      userId
+    },
+    select: {
+      path: true
+    }
+  });
+
+  await Promise.all(
+    documents.map(function (document) {
+      return removeStoredFile(document.path);
+    })
+  );
+}
+
 async function findUserDocument(userId, documentId) {
   return prisma.document.findFirst({
     where: {
@@ -124,5 +141,6 @@ export {
   getUserDocumentById,
   getUserDocumentFile,
   getUserDocuments,
+  removeUserStoredFiles,
   updateUserDocument
 };

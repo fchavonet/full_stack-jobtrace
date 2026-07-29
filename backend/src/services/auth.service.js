@@ -10,6 +10,8 @@ import {
   sendPasswordResetEmail
 } from "./email.service.js";
 
+import { removeUserStoredFiles } from "./document.service.js";
+
 const PASSWORD_SALT_ROUNDS = 12;
 const EMAIL_VERIFICATION_TOKEN_BYTES = 32;
 const EMAIL_VERIFICATION_EXPIRATION_HOURS = 24;
@@ -343,6 +345,8 @@ async function deleteUserAccount(userId) {
 
     throw error;
   }
+
+  await removeUserStoredFiles(userId);
 
   await prisma.user.delete({
     where: {

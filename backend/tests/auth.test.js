@@ -1,8 +1,15 @@
+import { Buffer } from "node:buffer";
+import fs from "fs/promises";
+import path from "path";
 import request from "supertest";
 import { afterAll, beforeEach, describe, expect, test, vi } from "vitest";
 
 import app from "../src/app.js";
 import env from "../src/config/env.js";
+
+import {
+  uploadDirectory
+} from "../src/middlewares/documentUpload.middleware.js";
 
 import {
   sendEmailVerificationEmail,
@@ -31,6 +38,9 @@ const TEST_PASSWORD = "Password42";
 const NEW_PASSWORD = "NewPassword42";
 const WRONG_PASSWORD = "WrongPassword1";
 const INVALID_TOKEN = "invalid-token";
+const TEST_DOCUMENT_TYPE = "resume";
+const TEST_DOCUMENT_FILE_NAME = "account-deletion-test.pdf";
+const TEST_DOCUMENT_FILE_CONTENT = Buffer.from("%PDF-1.4\nJobTrace account deletion test\n");
 
 const AUTH_REQUIRED_RESPONSE = {
   success: false,
@@ -615,6 +625,56 @@ describe("Authentication routes", function () {
     expect(
       loginAfterDeletionResponse.body
     ).toEqual(INVALID_CREDENTIALS_RESPONSE);
+  });
+
+  test("DELETE /api/auth/me - Should delete user documents from storage", async function () {
+    const authCookie =
+      await getAuthenticatedCookie();
+
+    const uploadResponse = await request(app)
+      .post("/api/documents")
+      .set("Cookie", authCookie)
+      .field("type", TEST_DOCUMENT_TYPE)
+      .attach(
+        "document",
+        TEST_DOCUMENT_FILE_CONTENT,
+        {
+          filename: TEST_DOCUMENT_FILE_NAME,
+          contentType: "application/pdf"
+        }
+      );
+
+    expect(uploadResponse.status).toBe(201);
+
+    const storedName =
+      uploadResponse.body.data.document.storedName;
+
+    const filePath = path.join(
+      uploadDirectory,
+      storedName
+    );
+
+    try {
+      await expect(
+        fs.access(filePath)
+      ).resolves.toBeUndefined();
+
+      const deleteResponse = await request(app)
+        .delete("/api/auth/me")
+        .set("Cookie", authCookie);
+
+      expect(deleteResponse.status).toBe(200);
+
+      await expect(
+        fs.access(filePath)
+      ).rejects.toMatchObject({
+        code: "ENOENT"
+      });
+    } finally {
+      await fs.rm(filePath, {
+        force: true
+      });
+    }
   });
 
   test("DELETE /api/auth/me - Should reject request without authentication token", async function () {
