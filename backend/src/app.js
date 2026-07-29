@@ -19,27 +19,30 @@ import tagRoutes from "./routes/tag.routes.js";
 const app = express();
 
 app.disable("x-powered-by");
-const swaggerDocument = YAML.load("docs/openapi.yaml");
 
-app.use(
-  "/api/doc",
-  swaggerUi.serve,
-  swaggerUi.setup(swaggerDocument, {
-    customSiteTitle: "JobTrace - Backend: documentation",
-    swaggerOptions: {
-      docExpansion: "list",
-      defaultModelsExpandDepth: -1
-    },
-    customCss: `
-      .swagger-ui .info .title small,
-      .swagger-ui .info .title .version-stamp,
-      .swagger-ui .info .title .version,
-      .swagger-ui .info .title small pre {
-        display: none !important;
-      }
-    `
-  })
-);
+if (env.nodeEnv !== "production") {
+  const swaggerDocument = YAML.load("docs/openapi.yaml");
+
+  app.use(
+    "/api/doc",
+    swaggerUi.serve,
+    swaggerUi.setup(swaggerDocument, {
+      customSiteTitle: "JobTrace - Backend: documentation",
+      swaggerOptions: {
+        docExpansion: "list",
+        defaultModelsExpandDepth: -1
+      },
+      customCss: `
+        .swagger-ui .info .title small,
+        .swagger-ui .info .title .version-stamp,
+        .swagger-ui .info .title .version,
+        .swagger-ui .info .title small pre {
+          display: none !important;
+        }
+      `
+    })
+  );
+}
 
 app.use(cors({ origin: env.frontendUrl, credentials: true }));
 app.use(express.json());
