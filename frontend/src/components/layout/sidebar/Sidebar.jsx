@@ -10,15 +10,6 @@ import {
 
 import SidebarNavItem from "./SidebarNavItem";
 
-function closeDrawer() {
-  const drawer = document.getElementById("dashboard-sidebar-drawer");
-
-  if (drawer) {
-    drawer.checked = false;
-    drawer.dispatchEvent(new Event("change", { bubbles: true }));
-  }
-}
-
 function getSettingsLinkClassName({ isActive }) {
   const baseClass = "w-full px-4 py-2 flex flex-row justify-center items-center gap-2 text-sm font-medium rounded-lg border border-primary cursor-pointer";
 
@@ -29,7 +20,7 @@ function getSettingsLinkClassName({ isActive }) {
   return baseClass + " text-primary hover:text-primary-content hover:bg-primary";
 }
 
-function Sidebar({ userProfile }) {
+function Sidebar({ userProfile, onClose }) {
   return (
     <nav className="w-64 h-full flex flex-col justify-between items-center text-base-content border-r border-base-300 bg-base-100">
       <div className="w-full p-4">
@@ -44,7 +35,7 @@ function Sidebar({ userProfile }) {
                 <ul className="w-full p-0 flex flex-col justify-start items-stretch gap-1">
                   {group.items.map(function (item) {
                     return (
-                      <SidebarNavItem item={item} key={item.id} onClick={closeDrawer} />
+                      <SidebarNavItem item={item} key={item.id} onClick={onClose} />
                     );
                   })}
                 </ul>
@@ -80,7 +71,7 @@ function Sidebar({ userProfile }) {
           </div>
         </div>
 
-        <NavLink className={getSettingsLinkClassName} to="/dashboard/settings" onClick={closeDrawer}>
+        <NavLink className={getSettingsLinkClassName} to="/dashboard/settings" onClick={onClose}>
           <Settings className="w-4 h-4" />
           Paramètres
         </NavLink>

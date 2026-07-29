@@ -22,6 +22,10 @@ function DashboardLayout() {
     setIsSidebarOpen(event.target.checked);
   }
 
+  function closeSidebar() {
+    setIsSidebarOpen(false);
+  }
+
   useEffect(function () {
     async function loadUserProfile() {
       try {
@@ -57,12 +61,11 @@ function DashboardLayout() {
       <Header authenticatedLinkIcon="home" authenticatedLinkLabel="Accueil" authenticatedLinkTo="/" pageTitle="Espace candidat" />
 
       <main className="relative h-[calc(100vh-65px)] flex overflow-hidden">
-        <input id="dashboard-sidebar-drawer" className="sr-only peer" type="checkbox" onChange={handleSidebarToggle} />
-
-        <label className="fixed lg:hidden top-[65px] bottom-0 inset-x-0 bg-black/0 peer-checked:bg-black/40 backdrop-blur-0 peer-checked:backdrop-blur-sm transition-all duration-200 z-40 pointer-events-none peer-checked:pointer-events-auto" htmlFor="dashboard-sidebar-drawer" aria-label="Fermer le menu" onClick={function () { setIsSidebarOpen(false); }} />
+        <input id="dashboard-sidebar-drawer" className="sr-only peer" type="checkbox" checked={isSidebarOpen} onChange={handleSidebarToggle} />
+        <label className="fixed lg:hidden top-[65px] bottom-0 inset-x-0 bg-black/0 peer-checked:bg-black/40 backdrop-blur-0 peer-checked:backdrop-blur-sm transition-all duration-200 z-40 pointer-events-none peer-checked:pointer-events-auto" htmlFor="dashboard-sidebar-drawer" aria-label="Fermer le menu" onClick={closeSidebar} />
 
         <aside className="fixed lg:static top-[65px] bottom-0 left-0 w-64 lg:h-full bg-base-100 -translate-x-full lg:translate-x-0 peer-checked:translate-x-0 transition-transform lg:transition-none duration-200 ease-out z-50 lg:z-auto">
-          <Sidebar userProfile={userProfile} />
+          <Sidebar userProfile={userProfile} onClose={closeSidebar} />
         </aside>
 
         <section className="h-full flex-1 overflow-y-auto">
