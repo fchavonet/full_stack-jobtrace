@@ -243,21 +243,29 @@ async function createUserApplication(userId, applicationData) {
       notes: applicationData.notes,
       sentAt: applicationData.sentAt,
       followUpAt: applicationData.followUpAt,
-      interviewAt: applicationData.interviewAt
+      interviewAt: applicationData.interviewAt,
+      history: {
+        create: {
+          action: "application_created",
+          metadata: {
+            company:
+              applicationData.company,
+            position:
+              applicationData.position,
+            status:
+              applicationData.status
+          }
+        }
+      }
     },
     include: getApplicationInclude()
-  });
-
-  await createApplicationHistory(application.id, "application_created", {
-    company: application.company,
-    position: application.position,
-    status: application.status
   });
 
   await runAchievementSideEffect(
     unlockFirstApplicationAchievement,
     userId
   );
+
   await runAchievementSideEffect(
     unlockFiveApplicationsAchievement,
     userId
@@ -273,34 +281,62 @@ async function createUserApplication(userId, applicationData) {
   return sanitizeApplication(application);
 }
 
-async function updateUserApplication(userId, applicationId, applicationData) {
-  const existingApplication = await findUserApplication(userId, applicationId);
+async function updateUserApplication(
+  userId,
+  applicationId,
+  applicationData
+) {
+  const existingApplication =
+    await findUserApplication(
+      userId,
+      applicationId
+    );
 
   if (!existingApplication) {
     return null;
   }
 
-  const application = await prisma.application.update({
-    where: {
-      id: applicationId
-    },
-    data: applicationData,
-    include: getApplicationInclude()
-  });
+  let historyAction =
+    "application_updated";
+
+  let historyMetadata = {
+    updatedFields:
+      Object.keys(applicationData)
+  };
 
   if (
     applicationData.status
-    && applicationData.status !== existingApplication.status
+    && applicationData.status
+      !== existingApplication.status
   ) {
-    await createApplicationHistory(application.id, "application_status_updated", {
-      previousStatus: existingApplication.status,
-      newStatus: application.status
-    });
-  } else {
-    await createApplicationHistory(application.id, "application_updated", {
-      updatedFields: Object.keys(applicationData)
-    });
+    historyAction =
+      "application_status_updated";
+
+    historyMetadata = {
+      previousStatus:
+        existingApplication.status,
+      newStatus:
+        applicationData.status
+    };
   }
+
+  const application =
+    await prisma.application.update({
+      where: {
+        id: applicationId
+      },
+      data: {
+        ...applicationData,
+        history: {
+          create: {
+            action: historyAction,
+            metadata: historyMetadata
+          }
+        }
+      },
+      include:
+        getApplicationInclude()
+    });
 
   return sanitizeApplication(application);
 }
