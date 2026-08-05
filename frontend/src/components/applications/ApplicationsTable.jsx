@@ -1,9 +1,10 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ChevronDown, ChevronUp, ChevronsUpDown, Eye, Trash2 } from "lucide-react";
 
 import { APPLICATION_STATUS_OPTIONS } from "../../constants/application.constants";
 import Badge from "../ui/Badge";
 import { SectionCard } from "../ui/Cards";
+import Pagination from "../ui/Pagination";
 import Search from "../ui/Search";
 import { getApplicationContractTypeLabel, getApplicationStatusLabel } from "../../utils/applications/display.utils";
 import { getApplicationFollowUpAt, getApplicationInterviewAt, getFilteredApplications, getFollowUpDisplay, getNextSortDirection, getSortedApplications } from "../../utils/applications/table.utils";
@@ -16,6 +17,8 @@ const statusFilters = [
   },
   ...APPLICATION_STATUS_OPTIONS,
 ];
+
+const APPLICATIONS_PER_PAGE = 50;
 
 function getApplicationStatusBadgeColor(status) {
   if (status === "sent") {
@@ -168,27 +171,87 @@ function ApplicationsTable({
     direction: "asc",
   });
 
-  const displayedApplications = useMemo(function () {
-    const filteredApplications = getFilteredApplications(applications, searchValue, statusFilter);
+  const [currentPage, setCurrentPage] = useState(1);
 
-    return getSortedApplications(filteredApplications, sortConfig);
-  }, [applications, searchValue, statusFilter, sortConfig]);
+  const filteredAndSortedApplications = useMemo(function () {
+    const filteredApplications =
+      getFilteredApplications(
+        applications,
+        searchValue,
+        statusFilter
+      );
+
+    return getSortedApplications(
+      filteredApplications,
+      sortConfig
+    );
+  }, [
+    applications,
+    searchValue,
+    statusFilter,
+    sortConfig,
+  ]);
+
+  const totalPages = Math.max(
+    1,
+    Math.ceil(
+      filteredAndSortedApplications.length
+      / APPLICATIONS_PER_PAGE
+    )
+  );
+
+  const displayedApplications = useMemo(function () {
+    const startIndex =
+      (currentPage - 1)
+      * APPLICATIONS_PER_PAGE;
+
+    const endIndex =
+      startIndex
+      + APPLICATIONS_PER_PAGE;
+
+    return filteredAndSortedApplications.slice(
+      startIndex,
+      endIndex
+    );
+  }, [
+    currentPage,
+    filteredAndSortedApplications,
+  ]);
+
+  useEffect(function () {
+    if (currentPage <= totalPages) {
+      return;
+    }
+
+    setCurrentPage(totalPages);
+  }, [
+    currentPage,
+    totalPages,
+  ]);
 
   function handleSearchChange(event) {
     setSearchValue(event.target.value);
+    setCurrentPage(1);
   }
 
   function handleStatusFilterChange(nextStatusFilter) {
     setStatusFilter(nextStatusFilter);
+    setCurrentPage(1);
   }
 
   function handleSort(sortKey) {
+    setCurrentPage(1);
+
     setSortConfig(function (currentSortConfig) {
       return {
         key: sortKey,
         direction: getNextSortDirection(currentSortConfig, sortKey),
       };
     });
+  }
+
+  function handlePageChange(nextPage) {
+    setCurrentPage(nextPage);
   }
 
   if (applications.length === 0) {
@@ -210,7 +273,7 @@ function ApplicationsTable({
       <Search
         title="Candidatures enregistrées"
         description="Ouvrez une candidature pour consulter ou modifier ses détails."
-        resultLabel={displayedApplications.length + " / " + applications.length}
+        resultLabel={filteredAndSortedApplications.length + " / " + applications.length}
         value={searchValue}
         onChange={handleSearchChange}
         placeholder="Rechercher une entreprise, un poste, une ville..."
@@ -227,7 +290,7 @@ function ApplicationsTable({
           })}
         </div>
 
-        {displayedApplications.length === 0 && (
+        {filteredAndSortedApplications.length === 0 && (
           <div className="w-full mt-6 p-4 text-center rounded-xl bg-base-200">
             <h3 className="font-semibold text-base-content">
               Aucun résultat
@@ -239,7 +302,7 @@ function ApplicationsTable({
           </div>
         )}
 
-        {displayedApplications.length > 0 && (
+        {filteredAndSortedApplications.length > 0 && (
           <div className="w-full mt-6 overflow-x-auto">
             <table className="table table-fixed min-w-[1024px]">
               <colgroup>
@@ -336,6 +399,14 @@ function ApplicationsTable({
               </tbody>
             </table>
           </div>
+        )}
+
+        {filteredAndSortedApplications.length > APPLICATIONS_PER_PAGE && (
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={handlePageChange}
+          />
         )}
       </SectionCard>
     </div>
