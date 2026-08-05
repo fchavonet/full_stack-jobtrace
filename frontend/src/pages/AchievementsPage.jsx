@@ -19,8 +19,8 @@ import {
 import { listAchievements } from "../api/achievements.api";
 import { listApplications } from "../api/applications.api";
 import { getUserProfile } from "../api/profile.api";
-import Badge from "../components/ui/Badge";
 import { ItemCard, MetricCard, SectionCard } from "../components/ui/Cards";
+import IconBox from "../components/ui/IconBox";
 import LoadingCard from "../components/ui/LoadingCard";
 import PageHeader from "../components/ui/PageHeader";
 import { useToast } from "../hooks/useToast";
@@ -190,76 +190,101 @@ function getAchievementIconKey(achievement) {
   return "award";
 }
 
-function getAchievementIconElement(icon) {
+function getAchievementIcon(icon) {
   if (icon === "briefcase") {
-    return <Briefcase className="w-6 h-6" />;
+    return Briefcase;
   }
 
   if (icon === "bell") {
-    return <Bell className="w-6 h-6" />;
+    return Bell;
   }
 
   if (icon === "tag") {
-    return <Tag className="w-6 h-6" />;
+    return Tag;
   }
 
   if (icon === "user") {
-    return <User className="w-6 h-6" />;
+    return User;
   }
 
   if (icon === "file") {
-    return <FileText className="w-6 h-6" />;
+    return FileText;
   }
 
   if (icon === "link") {
-    return <LinkIcon className="w-6 h-6" />;
+    return LinkIcon;
   }
 
   if (icon === "calendar-check") {
-    return <CalendarCheck className="w-6 h-6" />;
+    return CalendarCheck;
   }
 
   if (icon === "goal") {
-    return <Goal className="w-6 h-6" />;
+    return Goal;
   }
 
   if (icon === "calendar") {
-    return <CalendarDays className="w-6 h-6" />;
+    return CalendarDays;
   }
 
   if (icon === "target") {
-    return <Target className="w-6 h-6" />;
+    return Target;
   }
 
   if (icon === "trophy") {
-    return <Trophy className="w-6 h-6" />;
+    return Trophy;
   }
 
-  return <Award className="w-6 h-6" />;
+  return Award;
 }
 
-function getAchievementStatusLabel(achievement) {
+function getAchievementStatusIconClassName(
+  achievement
+) {
   if (achievement.unlocked) {
-    return "Débloqué";
+    return "w-9 h-9 shrink-0 flex justify-center items-center rounded-full bg-success/10 text-success";
   }
 
-  return "À débloquer";
+  return "w-9 h-9 shrink-0 flex justify-center items-center rounded-full bg-warning/10 text-warning";
 }
 
-function getAchievementStatusColor(achievement) {
+function getAchievementStatusTitle(
+  achievement
+) {
   if (achievement.unlocked) {
-    return "success";
+    return "Objectif débloqué";
   }
 
-  return "warning";
+  return "Objectif à débloquer";
 }
 
-function getAchievementStatusIcon(achievement) {
+function AchievementStatusIcon({
+  achievement,
+}) {
+  let StatusIcon = LockKeyhole;
+
   if (achievement.unlocked) {
-    return Award;
+    StatusIcon = Award;
   }
 
-  return LockKeyhole;
+  return (
+    <span
+      className={getAchievementStatusIconClassName(
+        achievement
+      )}
+      title={getAchievementStatusTitle(
+        achievement
+      )}
+      aria-label={getAchievementStatusTitle(
+        achievement
+      )}
+    >
+      <StatusIcon
+        className="w-5 h-5"
+        strokeWidth={2}
+      />
+    </span>
+  );
 }
 
 function getAchievementDateLabel(achievement) {
@@ -300,8 +325,12 @@ function DailyObjectiveContent({
       <div className="w-full min-w-0 flex flex-col justify-start items-stretch gap-6">
         <div className="w-full min-w-0 flex flex-col md:flex-row justify-between items-stretch gap-6">
           <div className="min-w-0 pt-1 flex-1 self-stretch flex flex-row justify-start items-center">
-            <div className="flex flex-row justify-center items-center gap-2">
-              <Goal className="w-6 h-6 shrink-0 text-primary" />
+            <div className="flex flex-row justify-start items-center gap-3">
+              <IconBox
+                icon={Goal}
+                size={40}
+                iconSize={18}
+              />
 
               <p className="min-w-0 text-sm text-base-content/60">
                 L’objectif quotidien se règle dans les{" "}
@@ -390,14 +419,30 @@ function ActivityCard({ activity }) {
   );
 }
 
+function getAchievementCardClassName(
+  achievement
+) {
+  if (achievement.unlocked) {
+    return "border-t-4 border-success";
+  }
+
+  return "border-t-4 border-warning";
+}
+
 function AchievementCard({ achievement }) {
   return (
-    <ItemCard>
-      <div className="w-full min-w-0 flex flex-col sm:flex-row justify-between items-start gap-4">
+    <ItemCard
+      className={getAchievementCardClassName(
+        achievement
+      )}
+    >
+      <div className="w-full min-w-0 flex flex-row justify-between items-start gap-4">
         <div className="min-w-0 flex-1 flex flex-row justify-start items-start gap-4">
-          <div className="w-12 h-12 shrink-0 flex flex-row justify-center items-center rounded-xl bg-base-100 text-primary">
-            {getAchievementIconElement(achievement.icon)}
-          </div>
+          <IconBox
+            icon={getAchievementIcon(achievement.icon)}
+            size={40}
+            iconSize={18}
+          />
 
           <div className="min-w-0 flex-1">
             <h3 className="font-bold text-base-content">
@@ -414,10 +459,8 @@ function AchievementCard({ achievement }) {
           </div>
         </div>
 
-        <Badge
-          color={getAchievementStatusColor(achievement)}
-          icon={getAchievementStatusIcon(achievement)}
-          label={getAchievementStatusLabel(achievement)}
+        <AchievementStatusIcon
+          achievement={achievement}
         />
       </div>
     </ItemCard>
