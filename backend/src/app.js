@@ -1,7 +1,9 @@
+import { readFileSync } from "node:fs";
+
 import cors from "cors";
 import express from "express";
 import swaggerUi from "swagger-ui-express";
-import YAML from "yamljs";
+import { parse } from "yaml";
 
 import env from "./config/env.js";
 import errorMiddleware from "./middlewares/error.middleware.js";
@@ -21,7 +23,9 @@ const app = express();
 app.disable("x-powered-by");
 
 if (env.nodeEnv !== "production") {
-  const swaggerDocument = YAML.load("docs/openapi.yaml");
+  const openApiPath = new URL("../docs/openapi.yaml", import.meta.url);
+  const openApiContent = readFileSync(openApiPath, "utf8");
+  const swaggerDocument = parse(openApiContent);
 
   app.use(
     "/api/doc",
