@@ -16,6 +16,12 @@ import {
 import authMiddleware from "../middlewares/auth.middleware.js";
 
 import {
+  loginRateLimiter,
+  passwordRecoveryRateLimiter,
+  registrationRateLimiter
+} from "../middlewares/rateLimit.middleware.js";
+
+import {
   validateEmailVerificationPayload,
   validateForgotPasswordPayload,
   validateLoginPayload,
@@ -26,14 +32,55 @@ import {
 const router = express.Router();
 
 router.get("/status", getAuthStatus);
-router.post("/register", validateRegisterPayload, register);
-router.get("/verify-email", validateEmailVerificationPayload, verifyEmail);
-router.post("/login", validateLoginPayload, login);
+
+router.post(
+  "/register",
+  registrationRateLimiter,
+  validateRegisterPayload,
+  register
+);
+
+router.get(
+  "/verify-email",
+  validateEmailVerificationPayload,
+  verifyEmail
+);
+
+router.post(
+  "/login",
+  loginRateLimiter,
+  validateLoginPayload,
+  login
+);
+
 router.post("/logout", logout);
+
 router.get("/me", authMiddleware, getMe);
-router.delete("/me", authMiddleware, deleteAccount);
-router.get("/export", authMiddleware, exportAccount);
-router.post("/forgot-password", validateForgotPasswordPayload, forgotPassword);
-router.post("/reset-password", validateResetPasswordPayload, resetPassword);
+
+router.delete(
+  "/me",
+  authMiddleware,
+  deleteAccount
+);
+
+router.get(
+  "/export",
+  authMiddleware,
+  exportAccount
+);
+
+router.post(
+  "/forgot-password",
+  passwordRecoveryRateLimiter,
+  validateForgotPasswordPayload,
+  forgotPassword
+);
+
+router.post(
+  "/reset-password",
+  passwordRecoveryRateLimiter,
+  validateResetPasswordPayload,
+  resetPassword
+);
 
 export default router;

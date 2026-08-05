@@ -21,6 +21,7 @@ import tagRoutes from "./routes/tag.routes.js";
 
 const JSON_BODY_LIMIT = "100kb";
 const CORS_MAX_AGE_SECONDS = 600;
+const PRODUCTION_PROXY_HOPS = 2;
 
 function createHelmetOptions() {
   const options = {};
@@ -58,6 +59,10 @@ const corsOptions = {
 };
 
 const app = express();
+
+if (env.nodeEnv === "production") {
+  app.set("trust proxy", PRODUCTION_PROXY_HOPS);
+}
 
 app.disable("x-powered-by");
 
