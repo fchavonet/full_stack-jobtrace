@@ -1,5 +1,6 @@
 import { lazy, Suspense } from "react";
-import { RouterProvider, createBrowserRouter } from "react-router-dom";
+import { createBrowserRouter } from "react-router";
+import { RouterProvider } from "react-router/dom";
 
 import App from "../App.jsx";
 import ProtectedRoute from "./ProtectedRoute.jsx";

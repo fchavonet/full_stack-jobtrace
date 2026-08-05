@@ -6,7 +6,7 @@ import {
 
 import {
   MemoryRouter,
-} from "react-router-dom";
+} from "react-router";
 
 import {
   beforeEach,

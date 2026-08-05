@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link } from "react-router";
 import { PlusCircle } from "lucide-react";
 
 import { JOB_BOARD_LINKS } from "../constants/jobBoards.constants";

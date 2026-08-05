@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import {
   Outlet,
   useLocation,
-} from "react-router-dom";
+} from "react-router";
 
 const HOME_URL = "https://jobtrace.fr/";
 

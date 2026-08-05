@@ -7,7 +7,7 @@ import {
   UserPlus,
 } from "lucide-react";
 
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router";
 
 import { useAuth } from "../../hooks/useAuth";
 import { useToast } from "../../hooks/useToast";

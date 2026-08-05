@@ -1,6 +1,6 @@
 import { CheckCircle, MailCheck } from "lucide-react";
 import { useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router";
 
 import { verifyUserEmail } from "../api/auth.api";
 import { useToast } from "../hooks/useToast";

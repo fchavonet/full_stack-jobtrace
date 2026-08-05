@@ -1,7 +1,7 @@
 import { BarChart3, CalendarDays, FilePen, FileText, Target, UsersRound, } from "lucide-react";
 
 import { lazy, Suspense, useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation } from "react-router";
 
 import LegalModal from "../components/homepage/LegalModal";
 import Header from "../components/layout/Header";

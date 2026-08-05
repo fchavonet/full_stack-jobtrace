@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams } from "react-router";
 import { CirclePlus, RefreshCw } from "lucide-react";
 
 import { deleteApplication, getApplication, getApplicationHistory, listApplications, updateApplication } from "../api/applications.api";

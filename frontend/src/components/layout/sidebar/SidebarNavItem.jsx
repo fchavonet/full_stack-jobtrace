@@ -1,4 +1,4 @@
-import { NavLink } from "react-router-dom";
+import { NavLink } from "react-router";
 
 const BASE_LINK_CLASS = "w-full px-4 py-2 flex flex-row justify-start items-center gap-2 text-sm font-medium rounded-lg";
 

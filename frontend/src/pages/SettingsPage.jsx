@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router";
 import { Eye, EyeOff } from "lucide-react";
 
 import { deleteCurrentUser, exportCurrentUserData } from "../api/auth.api";
