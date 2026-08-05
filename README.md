@@ -31,7 +31,7 @@ The project was developed as part of the French RNCP Level 6 "Concepteur Dévelo
 ![PostgreSQL badge](https://img.shields.io/badge/POSTGRESQL-4169e1?logo=postgresql&logoColor=white&style=for-the-badge)
 ![Prisma badge](https://img.shields.io/badge/PRISMA-2d3748?logo=prisma&logoColor=white&style=for-the-badge)
 ![JSON badge](https://img.shields.io/badge/JSON-000000?logo=json&logoColor=white&style=for-the-badge)
-![Swagger badge](https://img.shields.io/badge/SWAGGER-85ea2d?logo=swagger&logoColor=dark&style=for-the-badge)
+![Swagger badge](https://img.shields.io/badge/SWAGGER-85ea2d?logo=swagger&logoColor=black&style=for-the-badge)
 ![Docker badge](https://img.shields.io/badge/DOCKER-2496ed?logo=docker&logoColor=white&style=for-the-badge)
 ![Git badge](https://img.shields.io/badge/GIT-f05032?logo=git&logoColor=white&style=for-the-badge)
 ![GitHub badge](https://img.shields.io/badge/GITHUB-181717?logo=github&logoColor=white&style=for-the-badge)

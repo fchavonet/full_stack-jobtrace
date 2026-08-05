@@ -1,6 +1,12 @@
 import app from "./app.js";
-import env from "./config/env.js";
+import env, {
+  validateEnvironment
+} from "./config/env.js";
+
+validateEnvironment();
 
 app.listen(env.port, function () {
-  console.log("Server is running on port " + env.port + ".");
+  console.log(
+    "Server is running on port " + env.port + "."
+  );
 });
