@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 
 import cors from "cors";
 import express from "express";
+import helmet from "helmet";
 import swaggerUi from "swagger-ui-express";
 import { parse } from "yaml";
 
@@ -18,12 +19,56 @@ import healthRoutes from "./routes/health.routes.js";
 import profileRoutes from "./routes/profile.routes.js";
 import tagRoutes from "./routes/tag.routes.js";
 
+const JSON_BODY_LIMIT = "100kb";
+const CORS_MAX_AGE_SECONDS = 600;
+
+function createHelmetOptions() {
+  const options = {};
+
+  if (env.nodeEnv !== "production") {
+    options.contentSecurityPolicy = false;
+    options.strictTransportSecurity = false;
+  }
+
+  return options;
+}
+
+function validateCorsOrigin(origin, callback) {
+  if (!origin || origin === env.frontendUrl) {
+    callback(null, true);
+    return;
+  }
+
+  callback(null, false);
+}
+
+const corsOptions = {
+  origin: validateCorsOrigin,
+  credentials: true,
+  methods: [
+    "GET",
+    "HEAD",
+    "POST",
+    "PUT",
+    "PATCH",
+    "DELETE",
+    "OPTIONS"
+  ],
+  maxAge: CORS_MAX_AGE_SECONDS
+};
+
 const app = express();
 
 app.disable("x-powered-by");
 
+app.use(helmet(createHelmetOptions()));
+app.use(cors(corsOptions));
+
 if (env.nodeEnv !== "production") {
-  const openApiPath = new URL("../docs/openapi.yaml", import.meta.url);
+  const openApiPath = new URL(
+    "../docs/openapi.yaml",
+    import.meta.url
+  );
   const openApiContent = readFileSync(openApiPath, "utf8");
   const swaggerDocument = parse(openApiContent);
 
@@ -48,8 +93,11 @@ if (env.nodeEnv !== "production") {
   );
 }
 
-app.use(cors({ origin: env.frontendUrl, credentials: true }));
-app.use(express.json());
+app.use(
+  express.json({
+    limit: JSON_BODY_LIMIT
+  })
+);
 
 app.use("/api/health", healthRoutes);
 app.use("/api/auth", authRoutes);
