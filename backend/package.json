@@ -5,6 +5,10 @@
   "author": "Fabien Chavonet",
   "license": "ISC",
   "type": "module",
+  "engines": {
+    "node": ">=22.13.0 <23",
+    "npm": ">=10"
+  },
   "main": "src/server.js",
   "scripts": {
     "dev": "nodemon src/server.js",
