@@ -1,3 +1,4 @@
+import crypto from "crypto";
 import fs from "fs/promises";
 
 import prisma from "../config/prisma.js";
@@ -24,6 +25,49 @@ async function removeStoredFile(filePath) {
     if (error.code !== "ENOENT") {
       throw error;
     }
+  }
+}
+
+async function moveStoredFileForDeletion(filePath) {
+  const deletionFilePath =
+    filePath
+    + ".deleting-"
+    + crypto.randomUUID();
+
+  try {
+    await fs.rename(
+      filePath,
+      deletionFilePath
+    );
+
+    return deletionFilePath;
+  } catch (error) {
+    if (error.code === "ENOENT") {
+      return null;
+    }
+
+    throw error;
+  }
+}
+
+async function restoreStoredFile(
+  deletionFilePath,
+  originalFilePath
+) {
+  if (!deletionFilePath) {
+    return;
+  }
+
+  try {
+    await fs.rename(
+      deletionFilePath,
+      originalFilePath
+    );
+  } catch (error) {
+    console.error(
+      "Unable to restore document file.",
+      error
+    );
   }
 }
 
@@ -132,19 +176,47 @@ async function updateUserDocument(userId, documentId, documentData) {
 }
 
 async function deleteUserDocument(userId, documentId) {
-  const existingDocument = await findUserDocument(userId, documentId);
+  const existingDocument = await findUserDocument(
+    userId,
+    documentId
+  );
 
   if (!existingDocument) {
     return null;
   }
 
-  const document = await prisma.document.delete({
-    where: {
-      id: documentId
-    }
-  });
+  const deletionFilePath =
+    await moveStoredFileForDeletion(
+      existingDocument.path
+    );
 
-  await removeStoredFile(document.path);
+  let document;
+
+  try {
+    document = await prisma.document.delete({
+      where: {
+        id: documentId
+      }
+    });
+  } catch (error) {
+    await restoreStoredFile(
+      deletionFilePath,
+      existingDocument.path
+    );
+
+    throw error;
+  }
+
+  if (deletionFilePath) {
+    try {
+      await removeStoredFile(deletionFilePath);
+    } catch (error) {
+      console.error(
+        "Unable to permanently remove document file.",
+        error
+      );
+    }
+  }
 
   return sanitizeDocument(document);
 }

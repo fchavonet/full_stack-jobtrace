@@ -64,6 +64,71 @@ afterAll(async function () {
 });
 
 describe("Document upload cleanup", function () {
+  test("Should restore document file when database deletion fails", async function () {
+    const { token } =
+      await createAuthenticatedTestUser();
+
+    const createResponse = await request(app)
+      .post("/api/documents")
+      .set("Authorization", "Bearer " + token)
+      .field("type", "resume")
+      .attach(
+        "document",
+        DOCUMENT_FILE_CONTENT,
+        {
+          filename: "deletion-error.pdf",
+          contentType: "application/pdf"
+        }
+      );
+
+    expect(createResponse.status).toBe(201);
+
+    const document =
+      createResponse.body.data.document;
+
+    const documentPath =
+      uploadDirectory
+      + "/"
+      + document.storedName;
+
+    vi.spyOn(
+      prisma.document,
+      "delete"
+    ).mockRejectedValueOnce(
+      new Error("Database unavailable.")
+    );
+
+    const deleteResponse = await request(app)
+      .delete(
+        "/api/documents/" + document.id
+      )
+      .set(
+        "Authorization",
+        "Bearer " + token
+      );
+
+    expect(deleteResponse.status).toBe(500);
+
+    const documentCount =
+      await prisma.document.count();
+
+    expect(documentCount).toBe(1);
+
+    await expect(
+      fs.access(documentPath)
+    ).resolves.toBeUndefined();
+
+    const uploadedFiles =
+      await fs.readdir(uploadDirectory);
+
+    const deletionQueueFiles =
+      uploadedFiles.filter(function (fileName) {
+        return fileName.includes(".deleting-");
+      });
+
+    expect(deletionQueueFiles).toEqual([]);
+  });
+
   test("Should remove uploaded file when database creation fails", async function () {
     const { token } =
       await createAuthenticatedTestUser();
