@@ -1,14 +1,18 @@
 import {
   APPLICATION_CONTRACT_TYPE_OPTIONS,
-  APPLICATION_STATUS_OPTIONS,
+  APPLICATION_STATUS_OPTIONS
 } from "../../../constants/application.constants";
+
+import CityAutocomplete from "../CityAutocomplete";
 
 function ApplicationFormInformation({
   form,
   onFieldChange,
+  onLocationValueChange,
+  onLocationSelect
 }) {
   return (
-    <section className="p-4  sm:p-6 rounded-2xl bg-base-100 shadow-sm">
+    <section className="p-4 sm:p-6 rounded-2xl bg-base-100 shadow-sm">
       <div>
         <h3 className="text-lg font-semibold">
           Informations principales
@@ -21,7 +25,16 @@ function ApplicationFormInformation({
             Entreprise *
           </span>
 
-          <input className="input input-bordered w-full" name="company" type="text" autoComplete="off" value={form.company} onChange={onFieldChange} placeholder="Nom de l'entreprise..." required />
+          <input
+            className="input input-bordered w-full"
+            name="company"
+            type="text"
+            autoComplete="off"
+            value={form.company}
+            onChange={onFieldChange}
+            placeholder="Nom de l'entreprise..."
+            required
+          />
         </label>
 
         <label className="form-control w-full">
@@ -29,7 +42,16 @@ function ApplicationFormInformation({
             Poste *
           </span>
 
-          <input className="input input-bordered w-full" name="position" type="text" autoComplete="off" value={form.position} onChange={onFieldChange} placeholder="Intitulé du poste..." required />
+          <input
+            className="input input-bordered w-full"
+            name="position"
+            type="text"
+            autoComplete="off"
+            value={form.position}
+            onChange={onFieldChange}
+            placeholder="Intitulé du poste..."
+            required
+          />
         </label>
 
         <label className="form-control w-full">
@@ -37,14 +59,24 @@ function ApplicationFormInformation({
             Type de contrat
           </span>
 
-          <select className="select select-bordered w-full" name="contractType" value={form.contractType} onChange={onFieldChange}>
-            {APPLICATION_CONTRACT_TYPE_OPTIONS.map(function (option) {
-              return (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              );
-            })}
+          <select
+            className="select select-bordered w-full"
+            name="contractType"
+            value={form.contractType}
+            onChange={onFieldChange}
+          >
+            {APPLICATION_CONTRACT_TYPE_OPTIONS.map(
+              function (option) {
+                return (
+                  <option
+                    key={option.value}
+                    value={option.value}
+                  >
+                    {option.label}
+                  </option>
+                );
+              }
+            )}
           </select>
         </label>
 
@@ -53,31 +85,52 @@ function ApplicationFormInformation({
             Statut
           </span>
 
-          <select className="select select-bordered w-full" name="status" value={form.status} onChange={onFieldChange}>
-            {APPLICATION_STATUS_OPTIONS.map(function (option) {
-              return (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              );
-            })}
+          <select
+            className="select select-bordered w-full"
+            name="status"
+            value={form.status}
+            onChange={onFieldChange}
+          >
+            {APPLICATION_STATUS_OPTIONS.map(
+              function (option) {
+                return (
+                  <option
+                    key={option.value}
+                    value={option.value}
+                  >
+                    {option.label}
+                  </option>
+                );
+              }
+            )}
           </select>
         </label>
 
-        <label className="form-control w-full">
-          <span className="label mb-1">
-            Ville
-          </span>
-
-          <input className="input input-bordered w-full" name="location" type="text" autoComplete="off" value={form.location} onChange={onFieldChange} placeholder="Localisation..." />
-        </label>
+        <CityAutocomplete
+          value={form.location}
+          onValueChange={
+            onLocationValueChange
+          }
+          onCitySelect={
+            onLocationSelect
+          }
+        />
 
         <label className="form-control w-full">
           <span className="label mb-1">
             Salaire annuel brut
           </span>
 
-          <input className="input input-bordered w-full" name="salary" type="number" min="0" step="1" value={form.salary} onChange={onFieldChange} placeholder="22404" />
+          <input
+            className="input input-bordered w-full"
+            name="salary"
+            type="number"
+            min="0"
+            step="1"
+            value={form.salary}
+            onChange={onFieldChange}
+            placeholder="22404"
+          />
         </label>
 
         <label className="form-control w-full md:col-span-2">
@@ -85,7 +138,14 @@ function ApplicationFormInformation({
             Lien de l’offre
           </span>
 
-          <input className="input input-bordered w-full" name="link" type="url" autoComplete="off" value={form.link} onChange={onFieldChange} placeholder="https://..."
+          <input
+            className="input input-bordered w-full"
+            name="link"
+            type="url"
+            autoComplete="off"
+            value={form.link}
+            onChange={onFieldChange}
+            placeholder="https://..."
           />
         </label>
       </div>

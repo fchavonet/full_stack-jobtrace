@@ -53,6 +53,12 @@ function sanitizeApplication(application) {
     status: application.status,
     contractType: application.contractType,
     location: application.location,
+    locationCode:
+      application.locationCode,
+    locationLatitude:
+      application.locationLatitude,
+    locationLongitude:
+      application.locationLongitude,
     salary: application.salary,
     link: application.link,
     notes: application.notes,
@@ -212,6 +218,12 @@ async function createUserApplication(userId, applicationData) {
       status: applicationData.status,
       contractType: applicationData.contractType,
       location: applicationData.location,
+      locationCode:
+        applicationData.locationCode,
+      locationLatitude:
+        applicationData.locationLatitude,
+      locationLongitude:
+        applicationData.locationLongitude,
       salary: applicationData.salary,
       link: applicationData.link,
       notes: applicationData.notes,

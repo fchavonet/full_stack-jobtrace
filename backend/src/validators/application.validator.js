@@ -38,7 +38,11 @@ function sanitizeOptionalString(value) {
 }
 
 function sanitizeOptionalInteger(value) {
-  if (value === undefined || value === null || value === "") {
+  if (
+    value === undefined
+    || value === null
+    || value === ""
+  ) {
     return null;
   }
 
@@ -49,6 +53,31 @@ function sanitizeOptionalInteger(value) {
   }
 
   if (numberValue < 0) {
+    return null;
+  }
+
+  return numberValue;
+}
+
+function sanitizeOptionalNumber(value) {
+  if (
+    value === undefined
+    || value === null
+    || value === ""
+  ) {
+    return null;
+  }
+
+  if (
+    typeof value === "string"
+    && value.trim().length === 0
+  ) {
+    return null;
+  }
+
+  const numberValue = Number(value);
+
+  if (!Number.isFinite(numberValue)) {
     return null;
   }
 
@@ -70,7 +99,11 @@ function sanitizeRequiredDate(value) {
 }
 
 function sanitizeOptionalDate(value) {
-  if (value === undefined || value === null || value === "") {
+  if (
+    value === undefined
+    || value === null
+    || value === ""
+  ) {
     return null;
   }
 
@@ -91,7 +124,10 @@ function isValidUrl(value) {
   try {
     const url = new URL(value);
 
-    if (url.protocol === "http:" || url.protocol === "https:") {
+    if (
+      url.protocol === "http:"
+      || url.protocol === "https:"
+    ) {
       return true;
     }
 
@@ -101,59 +137,317 @@ function isValidUrl(value) {
   }
 }
 
-function validateApplicationPayload(request, response, next) {
-  const company = sanitizeRequiredString(request.body.company);
-  const position = sanitizeRequiredString(request.body.position);
-  const status = sanitizeRequiredString(request.body.status);
-  const contractType = sanitizeOptionalString(request.body.contractType);
-  const location = sanitizeOptionalString(request.body.location);
-  const salary = sanitizeOptionalInteger(request.body.salary);
-  const link = sanitizeOptionalString(request.body.link);
-  const notes = sanitizeOptionalString(request.body.notes);
-  const sentAt = sanitizeRequiredDate(request.body.sentAt);
-  const followUpAt = sanitizeOptionalDate(request.body.followUpAt);
-  const interviewAt = sanitizeOptionalDate(request.body.interviewAt);
+function hasOwnField(object, fieldName) {
+  return Object.prototype.hasOwnProperty.call(
+    object,
+    fieldName
+  );
+}
+
+function hasOptionalValue(value) {
+  if (
+    value === undefined
+    || value === null
+  ) {
+    return false;
+  }
+
+  if (
+    typeof value === "string"
+    && value.trim().length === 0
+  ) {
+    return false;
+  }
+
+  return true;
+}
+
+function getLocationMetadata(requestBody) {
+  const fieldNames = [
+    "locationCode",
+    "locationLatitude",
+    "locationLongitude"
+  ];
+
+  let fieldsProvided = 0;
+
+  for (const fieldName of fieldNames) {
+    if (
+      hasOwnField(
+        requestBody,
+        fieldName
+      )
+    ) {
+      fieldsProvided += 1;
+    }
+  }
+
+  let valuesProvided = 0;
+
+  if (
+    hasOptionalValue(
+      requestBody.locationCode
+    )
+  ) {
+    valuesProvided += 1;
+  }
+
+  if (
+    hasOptionalValue(
+      requestBody.locationLatitude
+    )
+  ) {
+    valuesProvided += 1;
+  }
+
+  if (
+    hasOptionalValue(
+      requestBody.locationLongitude
+    )
+  ) {
+    valuesProvided += 1;
+  }
+
+  return {
+    fieldsProvided,
+    valuesProvided,
+    locationCode:
+      sanitizeOptionalString(
+        requestBody.locationCode
+      ),
+    locationLatitude:
+      sanitizeOptionalNumber(
+        requestBody.locationLatitude
+      ),
+    locationLongitude:
+      sanitizeOptionalNumber(
+        requestBody.locationLongitude
+      )
+  };
+}
+
+function validateLocationMetadata(
+  location,
+  metadata,
+  errors
+) {
+  if (metadata.fieldsProvided === 0) {
+    return;
+  }
+
+  if (metadata.fieldsProvided !== 3) {
+    errors.push(
+      "Location code, latitude and longitude must be provided together."
+    );
+
+    return;
+  }
+
+  if (metadata.valuesProvided === 0) {
+    return;
+  }
+
+  if (metadata.valuesProvided !== 3) {
+    errors.push(
+      "Location code, latitude and longitude must be provided together."
+    );
+
+    return;
+  }
+
+  if (!metadata.locationCode) {
+    errors.push(
+      "Location code must be a valid string."
+    );
+  }
+
+  if (
+    metadata.locationLatitude === null
+  ) {
+    errors.push(
+      "Location latitude must be a valid number."
+    );
+  }
+
+  if (
+    metadata.locationLongitude === null
+  ) {
+    errors.push(
+      "Location longitude must be a valid number."
+    );
+  }
+
+  if (
+    metadata.locationLatitude !== null
+    && (
+      metadata.locationLatitude < -90
+      || metadata.locationLatitude > 90
+    )
+  ) {
+    errors.push(
+      "Location latitude must be between -90 and 90."
+    );
+  }
+
+  if (
+    metadata.locationLongitude !== null
+    && (
+      metadata.locationLongitude < -180
+      || metadata.locationLongitude > 180
+    )
+  ) {
+    errors.push(
+      "Location longitude must be between -180 and 180."
+    );
+  }
+
+  if (!location) {
+    errors.push(
+      "Location is required when location coordinates are provided."
+    );
+  }
+}
+
+function validateApplicationPayload(
+  request,
+  response,
+  next
+) {
+  const company =
+    sanitizeRequiredString(
+      request.body.company
+    );
+
+  const position =
+    sanitizeRequiredString(
+      request.body.position
+    );
+
+  const status =
+    sanitizeRequiredString(
+      request.body.status
+    );
+
+  const contractType =
+    sanitizeOptionalString(
+      request.body.contractType
+    );
+
+  const location =
+    sanitizeOptionalString(
+      request.body.location
+    );
+
+  const locationMetadata =
+    getLocationMetadata(request.body);
+
+  const salary =
+    sanitizeOptionalInteger(
+      request.body.salary
+    );
+
+  const link =
+    sanitizeOptionalString(
+      request.body.link
+    );
+
+  const notes =
+    sanitizeOptionalString(
+      request.body.notes
+    );
+
+  const sentAt =
+    sanitizeRequiredDate(
+      request.body.sentAt
+    );
+
+  const followUpAt =
+    sanitizeOptionalDate(
+      request.body.followUpAt
+    );
+
+  const interviewAt =
+    sanitizeOptionalDate(
+      request.body.interviewAt
+    );
 
   const errors = [];
 
   if (company.length === 0) {
-    errors.push("Company is required.");
+    errors.push(
+      "Company is required."
+    );
   }
 
   if (position.length === 0) {
-    errors.push("Position is required.");
+    errors.push(
+      "Position is required."
+    );
   }
 
   if (status.length === 0) {
-    errors.push("Status is required.");
+    errors.push(
+      "Status is required."
+    );
   }
 
-  if (status.length > 0 && !allowedStatuses.includes(status)) {
-    errors.push("Status is invalid.");
+  if (
+    status.length > 0
+    && !allowedStatuses.includes(status)
+  ) {
+    errors.push(
+      "Status is invalid."
+    );
   }
 
-  if (contractType && !allowedContractTypes.includes(contractType)) {
-    errors.push("Contract type is invalid.");
+  if (
+    contractType
+    && !allowedContractTypes.includes(
+      contractType
+    )
+  ) {
+    errors.push(
+      "Contract type is invalid."
+    );
   }
 
-  if (request.body.salary !== undefined && request.body.salary !== null && request.body.salary !== "") {
-    if (salary === null) {
-      errors.push("Salary must be a positive integer.");
-    }
+  if (
+    request.body.salary !== undefined
+    && request.body.salary !== null
+    && request.body.salary !== ""
+    && salary === null
+  ) {
+    errors.push(
+      "Salary must be a positive integer."
+    );
   }
 
-  if (link && !isValidUrl(link)) {
-    errors.push("Link must be a valid URL.");
+  if (
+    link
+    && !isValidUrl(link)
+  ) {
+    errors.push(
+      "Link must be a valid URL."
+    );
   }
 
   if (!sentAt) {
-    errors.push("Sent date is required and must be valid.");
+    errors.push(
+      "Sent date is required and must be valid."
+    );
   }
+
+  validateLocationMetadata(
+    location,
+    locationMetadata,
+    errors
+  );
 
   if (errors.length > 0) {
     return response.status(400).json({
       success: false,
-      message: "Invalid application data.",
+      message:
+        "Invalid application data.",
       errors
     });
   }
@@ -164,6 +458,12 @@ function validateApplicationPayload(request, response, next) {
     status,
     contractType,
     location,
+    locationCode:
+      locationMetadata.locationCode,
+    locationLatitude:
+      locationMetadata.locationLatitude,
+    locationLongitude:
+      locationMetadata.locationLongitude,
     salary,
     link,
     notes,
@@ -175,127 +475,290 @@ function validateApplicationPayload(request, response, next) {
   next();
 }
 
-function validateApplicationUpdatePayload(request, response, next) {
+function validateApplicationUpdatePayload(
+  request,
+  response,
+  next
+) {
   const applicationData = {};
   const errors = [];
 
-  if (request.body.company !== undefined) {
-    const company = sanitizeRequiredString(request.body.company);
+  const locationMetadata =
+    getLocationMetadata(request.body);
+
+  if (
+    request.body.company !== undefined
+  ) {
+    const company =
+      sanitizeRequiredString(
+        request.body.company
+      );
 
     if (company.length === 0) {
-      errors.push("Company cannot be empty.");
+      errors.push(
+        "Company cannot be empty."
+      );
     } else {
-      applicationData.company = company;
+      applicationData.company =
+        company;
     }
   }
 
-  if (request.body.position !== undefined) {
-    const position = sanitizeRequiredString(request.body.position);
+  if (
+    request.body.position !== undefined
+  ) {
+    const position =
+      sanitizeRequiredString(
+        request.body.position
+      );
 
     if (position.length === 0) {
-      errors.push("Position cannot be empty.");
+      errors.push(
+        "Position cannot be empty."
+      );
     } else {
-      applicationData.position = position;
+      applicationData.position =
+        position;
     }
   }
 
-  if (request.body.status !== undefined) {
-    const status = sanitizeRequiredString(request.body.status);
+  if (
+    request.body.status !== undefined
+  ) {
+    const status =
+      sanitizeRequiredString(
+        request.body.status
+      );
 
-    if (!allowedStatuses.includes(status)) {
-      errors.push("Status is invalid.");
+    if (
+      !allowedStatuses.includes(status)
+    ) {
+      errors.push(
+        "Status is invalid."
+      );
     } else {
-      applicationData.status = status;
+      applicationData.status =
+        status;
     }
   }
 
-  if (request.body.contractType !== undefined) {
-    const contractType = sanitizeOptionalString(request.body.contractType);
+  if (
+    request.body.contractType
+      !== undefined
+  ) {
+    const contractType =
+      sanitizeOptionalString(
+        request.body.contractType
+      );
 
-    if (contractType && !allowedContractTypes.includes(contractType)) {
-      errors.push("Contract type is invalid.");
+    if (
+      contractType
+      && !allowedContractTypes.includes(
+        contractType
+      )
+    ) {
+      errors.push(
+        "Contract type is invalid."
+      );
     } else {
-      applicationData.contractType = contractType;
+      applicationData.contractType =
+        contractType;
     }
   }
 
-  if (request.body.location !== undefined) {
-    applicationData.location = sanitizeOptionalString(request.body.location);
-  }
+  if (
+    request.body.location !== undefined
+  ) {
+    applicationData.location =
+      sanitizeOptionalString(
+        request.body.location
+      );
 
-  if (request.body.salary !== undefined) {
-    const salary = sanitizeOptionalInteger(request.body.salary);
+    if (
+      locationMetadata.fieldsProvided
+        === 0
+    ) {
+      applicationData.locationCode =
+        null;
 
-    if (request.body.salary !== null && request.body.salary !== "" && salary === null) {
-      errors.push("Salary must be a positive integer.");
-    } else {
-      applicationData.salary = salary;
+      applicationData.locationLatitude =
+        null;
+
+      applicationData.locationLongitude =
+        null;
     }
   }
 
-  if (request.body.link !== undefined) {
-    const link = sanitizeOptionalString(request.body.link);
+  if (
+    locationMetadata.fieldsProvided > 0
+  ) {
+    let location = null;
 
-    if (link && !isValidUrl(link)) {
-      errors.push("Link must be a valid URL.");
+    if (
+      request.body.location
+        !== undefined
+    ) {
+      location =
+        applicationData.location;
+    }
+
+    validateLocationMetadata(
+      location,
+      locationMetadata,
+      errors
+    );
+
+    applicationData.locationCode =
+      locationMetadata.locationCode;
+
+    applicationData.locationLatitude =
+      locationMetadata.locationLatitude;
+
+    applicationData.locationLongitude =
+      locationMetadata.locationLongitude;
+  }
+
+  if (
+    request.body.salary !== undefined
+  ) {
+    const salary =
+      sanitizeOptionalInteger(
+        request.body.salary
+      );
+
+    if (
+      request.body.salary !== null
+      && request.body.salary !== ""
+      && salary === null
+    ) {
+      errors.push(
+        "Salary must be a positive integer."
+      );
+    } else {
+      applicationData.salary =
+        salary;
+    }
+  }
+
+  if (
+    request.body.link !== undefined
+  ) {
+    const link =
+      sanitizeOptionalString(
+        request.body.link
+      );
+
+    if (
+      link
+      && !isValidUrl(link)
+    ) {
+      errors.push(
+        "Link must be a valid URL."
+      );
     } else {
       applicationData.link = link;
     }
   }
 
-  if (request.body.notes !== undefined) {
-    applicationData.notes = sanitizeOptionalString(request.body.notes);
+  if (
+    request.body.notes !== undefined
+  ) {
+    applicationData.notes =
+      sanitizeOptionalString(
+        request.body.notes
+      );
   }
 
-  if (request.body.sentAt !== undefined) {
-    const sentAt = sanitizeRequiredDate(request.body.sentAt);
+  if (
+    request.body.sentAt !== undefined
+  ) {
+    const sentAt =
+      sanitizeRequiredDate(
+        request.body.sentAt
+      );
 
     if (!sentAt) {
-      errors.push("Sent date must be valid.");
+      errors.push(
+        "Sent date must be valid."
+      );
     } else {
-      applicationData.sentAt = sentAt;
+      applicationData.sentAt =
+        sentAt;
     }
   }
 
-  if (request.body.followUpAt !== undefined) {
-    applicationData.followUpAt = sanitizeOptionalDate(request.body.followUpAt);
+  if (
+    request.body.followUpAt
+      !== undefined
+  ) {
+    applicationData.followUpAt =
+      sanitizeOptionalDate(
+        request.body.followUpAt
+      );
   }
 
-  if (request.body.interviewAt !== undefined) {
-    applicationData.interviewAt = sanitizeOptionalDate(request.body.interviewAt);
+  if (
+    request.body.interviewAt
+      !== undefined
+  ) {
+    applicationData.interviewAt =
+      sanitizeOptionalDate(
+        request.body.interviewAt
+      );
   }
 
-  if (Object.keys(applicationData).length === 0) {
-    errors.push("At least one valid application field must be provided.");
+  if (
+    Object.keys(applicationData)
+      .length === 0
+  ) {
+    errors.push(
+      "At least one valid application field must be provided."
+    );
   }
 
   if (errors.length > 0) {
     return response.status(400).json({
       success: false,
-      message: "Invalid application data.",
+      message:
+        "Invalid application data.",
       errors
     });
   }
 
-  request.body.applicationData = applicationData;
+  request.body.applicationData =
+    applicationData;
 
   next();
 }
 
-function validateApplicationContactPayload(request, response, next) {
+function validateApplicationContactPayload(
+  request,
+  response,
+  next
+) {
   const errors = [];
 
-  const contactId = sanitizeOptionalString(request.body.contactId);
-  const role = sanitizeOptionalString(request.body.role);
+  const contactId =
+    sanitizeOptionalString(
+      request.body.contactId
+    );
+
+  const role =
+    sanitizeOptionalString(
+      request.body.role
+    );
 
   if (!contactId) {
-    errors.push("Contact id is required.");
+    errors.push(
+      "Contact id is required."
+    );
   }
 
   if (errors.length > 0) {
     return response.status(400).json({
       success: false,
-      message: "Invalid application contact data.",
+      message:
+        "Invalid application contact data.",
       errors
     });
   }
@@ -308,19 +771,29 @@ function validateApplicationContactPayload(request, response, next) {
   next();
 }
 
-function validateApplicationTagPayload(request, response, next) {
+function validateApplicationTagPayload(
+  request,
+  response,
+  next
+) {
   const errors = [];
 
-  const tagId = sanitizeOptionalString(request.body.tagId);
+  const tagId =
+    sanitizeOptionalString(
+      request.body.tagId
+    );
 
   if (!tagId) {
-    errors.push("Tag id is required.");
+    errors.push(
+      "Tag id is required."
+    );
   }
 
   if (errors.length > 0) {
     return response.status(400).json({
       success: false,
-      message: "Invalid application tag data.",
+      message:
+        "Invalid application tag data.",
       errors
     });
   }
@@ -332,19 +805,29 @@ function validateApplicationTagPayload(request, response, next) {
   next();
 }
 
-function validateApplicationDocumentPayload(request, response, next) {
+function validateApplicationDocumentPayload(
+  request,
+  response,
+  next
+) {
   const errors = [];
 
-  const documentId = sanitizeOptionalString(request.body.documentId);
+  const documentId =
+    sanitizeOptionalString(
+      request.body.documentId
+    );
 
   if (!documentId) {
-    errors.push("Document id is required.");
+    errors.push(
+      "Document id is required."
+    );
   }
 
   if (errors.length > 0) {
     return response.status(400).json({
       success: false,
-      message: "Invalid application document data.",
+      message:
+        "Invalid application document data.",
       errors
     });
   }

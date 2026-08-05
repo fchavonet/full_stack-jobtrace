@@ -26,6 +26,9 @@ const defaultForm = {
   status: "sent",
   contractType: "",
   location: "",
+  locationCode: "",
+  locationLatitude: null,
+  locationLongitude: null,
   salary: "",
   link: "",
   sentAt: "",
@@ -267,6 +270,32 @@ function ApplicationModal({
     });
   }
 
+  function handleLocationValueChange(value) {
+    setForm(function (currentForm) {
+      return {
+        ...currentForm,
+        location: value,
+        locationCode: "",
+        locationLatitude: null,
+        locationLongitude: null,
+      };
+    });
+  }
+
+  function handleLocationSelect(city) {
+    setForm(function (currentForm) {
+      return {
+        ...currentForm,
+        location: city.name,
+        locationCode: city.code,
+        locationLatitude:
+          city.latitude,
+        locationLongitude:
+          city.longitude,
+      };
+    });
+  }
+
   function addSelectedTag(tagName) {
     if (selectedTagNames.length >= APPLICATION_MAX_TAGS) {
       showToast("Vous pouvez associer jusqu’à " + APPLICATION_MAX_TAGS + " tags par candidature.", "warning");
@@ -455,7 +484,16 @@ function ApplicationModal({
       }
     >
       <div className="grid gap-4">
-        <ApplicationFormInformation form={form} onFieldChange={handleChange} />
+        <ApplicationFormInformation
+          form={form}
+          onFieldChange={handleChange}
+          onLocationValueChange={
+            handleLocationValueChange
+          }
+          onLocationSelect={
+            handleLocationSelect
+          }
+        />
 
         <ApplicationFormDates form={form} onFieldChange={handleChange} />
 

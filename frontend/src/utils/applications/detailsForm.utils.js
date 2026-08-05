@@ -9,6 +9,9 @@ export function getEmptyApplicationEditForm() {
     status: "sent",
     contractType: "",
     location: "",
+    locationCode: "",
+    locationLatitude: null,
+    locationLongitude: null,
     salary: "",
     link: "",
     sentAt: "",
@@ -16,6 +19,24 @@ export function getEmptyApplicationEditForm() {
     interviewAt: "",
     notes: "",
   };
+}
+
+function getNullableLocationNumber(value) {
+  if (
+    value === undefined
+    || value === null
+    || value === ""
+  ) {
+    return null;
+  }
+
+  const numberValue = Number(value);
+
+  if (!Number.isFinite(numberValue)) {
+    return null;
+  }
+
+  return numberValue;
 }
 
 function getDateIsBefore(referenceDate, dateToCheck) {
@@ -76,6 +97,16 @@ export function getEditFormFromApplication(application) {
     status: application.status || "sent",
     contractType: application.contractType || "",
     location: application.location || "",
+    locationCode:
+      application.locationCode || "",
+    locationLatitude:
+      getNullableLocationNumber(
+        application.locationLatitude
+      ),
+    locationLongitude:
+      getNullableLocationNumber(
+        application.locationLongitude
+      ),
     salary,
     link: application.link || "",
     sentAt,
@@ -124,6 +155,16 @@ export function buildAnnouncementUpdatePayload(form) {
     status: form.status,
     contractType: form.contractType,
     location: form.location,
+    locationCode:
+      form.locationCode || null,
+    locationLatitude:
+      getNullableLocationNumber(
+        form.locationLatitude
+      ),
+    locationLongitude:
+      getNullableLocationNumber(
+        form.locationLongitude
+      ),
     salary: form.salary,
     link: form.link,
     sentAt: form.sentAt,
@@ -159,6 +200,12 @@ export function getNextApplicationEditForm({
     ...currentForm,
     [fieldName]: value,
   };
+
+  if (fieldName === "location") {
+    nextForm.locationCode = "";
+    nextForm.locationLatitude = null;
+    nextForm.locationLongitude = null;
+  }
 
   if (fieldName === "followUpAt" && getDateIsBefore(nextForm.sentAt, value)) {
     nextForm.followUpAt = "";

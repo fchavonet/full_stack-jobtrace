@@ -240,6 +240,32 @@ function ApplicationDetailsModal({
     });
   }
 
+  function handleLocationValueChange(value) {
+    setEditForm(function (currentForm) {
+      return getNextApplicationEditForm({
+        currentForm,
+        fieldName: "location",
+        value,
+        followUpDelayDays:
+          normalizedFollowUpDelayDays,
+      });
+    });
+  }
+
+  function handleLocationSelect(city) {
+    setEditForm(function (currentForm) {
+      return {
+        ...currentForm,
+        location: city.name,
+        locationCode: city.code,
+        locationLatitude:
+          city.latitude,
+        locationLongitude:
+          city.longitude,
+      };
+    });
+  }
+
   async function refreshApplicationData() {
     if (onApplicationChanged) {
       await onApplicationChanged(application.id);
@@ -623,7 +649,18 @@ function ApplicationDetailsModal({
   function renderAnnouncementEditForm() {
     return (
       <div className="grid gap-4">
-        <ApplicationFormInformation form={editForm} onFieldChange={handleFieldChange} />
+        <ApplicationFormInformation
+                    form={editForm}
+                    onFieldChange={
+                      handleFieldChange
+                    }
+                    onLocationValueChange={
+                      handleLocationValueChange
+                    }
+                    onLocationSelect={
+                      handleLocationSelect
+                    }
+                  />
 
         <ApplicationFormDates form={editForm} onFieldChange={handleFieldChange} />
 

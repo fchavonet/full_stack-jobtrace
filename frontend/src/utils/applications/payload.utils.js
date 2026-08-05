@@ -28,6 +28,46 @@ function addSalaryField(payload, value) {
   }
 }
 
+function addLocationMetadata(payload, form) {
+  if (!form.locationCode) {
+    return;
+  }
+
+  if (
+    form.locationLatitude === null
+    || form.locationLatitude
+      === undefined
+    || form.locationLongitude
+      === null
+    || form.locationLongitude
+      === undefined
+  ) {
+    return;
+  }
+
+  const latitude =
+    Number(form.locationLatitude);
+
+  const longitude =
+    Number(form.locationLongitude);
+
+  if (
+    !Number.isFinite(latitude)
+    || !Number.isFinite(longitude)
+  ) {
+    return;
+  }
+
+  payload.locationCode =
+    form.locationCode;
+
+  payload.locationLatitude =
+    latitude;
+
+  payload.locationLongitude =
+    longitude;
+}
+
 function getDateIsBefore(referenceDate, dateToCheck) {
   if (!referenceDate || !dateToCheck) {
     return false;
@@ -86,6 +126,7 @@ export function buildApplicationPayload(form) {
 
   addTextField(payload, "contractType", form.contractType);
   addTextField(payload, "location", form.location);
+  addLocationMetadata(payload, form);
   addTextField(payload, "link", form.link);
   addTextField(payload, "notes", form.notes);
   addSalaryField(payload, form.salary);
