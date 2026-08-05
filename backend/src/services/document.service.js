@@ -81,17 +81,24 @@ async function getUserDocumentFile(userId, documentId) {
 }
 
 async function createUserDocument(userId, documentData, file) {
-  const document = await prisma.document.create({
-    data: {
-      userId,
-      type: documentData.type,
-      originalName: file.originalname,
-      storedName: file.filename,
-      mimeType: file.mimetype,
-      size: file.size,
-      path: file.path
-    }
-  });
+  let document;
+
+  try {
+    document = await prisma.document.create({
+      data: {
+        userId,
+        type: documentData.type,
+        originalName: file.originalname,
+        storedName: file.filename,
+        mimeType: file.mimetype,
+        size: file.size,
+        path: file.path
+      }
+    });
+  } catch (error) {
+    await removeStoredFile(file.path);
+    throw error;
+  }
 
   await unlockFirstDocumentAchievement(userId);
 

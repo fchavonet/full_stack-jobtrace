@@ -7,10 +7,12 @@ import {
   beforeEach,
   describe,
   expect,
-  test
+  test,
+  vi
 } from "vitest";
 
 import app from "../src/app.js";
+import prisma from "../src/config/prisma.js";
 
 import {
   uploadDirectory
@@ -51,6 +53,7 @@ async function cleanUploadedDocuments() {
 }
 
 beforeEach(async function () {
+  vi.restoreAllMocks();
   await cleanUploadedDocuments();
   await cleanDatabase();
 });
@@ -61,6 +64,48 @@ afterAll(async function () {
 });
 
 describe("Document upload cleanup", function () {
+  test("Should remove uploaded file when database creation fails", async function () {
+    const { token } =
+      await createAuthenticatedTestUser();
+
+    vi.spyOn(
+      prisma.document,
+      "create"
+    ).mockRejectedValueOnce(
+      new Error("Database unavailable.")
+    );
+
+    const response = await request(app)
+      .post("/api/documents")
+      .set("Authorization", "Bearer " + token)
+      .field("type", "resume")
+      .attach(
+        "document",
+        DOCUMENT_FILE_CONTENT,
+        {
+          filename: "database-error.pdf",
+          contentType: "application/pdf"
+        }
+      );
+
+    expect(response.status).toBe(500);
+
+    const uploadedFiles =
+      await fs.readdir(uploadDirectory);
+
+    const storedDocuments =
+      uploadedFiles.filter(function (fileName) {
+        return fileName !== ".gitkeep";
+      });
+
+    expect(storedDocuments).toEqual([]);
+
+    const documentCount =
+      await prisma.document.count();
+
+    expect(documentCount).toBe(0);
+  });
+
   test("Should remove uploaded file when document data is invalid", async function () {
     const { token } =
       await createAuthenticatedTestUser();
