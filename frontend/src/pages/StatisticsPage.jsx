@@ -568,18 +568,21 @@ function StatisticsPage() {
             <MetricCard
               label="Total candidatures"
               value={summary.total}
+              accentClassName="border-info"
               helper={summary.active + " candidature(s) active(s)"}
             />
 
             <MetricCard
               label="Total entretiens"
               value={summary.interviews}
+              accentClassName="border-primary"
               helper={summary.interviewRate + " % du total"}
             />
 
             <MetricCard
               label="Total refusées"
               value={summary.rejected}
+              accentClassName="border-error"
               helper={
                 getPercentLabel(summary.rejected, summary.total) + " du total"
               }
@@ -588,6 +591,7 @@ function StatisticsPage() {
             <MetricCard
               label="Total acceptées"
               value={summary.accepted}
+              accentClassName="border-success"
               helper={summary.successRate + " % de réussite"}
             />
           </div>

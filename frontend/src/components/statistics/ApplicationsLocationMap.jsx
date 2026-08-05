@@ -1,6 +1,8 @@
 import "leaflet/dist/leaflet.css";
+import "leaflet.markercluster/dist/MarkerCluster.css";
 
 import L from "leaflet";
+import "leaflet.markercluster";
 import { RotateCcw } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef } from "react";
 
@@ -9,7 +11,7 @@ import { buildApplicationsLocationMapData } from "../../utils/statistics/locatio
 
 const FRANCE_CENTER = [46.2276, 2.2137];
 const DEFAULT_ZOOM = 5;
-const LOCATION_FOCUS_ZOOM = 9;
+const LOCATION_FOCUS_ZOOM = 12;
 
 function escapeHtml(value) {
   return String(value)
@@ -61,6 +63,47 @@ function createLocationIcon(location) {
     iconSize: [40, 40],
     iconAnchor: [20, 20],
     popupAnchor: [0, -20],
+  });
+}
+
+function getClusterApplicationCount(
+  cluster
+) {
+  let applicationCount = 0;
+
+  cluster
+    .getAllChildMarkers()
+    .forEach(function (marker) {
+      const markerApplicationCount =
+        Number(
+          marker.options.applicationCount
+        );
+
+      if (
+        Number.isFinite(
+          markerApplicationCount
+        )
+      ) {
+        applicationCount +=
+          markerApplicationCount;
+      }
+    });
+
+  return applicationCount;
+}
+
+function createClusterIcon(cluster) {
+  const applicationCount =
+    getClusterApplicationCount(cluster);
+
+  return L.divIcon({
+    className: "",
+    html:
+      "<div class=\"w-12 h-12 flex flex-row justify-center items-center text-sm font-black text-primary-content rounded-full bg-primary shadow-md ring-4 ring-primary/20\">"
+      + String(applicationCount)
+      + "</div>",
+    iconSize: [48, 48],
+    iconAnchor: [24, 24],
   });
 }
 
@@ -190,7 +233,16 @@ function ApplicationsLocationMap({ applications }) {
       detectRetina: true,
     }).addTo(mapRef.current);
 
-    markerLayerRef.current = L.layerGroup().addTo(mapRef.current);
+    markerLayerRef.current = L.markerClusterGroup({
+      animate: false,
+      showCoverageOnHover: false,
+      zoomToBoundsOnClick: true,
+      spiderfyOnMaxZoom: true,
+      spiderfyDistanceMultiplier: 1.5,
+      disableClusteringAtZoom: 12,
+      maxClusterRadius: 48,
+      iconCreateFunction: createClusterIcon,
+    }).addTo(mapRef.current);
 
     window.setTimeout(function () {
       if (mapRef.current) {
@@ -215,9 +267,18 @@ function ApplicationsLocationMap({ applications }) {
     markerLayerRef.current.clearLayers();
 
     mappedLocations.forEach(function (location) {
-      const marker = L.marker([location.latitude, location.longitude], {
-        icon: createLocationIcon(location),
-      }).bindPopup(getPopupHtml(location));
+      const marker = L.marker(
+        [
+          location.latitude,
+          location.longitude,
+        ],
+        {
+          icon: createLocationIcon(location),
+          applicationCount: location.count,
+        }
+      ).bindPopup(
+        getPopupHtml(location)
+      );
 
       marker.addTo(markerLayerRef.current);
     });
