@@ -32,6 +32,20 @@ function ensureUploadDirectory() {
   }
 }
 
+async function removeUploadedDocumentFile(file) {
+  if (!file || !file.path) {
+    return;
+  }
+
+  try {
+    await fs.promises.unlink(file.path);
+  } catch (error) {
+    if (error.code !== "ENOENT") {
+      throw error;
+    }
+  }
+}
+
 function getFileExtension(fileName) {
   return path.extname(fileName).toLowerCase();
 }
@@ -87,6 +101,7 @@ export {
   allowedExtensions,
   allowedMimeTypes,
   maxFileSize,
+  removeUploadedDocumentFile,
   uploadDirectory,
   uploadDocument
 };

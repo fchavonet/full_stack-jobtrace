@@ -1,3 +1,7 @@
+import {
+  removeUploadedDocumentFile
+} from "../middlewares/documentUpload.middleware.js";
+
 const allowedDocumentTypes = [
   "resume",
   "cover_letter",
@@ -17,7 +21,7 @@ function isAllowedDocumentType(type) {
   return allowedDocumentTypes.includes(type);
 }
 
-function validateDocumentPayload(request, response, next) {
+async function validateDocumentPayload(request, response, next) {
   const type = sanitizeRequiredString(request.body.type);
   const errors = [];
 
@@ -34,6 +38,8 @@ function validateDocumentPayload(request, response, next) {
   }
 
   if (errors.length > 0) {
+    await removeUploadedDocumentFile(request.file);
+
     return response.status(400).json({
       success: false,
       message: "Invalid document data.",
