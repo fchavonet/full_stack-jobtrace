@@ -3,7 +3,17 @@ import fs from "fs";
 import multer from "multer";
 import path from "path";
 
-const uploadDirectory = path.join(process.cwd(), "uploads", "documents");
+let uploadDirectoryName = "documents";
+
+if (process.env.NODE_ENV === "test") {
+  uploadDirectoryName = "test-documents";
+}
+
+const uploadDirectory = path.join(
+  process.cwd(),
+  "uploads",
+  uploadDirectoryName
+);
 
 const allowedMimeTypes = new Set([
   "application/pdf",

@@ -7,6 +7,20 @@ import {
   unlockFollowUpPlannedAchievement
 } from "./achievement.service.js";
 
+async function runAchievementSideEffect(
+  achievementAction,
+  userId
+) {
+  try {
+    await achievementAction(userId);
+  } catch (error) {
+    console.error(
+      "Unable to unlock application achievement.",
+      error
+    );
+  }
+}
+
 function sanitizeApplicationTag(applicationTag) {
   return {
     id: applicationTag.tag.id,
@@ -240,11 +254,20 @@ async function createUserApplication(userId, applicationData) {
     status: application.status
   });
 
-  await unlockFirstApplicationAchievement(userId);
-  await unlockFiveApplicationsAchievement(userId);
+  await runAchievementSideEffect(
+    unlockFirstApplicationAchievement,
+    userId
+  );
+  await runAchievementSideEffect(
+    unlockFiveApplicationsAchievement,
+    userId
+  );
 
   if (applicationData.followUpAt) {
-    await unlockFollowUpPlannedAchievement(userId);
+    await runAchievementSideEffect(
+      unlockFollowUpPlannedAchievement,
+      userId
+    );
   }
 
   return sanitizeApplication(application);
@@ -334,7 +357,10 @@ async function linkTagToUserApplication(userId, applicationId, tagData) {
     tagId: tagData.tagId
   });
 
-  await unlockApplicationOrganizedAchievement(userId);
+  await runAchievementSideEffect(
+    unlockApplicationOrganizedAchievement,
+    userId
+  );
 
   const application = await findUserApplicationWithRelations(
     userId,
@@ -434,7 +460,10 @@ async function linkContactToUserApplication(userId, applicationId, contactData) 
     role: contactData.role
   });
 
-  await unlockApplicationOrganizedAchievement(userId);
+  await runAchievementSideEffect(
+    unlockApplicationOrganizedAchievement,
+    userId
+  );
 
   const application = await findUserApplicationWithRelations(
     userId,
@@ -526,7 +555,10 @@ async function linkDocumentToUserApplication(userId, applicationId, documentData
     documentId: documentData.documentId
   });
 
-  await unlockApplicationOrganizedAchievement(userId);
+  await runAchievementSideEffect(
+    unlockApplicationOrganizedAchievement,
+    userId
+  );
 
   const application = await findUserApplicationWithRelations(
     userId,

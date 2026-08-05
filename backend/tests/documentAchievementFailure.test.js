@@ -92,7 +92,7 @@ describe(
     test(
       "Should preserve uploaded document when achievement unlocking fails",
       async function () {
-        const { token } =
+        const { token, user } =
           await createAuthenticatedTestUser();
 
         unlockFirstDocumentAchievement
@@ -123,7 +123,11 @@ describe(
           response.body.data.document;
 
         const documentCount =
-          await prisma.document.count();
+          await prisma.document.count({
+            where: {
+              userId: user.id
+            }
+          });
 
         expect(documentCount).toBe(1);
 

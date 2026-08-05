@@ -65,7 +65,7 @@ afterAll(async function () {
 
 describe("Document upload cleanup", function () {
   test("Should restore document file when database deletion fails", async function () {
-    const { token } =
+    const { token, user } =
       await createAuthenticatedTestUser();
 
     const createResponse = await request(app)
@@ -110,7 +110,11 @@ describe("Document upload cleanup", function () {
     expect(deleteResponse.status).toBe(500);
 
     const documentCount =
-      await prisma.document.count();
+      await prisma.document.count({
+        where: {
+          userId: user.id
+        }
+      });
 
     expect(documentCount).toBe(1);
 
@@ -130,7 +134,7 @@ describe("Document upload cleanup", function () {
   });
 
   test("Should remove uploaded file when database creation fails", async function () {
-    const { token } =
+    const { token, user } =
       await createAuthenticatedTestUser();
 
     vi.spyOn(
@@ -166,7 +170,11 @@ describe("Document upload cleanup", function () {
     expect(storedDocuments).toEqual([]);
 
     const documentCount =
-      await prisma.document.count();
+      await prisma.document.count({
+        where: {
+          userId: user.id
+        }
+      });
 
     expect(documentCount).toBe(0);
   });
