@@ -310,9 +310,9 @@ function JobLinksCard() {
               rel="noreferrer"
 
               rightElement={
-                <span className="h-10 shrink-0 flex flex-row justify-end items-center rounded-lg">
+                <span className="w-32 h-12 shrink-0 p-2 flex justify-center items-center rounded-xl bg-white ring-1 ring-black/10">
                   <img
-                    className="h-full w-auto max-w-28 object-contain"
+                    className="max-h-8 w-auto max-w-full object-contain"
                     width="112"
                     height="40"
                     src={link.logo}
@@ -411,24 +411,28 @@ function DashboardPage() {
           label="Total candidatures"
           value={summary.total}
           helper={summary.active + " candidature(s) active(s)"}
+          accentClassName="border-info"
         />
 
         <MetricCard
           label="Total entretiens"
           value={summary.interviews}
           helper={summary.interviewRate + " % du total"}
+          accentClassName="border-primary"
         />
 
         <MetricCard
           label="Total refusées"
           value={summary.rejected}
           helper={getPercentLabel(summary.rejected, summary.total) + " du total"}
+          accentClassName="border-error"
         />
 
         <MetricCard
           label="Total acceptées"
           value={summary.accepted}
           helper={summary.successRate + " % de réussite"}
+          accentClassName="border-success"
         />
       </div>
 

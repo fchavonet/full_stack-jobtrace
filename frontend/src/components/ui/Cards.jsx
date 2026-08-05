@@ -52,11 +52,25 @@ function getSectionCardContentClassName(hasHeader, className) {
   return finalClassName;
 }
 
-function getMetricCardClassName(className) {
-  let finalClassName = "w-full min-w-0 p-4 md:p-6 rounded-2xl bg-base-100 shadow-sm";
+function getMetricCardClassName(
+  className,
+  accentClassName
+) {
+  let finalClassName =
+    "w-full min-w-0 p-4 md:p-6 rounded-2xl bg-base-100 shadow-sm";
+
+  if (accentClassName) {
+    finalClassName =
+      finalClassName
+      + " border-t-4 "
+      + accentClassName;
+  }
 
   if (className) {
-    finalClassName = finalClassName + " " + className;
+    finalClassName =
+      finalClassName
+      + " "
+      + className;
   }
 
   return finalClassName;
@@ -139,10 +153,16 @@ export function MetricCard({
   label,
   value,
   helper,
+  accentClassName = "",
   className = "",
 }) {
   return (
-    <div className={getMetricCardClassName(className)}>
+    <div
+      className={getMetricCardClassName(
+        className,
+        accentClassName
+      )}
+    >
       <div className="w-full flex flex-row justify-between items-start gap-4">
         <div className="min-w-0">
           <h2 className="text-sm font-semibold text-base-content truncate">
