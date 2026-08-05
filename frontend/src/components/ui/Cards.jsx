@@ -8,7 +8,14 @@ function getSectionCardClassName(className) {
   return finalClassName;
 }
 
-function getSectionCardHeaderClassName(centered) {
+function getSectionCardHeaderClassName(
+  centered,
+  className
+) {
+  if (className) {
+    return className;
+  }
+
   if (centered) {
     return "w-full flex flex-col justify-center items-center gap-1 text-center";
   }
@@ -108,6 +115,7 @@ export function SectionCard({
   children,
   className = "",
   contentClassName = "",
+  headerClassName = "",
   rightElementClassName = "",
   centered = false,
   ...props
@@ -117,7 +125,10 @@ export function SectionCard({
   return (
     <Component className={getSectionCardClassName(className)} {...props}>
       {hasHeader && (
-        <div className={getSectionCardHeaderClassName(centered)}>
+        <div className={getSectionCardHeaderClassName(
+          centered,
+          headerClassName
+        )}>
           <div className={getSectionCardTitleBlockClassName(centered)}>
             {title && (
               <h2 className="text-lg font-semibold text-base-content truncate">

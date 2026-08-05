@@ -5,6 +5,7 @@ import {
   CalendarCheck,
   ChevronLeft,
   ChevronRight,
+  Download,
   Send,
 } from "lucide-react";
 
@@ -25,6 +26,7 @@ import {
   getStartOfMonth,
   groupCalendarEventsByDate,
 } from "../utils/calendar/calendar.utils";
+import { downloadCalendarEventsAsIcs } from "../utils/calendar/calendarExport.utils";
 import { getListFromResponse } from "../utils/common/apiResponse.utils";
 
 const AGENDA_DATE_FORMATTER = new Intl.DateTimeFormat("fr-FR", {
@@ -74,6 +76,41 @@ function getEventDotClassName(type) {
   return "w-3 h-3 shrink-0 rounded-full bg-base-300";
 }
 
+function getLegendDotClassName(
+  type,
+  isVisible
+) {
+  if (!isVisible) {
+    return "w-3 h-3 shrink-0 rounded-full bg-base-300";
+  }
+
+  return getEventDotClassName(type);
+}
+
+function getLegendButtonClassName(isVisible) {
+  let className =
+    "btn btn-ghost btn-xs h-auto min-h-0 px-2 py-1 flex flex-row justify-center items-center gap-2 cursor-pointer";
+
+  if (!isVisible) {
+    className =
+      className
+      + " text-base-content/40";
+  }
+
+  return className;
+}
+
+function getLegendAriaLabel(
+  label,
+  isVisible
+) {
+  if (isVisible) {
+    return "Masquer les événements " + label;
+  }
+
+  return "Afficher les événements " + label;
+}
+
 function getCalendarEventBadgeColor(type) {
   if (type === "sent") {
     return "primary";
@@ -113,21 +150,48 @@ function formatAgendaDate(dateValue) {
   return label.charAt(0).toUpperCase() + label.slice(1);
 }
 
-function CalendarLegendItem({ label, type }) {
+function CalendarLegendItem({
+  label,
+  type,
+  isVisible,
+  onToggle,
+}) {
   return (
-    <div className="flex flex-row justify-start items-center gap-2">
-      <span className={getEventDotClassName(type)} />
+    <button
+      className={getLegendButtonClassName(
+        isVisible
+      )}
+      type="button"
+      aria-label={getLegendAriaLabel(
+        label,
+        isVisible
+      )}
+      aria-pressed={isVisible}
+      onClick={function () {
+        onToggle(type);
+      }}
+    >
+      <span
+        className={getLegendDotClassName(
+          type,
+          isVisible
+        )}
+      />
 
-      <span className="text-xs font-medium text-base-content/60 whitespace-nowrap">
+      <span className="text-xs font-medium whitespace-nowrap">
         {label}
       </span>
-    </div>
+    </button>
   );
 }
 
-function CalendarHeaderRightElement({ loading }) {
+function CalendarHeaderRightElement({
+  loading,
+  visibleEventTypes,
+  onToggleEventType,
+}) {
   return (
-    <div className="hidden sm:flex flex-col sm:flex-row flex-wrap justify-center items-end sm:items-center gap-x-4 gap-y-2">
+    <div className="flex flex-row flex-wrap justify-center sm:justify-end items-center gap-1">
       {loading && (
         <span className="loading loading-spinner loading-sm shrink-0" />
       )}
@@ -135,16 +199,22 @@ function CalendarHeaderRightElement({ loading }) {
       <CalendarLegendItem
         label="Envoi"
         type="sent"
+        isVisible={visibleEventTypes.sent}
+        onToggle={onToggleEventType}
       />
 
       <CalendarLegendItem
         label="Relance"
         type="follow_up"
+        isVisible={visibleEventTypes.follow_up}
+        onToggle={onToggleEventType}
       />
 
       <CalendarLegendItem
         label="Entretien"
         type="interview"
+        isVisible={visibleEventTypes.interview}
+        onToggle={onToggleEventType}
       />
     </div>
   );
@@ -154,7 +224,7 @@ function CalendarEmptyAgenda() {
   return (
     <ItemCard className="text-center">
       <h3 className="font-semibold text-base-content">
-        Aucun événement ce mois-ci
+        Aucun événement visible ce mois-ci
       </h3>
 
       <p className="mt-1 text-sm text-base-content/60">
@@ -294,12 +364,30 @@ function CalendarDesktopGrid({
   );
 }
 
-function CalendarInfoCard() {
+function CalendarInfoCard({
+  eventCount,
+  onExport,
+}) {
   return (
     <SectionCard>
-      <p className="text-sm text-base-content/60">
-        Un clic sur un événement ouvre la table des candidatures avec uniquement la candidature concernée.
-      </p>
+      <div className="w-full flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <p className="max-w-3xl text-sm text-base-content/60">
+          Un clic sur un événement ouvre la candidature concernée.
+          L’export reprend le mois affiché et les catégories visibles.
+        </p>
+
+        <button
+          className="btn btn-ghost btn-sm self-end shrink-0 flex flex-row justify-center items-center gap-2 cursor-pointer"
+          type="button"
+          title="Télécharger un fichier calendrier au format .ics"
+          onClick={onExport}
+          disabled={eventCount === 0}
+        >
+          <Download className="w-4 h-4" />
+
+          Exporter le mois
+        </button>
+      </div>
     </SectionCard>
   );
 }
@@ -311,6 +399,15 @@ function CalendarPage() {
   const [currentMonth, setCurrentMonth] = useState(getStartOfMonth(new Date()));
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  const [
+    visibleEventTypes,
+    setVisibleEventTypes,
+  ] = useState({
+    sent: true,
+    follow_up: true,
+    interview: true,
+  });
 
   useEffect(function () {
     async function loadApplications() {
@@ -335,14 +432,25 @@ function CalendarPage() {
     return buildCalendarEvents(applications);
   }, [applications]);
 
+  const visibleEvents = useMemo(function () {
+    return events.filter(function (event) {
+      return visibleEventTypes[event.type];
+    });
+  }, [
+    events,
+    visibleEventTypes,
+  ]);
+
   const eventsByDate = useMemo(function () {
-    return groupCalendarEventsByDate(events);
-  }, [events]);
+    return groupCalendarEventsByDate(
+      visibleEvents
+    );
+  }, [visibleEvents]);
 
   const currentMonthEvents = useMemo(function () {
     const monthKey = getMonthKey(currentMonth);
 
-    return events
+    return visibleEvents
       .filter(function (event) {
         return event.date.startsWith(monthKey);
       })
@@ -354,7 +462,7 @@ function CalendarPage() {
         return getCalendarEventSortValue(firstEvent.type)
           - getCalendarEventSortValue(secondEvent.type);
       });
-  }, [events, currentMonth]);
+  }, [visibleEvents, currentMonth]);
 
   const todayIso = getIsoDate(new Date());
 
@@ -368,6 +476,42 @@ function CalendarPage() {
 
   function goToNextMonth() {
     setCurrentMonth(addMonths(currentMonth, 1));
+  }
+
+  function toggleEventType(eventType) {
+    setVisibleEventTypes(
+      function (currentVisibleEventTypes) {
+        return {
+          ...currentVisibleEventTypes,
+          [eventType]:
+            !currentVisibleEventTypes[
+              eventType
+            ],
+        };
+      }
+    );
+  }
+
+  function exportCurrentMonthCalendar() {
+    const exportStarted =
+      downloadCalendarEventsAsIcs(
+        currentMonthEvents,
+        currentMonth
+      );
+
+    if (!exportStarted) {
+      showToast(
+        "Aucun événement visible à exporter.",
+        "info"
+      );
+
+      return;
+    }
+
+    showToast(
+      "Calendrier exporté au format .ics.",
+      "success"
+    );
   }
 
   function openApplication(applicationId) {
@@ -414,9 +558,14 @@ function CalendarPage() {
       <SectionCard
         title={formatCalendarMonth(currentMonth)}
         description={currentMonthEvents.length + " événement(s) ce mois-ci."}
-        rightElementClassName="self-center"
+        headerClassName="w-full flex flex-col sm:flex-row justify-between items-center sm:items-start gap-4 text-center sm:text-left"
+        rightElementClassName="w-full sm:w-auto self-center sm:self-start"
         rightElement={
-          <CalendarHeaderRightElement loading={loading} />
+          <CalendarHeaderRightElement
+            loading={loading}
+            visibleEventTypes={visibleEventTypes}
+            onToggleEventType={toggleEventType}
+          />
         }
       >
         <CalendarMobileAgenda
@@ -434,7 +583,10 @@ function CalendarPage() {
         />
       </SectionCard>
 
-      <CalendarInfoCard />
+      <CalendarInfoCard
+        eventCount={currentMonthEvents.length}
+        onExport={exportCurrentMonthCalendar}
+      />
     </section>
   );
 }

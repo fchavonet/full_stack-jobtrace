@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { ChevronDown, ChevronUp, ChevronsUpDown, Eye, Trash2 } from "lucide-react";
 
 import { APPLICATION_STATUS_OPTIONS } from "../../constants/application.constants";
@@ -200,9 +200,14 @@ function ApplicationsTable({
     )
   );
 
+  const safeCurrentPage = Math.min(
+    currentPage,
+    totalPages
+  );
+
   const displayedApplications = useMemo(function () {
     const startIndex =
-      (currentPage - 1)
+      (safeCurrentPage - 1)
       * APPLICATIONS_PER_PAGE;
 
     const endIndex =
@@ -214,19 +219,8 @@ function ApplicationsTable({
       endIndex
     );
   }, [
-    currentPage,
+    safeCurrentPage,
     filteredAndSortedApplications,
-  ]);
-
-  useEffect(function () {
-    if (currentPage <= totalPages) {
-      return;
-    }
-
-    setCurrentPage(totalPages);
-  }, [
-    currentPage,
-    totalPages,
   ]);
 
   function handleSearchChange(event) {
@@ -280,7 +274,7 @@ function ApplicationsTable({
       />
 
       <SectionCard>
-        <div className="flex flex-row flex-wrap justify-start items-center gap-2">
+        <div className="flex flex-row flex-wrap justify-center sm:justify-start items-center gap-2">
           {statusFilters.map(function (statusFilterOption) {
             return (
               <button className={getStatusFilterButtonClassName(statusFilter, statusFilterOption.value)} type="button" key={statusFilterOption.value} onClick={function () { handleStatusFilterChange(statusFilterOption.value); }}>
@@ -403,7 +397,7 @@ function ApplicationsTable({
 
         {filteredAndSortedApplications.length > APPLICATIONS_PER_PAGE && (
           <Pagination
-            currentPage={currentPage}
+            currentPage={safeCurrentPage}
             totalPages={totalPages}
             onPageChange={handlePageChange}
           />
