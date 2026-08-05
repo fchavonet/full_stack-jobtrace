@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>DaisyUI components</title>
+
+    <!-- DaisyUI -->
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+</head>
+
+<body class="max-w-7xl min-h-screen mx-auto p-8 flex flex-col justify-center items-center gap-12">
+    <!-- COLORS -->
+    <div class="w-full flex flex-col justify-center items-center gap-2">
+        <h2 class="w-full ps-2 flex-start text-xl font-bold">Colors</h2>
+
+        <div class="w-full p-4 flex flex-row justify-center items-center gap-2 rounded-xl bg-base-200">
+            <div class="w-8 h-8 rounded bg-primary"></div>
+            <div class="w-8 h-8 rounded bg-secondary"></div>
+            <div class="w-8 h-8 rounded bg-success"></div>
+            <div class="w-8 h-8 rounded bg-warning"></div>
+            <div class="w-8 h-8 rounded bg-error"></div>
+        </div>
+    </div>
+
+    <!-- NAVBAR -->
+    <div class="w-full flex flex-col justify-center items-center gap-2">
+        <h2 class="w-full ps-2 flex-start text-xl font-bold">Navbar</h2>
+
+        <div class="w-full p-4 flex flex-row justify-center items-center gap-2 rounded-xl bg-base-200">
+            <div class="navbar bg-base-100 shadow-sm">
+                <a class="ms-2 text-xl font-bold">Job<span class="text-primary">Trace</span></a>
+            </div>
+        </div>
+    </div>
+
+    <!-- BUTTONS -->
+    <div class="w-full flex flex-col justify-center items-center gap-2">
+        <h2 class="w-full ps-2 flex-start text-xl font-bold">Buttons</h2>
+
+        <div class="w-full p-4 flex flex-row justify-center items-center gap-2 rounded-xl bg-base-200">
+            <button class="btn btn-primary">Primary</button>
+            <button class="btn btn-ghost">Ghost</button>
+            <button class="btn btn-link">Link</button>
+        </div>
+    </div>
+
+    <!-- BADGES -->
+    <div class="w-full flex flex-col justify-center items-center gap-2">
+        <h2 class="w-full ps-2 flex-start text-xl font-bold">Badge</h2>
+
+        <div class="w-full p-4 flex flex-row justify-around items-center gap-2 rounded-xl bg-base-200">
+            <div class="badge badge-primary">Primary</div>
+            <div class="badge badge-secondary">Secondary</div>
+            <div class="badge badge-success">Success</div>
+            <div class="badge badge-warning">Warning</div>
+            <div class="badge badge-error">Error</div>
+        </div>
+    </div>
+
+    <!-- CARD -->
+    <div class="w-full flex flex-col justify-center items-center gap-2">
+        <h2 class="w-full ps-2 flex-start text-xl font-bold">Card</h2>
+
+        <div class="w-full p-4 flex flex-row justify-center items-center gap-2 rounded-xl bg-base-200">
+            <div class="w-full card w-96 bg-base-100 card-md shadow-sm">
+                <div class="card-body">
+                    <h2 class="card-title">Medium Card</h2>
+                    <p>A card component has a figure, a body part, and inside body there are title and actions parts</p>
+                    <div class="justify-end card-actions">
+                        <button class="btn btn-primary">Buy Now</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TABS -->
+    <div class="w-full flex flex-col justify-center items-center gap-2">
+        <h2 class="w-full ps-2 flex-start text-xl font-bold">Tabs</h2>
+
+        <div class="w-full p-4 flex flex-row justify-center items-center gap-2 rounded-xl bg-base-200">
+            <div role="tablist" class="tabs tabs-lift">
+                <a role="tab" class="tab">Tab 1</a>
+                <a role="tab" class="tab tab-active">Tab 2</a>
+                <a role="tab" class="tab">Tab 3</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- ACCORDION -->
+    <div class="w-full flex flex-col justify-center items-center gap-2">
+        <h2 class="w-full ps-2 flex-start text-xl font-bold">Accordion</h2>
+
+        <div class="w-full p-4 flex flex-col justify-center items-center gap-2 rounded-xl bg-base-200">
+            <div class="collapse collapse-plus bg-base-100 border border-base-300">
+                <input type="radio" name="my-accordion-3" checked="checked" />
+                <div class="collapse-title font-semibold">How do I create an account?</div>
+                <div class="collapse-content text-sm">Click the "Sign Up" button in the top right corner and follow the registration process.</div>
+            </div>
+            <div class="collapse collapse-plus bg-base-100 border border-base-300">
+                <input type="radio" name="my-accordion-3" />
+                <div class="collapse-title font-semibold">I forgot my password. What should I do?</div>
+                <div class="collapse-content text-sm">Click on "Forgot Password" on the login page and follow the instructions sent to your email.</div>
+            </div>
+            <div class="collapse collapse-plus bg-base-100 border border-base-300">
+                <input type="radio" name="my-accordion-3" />
+                <div class="collapse-title font-semibold">How do I update my profile information?</div>
+                <div class="collapse-content text-sm">Go to "My Account" settings and select "Edit Profile" to make changes.</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- LABEL / SELECT -->
+    <div class="w-full flex flex-col justify-center items-center gap-2">
+        <h2 class="w-full ps-2 flex-start text-xl font-bold">Label / Select</h2>
+
+        <div class="w-full p-4 flex flex-col justify-around items-center gap-2 rounded-xl bg-base-200">
+            <label class="w-full floating-label">
+                <input type="text" placeholder="Medium" class="w-full input input-md" />
+                <span>Medium</span>
+            </label>
+
+            <select class="w-full select select-md">
+                <option disabled selected>Medium</option>
+                <option>001</option>
+                <option>002</option>
+                <option>003</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- TOAST -->
+    <div class="w-full flex flex-col justify-center items-center gap-2">
+        <h2 class="w-full ps-2 flex-start text-xl font-bold">Toast</h2>
+
+        <div class="w-full p-4 flex flex-col justify-around items-center gap-2 rounded-xl bg-base-200">
+            <div class="w-full alert alert-success">
+                <span>Success</span>
+            </div>
+
+            <div class="w-full alert alert-warning">
+                <span>Warning</span>
+            </div>
+
+            <div class="w-full alert alert-error">
+                <span>Error</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- PROGRESS -->
+    <div class="w-full flex flex-col justify-center items-center gap-2">
+        <h2 class="w-full ps-2 flex-start text-xl font-bold">Progress</h2>
+
+        <div class="w-full p-4 flex flex-col justify-center items-center gap-2 rounded-xl bg-base-200">
+            <progress class="w-full progress progress-primary w-56" value="0" max="100"></progress>
+            <progress class="w-full progress progress-primary w-56" value="25" max="100"></progress>
+            <progress class="w-full progress progress-primary w-56" value="50" max="100"></progress>
+            <progress class="w-full progress progress-primary w-56" value="75" max="100"></progress>
+            <progress class="w-full progress progress-primary w-56" value="100" max="100"></progress>
+        </div>
+    </div>
+
+    <!-- RADIAL PROGRESS -->
+    <div class="w-full flex flex-col justify-center items-center gap-2">
+        <h2 class="w-full ps-2 flex-start text-xl font-bold">Radial progress</h2>
+
+        <div class="w-full p-4 flex flex-row justify-around items-center gap-2 rounded-xl bg-base-200">
+            <div class="radial-progress text-primary" style="--value:0;" aria-valuenow="0" role="progressbar">0%</div>
+            <div class="radial-progress text-primary" style="--value:25;" aria-valuenow="25" role="progressbar">25%</div>
+            <div class="radial-progress text-primary" style="--value:50;" aria-valuenow="50" role="progressbar">50%</div>
+            <div class="radial-progress text-primary" style="--value:75;" aria-valuenow="75" role="progressbar">75%</div>
+            <div class="radial-progress text-primary" style="--value:100;" aria-valuenow="100" role="progressbar">100%</div>
+        </div>
+    </div>
+</body>
+
+</html>
