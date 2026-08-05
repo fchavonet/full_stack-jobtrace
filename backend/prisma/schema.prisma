@@ -19,6 +19,7 @@ model User {
   emailVerifyExpires DateTime?         @map("email_verify_expires")
   resetToken         String?           @map("reset_token")
   resetTokenExpires  DateTime?         @map("reset_token_expires")
+  authVersion        Int               @default(0) @map("auth_version")
   theme              String            @default("light")
   dailyGoal          Int               @default(5) @map("daily_goal")
   followUpDelayDays  Int               @default(15) @map("follow_up_delay_days")

@@ -28,7 +28,8 @@ function createAuthToken(user) {
   const token = jwt.sign(
     {
       userId: user.id,
-      email: user.email
+      email: user.email,
+      authVersion: user.authVersion
     },
     env.jwtSecret,
     {

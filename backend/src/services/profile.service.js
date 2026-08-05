@@ -92,7 +92,10 @@ async function updateUserPassword(userId, payload) {
       id: userId
     },
     data: {
-      passwordHash
+      passwordHash,
+      authVersion: {
+        increment: 1
+      }
     }
   });
 

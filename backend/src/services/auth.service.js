@@ -153,7 +153,8 @@ function generateAuthToken(user) {
   return jwt.sign(
     {
       userId: user.id,
-      email: user.email
+      email: user.email,
+      authVersion: user.authVersion
     },
     env.jwtSecret,
     {
@@ -288,7 +289,10 @@ async function resetUserPassword(payload) {
     data: {
       passwordHash,
       resetToken: null,
-      resetTokenExpires: null
+      resetTokenExpires: null,
+      authVersion: {
+        increment: 1
+      }
     }
   });
 

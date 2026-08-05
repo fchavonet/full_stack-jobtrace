@@ -43,6 +43,14 @@ function getBearerToken(request) {
   return token;
 }
 
+function getTokenAuthVersion(decodedToken) {
+  if (Number.isInteger(decodedToken.authVersion)) {
+    return decodedToken.authVersion;
+  }
+
+  return 0;
+}
+
 async function authMiddleware(request, response, next) {
   try {
     const cookieToken = getCookieValue(
@@ -81,6 +89,17 @@ async function authMiddleware(request, response, next) {
       return response.status(401).json({
         success: false,
         message: "Authenticated user no longer exists.",
+        errors: []
+      });
+    }
+
+    const tokenAuthVersion =
+      getTokenAuthVersion(decodedToken);
+
+    if (tokenAuthVersion !== user.authVersion) {
+      return response.status(401).json({
+        success: false,
+        message: "Authentication session is no longer valid.",
         errors: []
       });
     }
