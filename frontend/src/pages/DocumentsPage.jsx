@@ -16,6 +16,7 @@ import ConfirmationModal from "../components/ui/ConfirmationModal";
 import LoadingCard from "../components/ui/LoadingCard";
 import PageHeader from "../components/ui/PageHeader";
 import Search from "../components/ui/Search";
+import Pagination from "../components/ui/Pagination";
 import { SectionCard } from "../components/ui/Cards";
 
 import { useToast } from "../hooks/useToast";
@@ -30,6 +31,8 @@ import {
   revokeUrl,
   validateDocumentFile,
 } from "../utils/documents/document.utils";
+
+const DOCUMENTS_PER_PAGE = 12;
 
 function DocumentsEmptyCard({ title, description }) {
   return (
@@ -51,6 +54,7 @@ function DocumentsPage() {
   const [documents, setDocuments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchValue, setSearchValue] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
   const [modalOpen, setModalOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [deletingId, setDeletingId] = useState("");
@@ -64,9 +68,46 @@ function DocumentsPage() {
 
   const previewUrlsRef = useRef({});
 
+  const filteredDocuments = useMemo(function () {
+    return getFilteredDocuments(
+      documents,
+      searchValue
+    );
+  }, [
+    documents,
+    searchValue,
+  ]);
+
+  const totalPages = Math.max(
+    1,
+    Math.ceil(
+      filteredDocuments.length
+      / DOCUMENTS_PER_PAGE
+    )
+  );
+
+  const safeCurrentPage = Math.min(
+    currentPage,
+    totalPages
+  );
+
   const displayedDocuments = useMemo(function () {
-    return getFilteredDocuments(documents, searchValue);
-  }, [documents, searchValue]);
+    const startIndex =
+      (safeCurrentPage - 1)
+      * DOCUMENTS_PER_PAGE;
+
+    const endIndex =
+      startIndex
+      + DOCUMENTS_PER_PAGE;
+
+    return filteredDocuments.slice(
+      startIndex,
+      endIndex
+    );
+  }, [
+    filteredDocuments,
+    safeCurrentPage,
+  ]);
 
   async function getPreviewUrl(doc) {
     if (previewUrlsRef.current[doc.id]) {
@@ -199,6 +240,11 @@ function DocumentsPage() {
 
   function handleSearchChange(event) {
     setSearchValue(event.target.value);
+    setCurrentPage(1);
+  }
+
+  function handlePageChange(nextPage) {
+    setCurrentPage(nextPage);
   }
 
   async function handleSubmitDocument(form) {
@@ -219,6 +265,7 @@ function DocumentsPage() {
       await uploadDocument(formData);
       await loadDocuments();
 
+      setCurrentPage(1);
       setModalOpen(false);
       showToast("Document ajouté.", "success");
     } catch (error) {
@@ -367,7 +414,7 @@ function DocumentsPage() {
       <Search
         title="Documents enregistrés"
         description="Recherchez un CV, une lettre de motivation ou un fichier associé à vos candidatures."
-        resultLabel={displayedDocuments.length + " / " + documents.length}
+        resultLabel={filteredDocuments.length + " / " + documents.length}
         value={searchValue}
         onChange={handleSearchChange}
         placeholder="Rechercher un document..."
@@ -384,7 +431,7 @@ function DocumentsPage() {
         />
       )}
 
-      {!loading && documents.length > 0 && displayedDocuments.length === 0 && (
+      {!loading && documents.length > 0 && filteredDocuments.length === 0 && (
         <DocumentsEmptyCard
           title="Aucun résultat"
           description="Modifiez votre recherche pour afficher des documents."
@@ -408,6 +455,14 @@ function DocumentsPage() {
             );
           })}
         </div>
+      )}
+
+      {!loading && filteredDocuments.length > DOCUMENTS_PER_PAGE && (
+        <Pagination
+          currentPage={safeCurrentPage}
+          totalPages={totalPages}
+          onPageChange={handlePageChange}
+        />
       )}
 
       {modalOpen && (

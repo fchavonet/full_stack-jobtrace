@@ -14,12 +14,15 @@ import ConfirmationModal from "../components/ui/ConfirmationModal";
 import LoadingCard from "../components/ui/LoadingCard";
 import PageHeader from "../components/ui/PageHeader";
 import Search from "../components/ui/Search";
+import Pagination from "../components/ui/Pagination";
 import { SectionCard } from "../components/ui/Cards";
 
 import { useToast } from "../hooks/useToast";
 
 import { getListFromResponse } from "../utils/common/apiResponse.utils";
 import { getContactFromResponse, getContactModalKey, getFilteredContacts, } from "../utils/contacts/contact.utils";
+
+const CONTACTS_PER_PAGE = 12;
 
 function ContactsEmptyCard({ title, description }) {
   return (
@@ -41,15 +44,53 @@ function ContactsPage() {
   const [contacts, setContacts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchValue, setSearchValue] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedContact, setSelectedContact] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [contactToDelete, setContactToDelete] = useState(null);
   const [deletingContact, setDeletingContact] = useState(false);
 
+  const filteredContacts = useMemo(function () {
+    return getFilteredContacts(
+      contacts,
+      searchValue
+    );
+  }, [
+    contacts,
+    searchValue,
+  ]);
+
+  const totalPages = Math.max(
+    1,
+    Math.ceil(
+      filteredContacts.length
+      / CONTACTS_PER_PAGE
+    )
+  );
+
+  const safeCurrentPage = Math.min(
+    currentPage,
+    totalPages
+  );
+
   const displayedContacts = useMemo(function () {
-    return getFilteredContacts(contacts, searchValue);
-  }, [contacts, searchValue]);
+    const startIndex =
+      (safeCurrentPage - 1)
+      * CONTACTS_PER_PAGE;
+
+    const endIndex =
+      startIndex
+      + CONTACTS_PER_PAGE;
+
+    return filteredContacts.slice(
+      startIndex,
+      endIndex
+    );
+  }, [
+    filteredContacts,
+    safeCurrentPage,
+  ]);
 
   useEffect(function () {
     let shouldIgnore = false;
@@ -85,6 +126,11 @@ function ContactsPage() {
 
   function handleSearchChange(event) {
     setSearchValue(event.target.value);
+    setCurrentPage(1);
+  }
+
+  function handlePageChange(nextPage) {
+    setCurrentPage(nextPage);
   }
 
   function openCreateModal() {
@@ -139,6 +185,7 @@ function ContactsPage() {
           });
         }
 
+        setCurrentPage(1);
         showToast("Contact créé.", "success");
       }
 
@@ -207,7 +254,7 @@ function ContactsPage() {
       <Search
         title="Contacts enregistrés"
         description="Recherchez un contact, une entreprise, un poste ou une adresse email."
-        resultLabel={displayedContacts.length + " / " + contacts.length}
+        resultLabel={filteredContacts.length + " / " + contacts.length}
         value={searchValue}
         onChange={handleSearchChange}
         placeholder="Rechercher un contact, une entreprise, un poste, un email..."
@@ -224,7 +271,7 @@ function ContactsPage() {
         />
       )}
 
-      {!loading && contacts.length > 0 && displayedContacts.length === 0 && (
+      {!loading && contacts.length > 0 && filteredContacts.length === 0 && (
         <ContactsEmptyCard
           title="Aucun résultat"
           description="Modifiez votre recherche pour afficher des contacts."
@@ -244,6 +291,14 @@ function ContactsPage() {
             );
           })}
         </div>
+      )}
+
+      {!loading && filteredContacts.length > CONTACTS_PER_PAGE && (
+        <Pagination
+          currentPage={safeCurrentPage}
+          totalPages={totalPages}
+          onPageChange={handlePageChange}
+        />
       )}
 
       {isModalOpen && (

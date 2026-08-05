@@ -8,6 +8,7 @@ import {
   FileImage,
   FileText,
   HardDrive,
+  Tag,
   Trash2,
 } from "lucide-react";
 
@@ -268,7 +269,7 @@ function DocumentInformationsBlock({
           </h3>
 
           <div className="w-full mt-3 flex flex-col justify-start items-stretch gap-2">
-            <DocumentInfoRow icon={FileText}>
+            <DocumentInfoRow icon={Tag}>
               {getDocumentTypeLabel(doc)}
             </DocumentInfoRow>
 
