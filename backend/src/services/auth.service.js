@@ -10,7 +10,11 @@ import {
   sendPasswordResetEmail
 } from "./email.service.js";
 
-import { removeUserStoredFiles } from "./document.service.js";
+import {
+  finalizeUserStoredFilesDeletion,
+  prepareUserStoredFilesForDeletion,
+  restoreUserStoredFiles
+} from "./document.service.js";
 
 const PASSWORD_SALT_ROUNDS = 12;
 const EMAIL_VERIFICATION_TOKEN_BYTES = 32;
@@ -350,13 +354,28 @@ async function deleteUserAccount(userId) {
     throw error;
   }
 
-  await removeUserStoredFiles(userId);
+  const preparedFiles =
+    await prepareUserStoredFilesForDeletion(
+      userId
+    );
 
-  await prisma.user.delete({
-    where: {
-      id: userId
-    }
-  });
+  try {
+    await prisma.user.delete({
+      where: {
+        id: userId
+      }
+    });
+  } catch (error) {
+    await restoreUserStoredFiles(
+      preparedFiles
+    );
+
+    throw error;
+  }
+
+  await finalizeUserStoredFilesDeletion(
+    preparedFiles
+  );
 
   return true;
 }

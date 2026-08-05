@@ -71,7 +71,20 @@ async function restoreStoredFile(
   }
 }
 
-async function removeUserStoredFiles(userId) {
+async function restoreUserStoredFiles(
+  preparedFiles
+) {
+  for (const preparedFile of preparedFiles) {
+    await restoreStoredFile(
+      preparedFile.deletionFilePath,
+      preparedFile.originalFilePath
+    );
+  }
+}
+
+async function prepareUserStoredFilesForDeletion(
+  userId
+) {
   const documents = await prisma.document.findMany({
     where: {
       userId
@@ -81,11 +94,50 @@ async function removeUserStoredFiles(userId) {
     }
   });
 
-  await Promise.all(
-    documents.map(function (document) {
-      return removeStoredFile(document.path);
-    })
-  );
+  const preparedFiles = [];
+
+  try {
+    for (const document of documents) {
+      const deletionFilePath =
+        await moveStoredFileForDeletion(
+          document.path
+        );
+
+      preparedFiles.push({
+        originalFilePath: document.path,
+        deletionFilePath
+      });
+    }
+  } catch (error) {
+    await restoreUserStoredFiles(
+      preparedFiles
+    );
+
+    throw error;
+  }
+
+  return preparedFiles;
+}
+
+async function finalizeUserStoredFilesDeletion(
+  preparedFiles
+) {
+  for (const preparedFile of preparedFiles) {
+    if (!preparedFile.deletionFilePath) {
+      continue;
+    }
+
+    try {
+      await removeStoredFile(
+        preparedFile.deletionFilePath
+      );
+    } catch (error) {
+      console.error(
+        "Unable to permanently remove user document file.",
+        error
+      );
+    }
+  }
 }
 
 async function findUserDocument(userId, documentId) {
@@ -224,9 +276,11 @@ async function deleteUserDocument(userId, documentId) {
 export {
   createUserDocument,
   deleteUserDocument,
+  finalizeUserStoredFilesDeletion,
   getUserDocumentById,
   getUserDocumentFile,
   getUserDocuments,
-  removeUserStoredFiles,
+  prepareUserStoredFilesForDeletion,
+  restoreUserStoredFiles,
   updateUserDocument
 };
