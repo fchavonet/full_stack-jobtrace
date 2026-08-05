@@ -100,7 +100,14 @@ async function createUserDocument(userId, documentData, file) {
     throw error;
   }
 
-  await unlockFirstDocumentAchievement(userId);
+  try {
+    await unlockFirstDocumentAchievement(userId);
+  } catch (error) {
+    console.error(
+      "Unable to unlock document achievement.",
+      error
+    );
+  }
 
   return sanitizeDocument(document);
 }
