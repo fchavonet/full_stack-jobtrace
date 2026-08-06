@@ -67,6 +67,7 @@ function DocumentsPage() {
   const [documentToDelete, setDocumentToDelete] = useState(null);
 
   const previewUrlsRef = useRef({});
+  const previewLoadIdRef = useRef(0);
 
   const filteredDocuments = useMemo(function () {
     return getFilteredDocuments(
@@ -150,42 +151,12 @@ function DocumentsPage() {
     return previewUrl;
   }
 
-  async function loadPreviewForDocuments(nextDocuments) {
-    const nextPreviewUrls = {};
-    const nextPreviewFailures = {};
-
-    for (const doc of nextDocuments) {
-      if (canPreviewDocument(doc)) {
-        try {
-          const directUrl = getDocumentDirectUrl(doc);
-
-          if (directUrl) {
-            nextPreviewUrls[doc.id] = directUrl;
-          }
-
-          if (!directUrl) {
-            const file = await getDocumentFile(doc.id);
-            nextPreviewUrls[doc.id] = URL.createObjectURL(file.blob);
-          }
-        } catch {
-          nextPreviewFailures[doc.id] = true;
-        }
-      }
-    }
-
-    revokePreviewUrls(previewUrlsRef.current);
-    previewUrlsRef.current = nextPreviewUrls;
-    setPreviewUrls(nextPreviewUrls);
-    setPreviewFailures(nextPreviewFailures);
-  }
-
   async function loadDocuments() {
     try {
       const response = await listDocuments();
       const nextDocuments = getListFromResponse(response, "documents");
 
       setDocuments(nextDocuments);
-      await loadPreviewForDocuments(nextDocuments);
     } catch {
       showToast("Impossible de charger les documents.", "error");
     } finally {
@@ -206,7 +177,6 @@ function DocumentsPage() {
         }
 
         setDocuments(nextDocuments);
-        await loadPreviewForDocuments(nextDocuments);
       } catch {
         if (mounted) {
           showToast("Impossible de charger les documents.", "error");
@@ -222,9 +192,123 @@ function DocumentsPage() {
 
     return function cleanup() {
       mounted = false;
+      previewLoadIdRef.current += 1;
       revokePreviewUrls(previewUrlsRef.current);
     };
   }, [showToast]);
+
+  useEffect(function () {
+    const loadId =
+      previewLoadIdRef.current + 1;
+
+    previewLoadIdRef.current = loadId;
+
+    async function loadDisplayedPreviews() {
+      const displayedDocumentIds = new Set(
+        displayedDocuments.map(function (doc) {
+          return doc.id;
+        })
+      );
+
+      const retainedPreviewUrls = {};
+
+      Object.entries(
+        previewUrlsRef.current
+      ).forEach(function (entry) {
+        const documentId = entry[0];
+        const previewUrl = entry[1];
+
+        if (
+          displayedDocumentIds.has(documentId)
+        ) {
+          retainedPreviewUrls[documentId] =
+            previewUrl;
+
+          return;
+        }
+
+        revokeUrl(previewUrl);
+      });
+
+      previewUrlsRef.current =
+        retainedPreviewUrls;
+
+      setPreviewUrls(retainedPreviewUrls);
+      setPreviewFailures({});
+
+      for (const doc of displayedDocuments) {
+        if (!canPreviewDocument(doc)) {
+          continue;
+        }
+
+        if (retainedPreviewUrls[doc.id]) {
+          continue;
+        }
+
+        try {
+          let previewUrl =
+            getDocumentDirectUrl(doc);
+
+          if (!previewUrl) {
+            const file =
+              await getDocumentFile(doc.id);
+
+            previewUrl =
+              URL.createObjectURL(file.blob);
+          }
+
+          if (
+            previewLoadIdRef.current
+            !== loadId
+          ) {
+            revokeUrl(previewUrl);
+            return;
+          }
+
+          previewUrlsRef.current = {
+            ...previewUrlsRef.current,
+            [doc.id]: previewUrl,
+          };
+
+          setPreviewUrls(function (
+            currentPreviewUrls
+          ) {
+            return {
+              ...currentPreviewUrls,
+              [doc.id]: previewUrl,
+            };
+          });
+        } catch {
+          if (
+            previewLoadIdRef.current
+            !== loadId
+          ) {
+            return;
+          }
+
+          setPreviewFailures(function (
+            currentPreviewFailures
+          ) {
+            return {
+              ...currentPreviewFailures,
+              [doc.id]: true,
+            };
+          });
+        }
+      }
+    }
+
+    loadDisplayedPreviews();
+
+    return function cleanup() {
+      if (
+        previewLoadIdRef.current
+        === loadId
+      ) {
+        previewLoadIdRef.current += 1;
+      }
+    };
+  }, [displayedDocuments]);
 
   function openDocumentModal() {
     setModalOpen(true);
