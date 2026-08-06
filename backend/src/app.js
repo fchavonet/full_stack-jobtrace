@@ -9,6 +9,7 @@ import { parse } from "yaml";
 import env from "./config/env.js";
 import errorMiddleware from "./middlewares/error.middleware.js";
 import notFoundMiddleware from "./middlewares/notFound.middleware.js";
+import originProtectionMiddleware from "./middlewares/originProtection.middleware.js";
 
 import achievementRoutes from "./routes/achievement.routes.js";
 import applicationRoutes from "./routes/application.routes.js";
@@ -68,6 +69,7 @@ app.disable("x-powered-by");
 
 app.use(helmet(createHelmetOptions()));
 app.use(cors(corsOptions));
+app.use(originProtectionMiddleware);
 
 if (env.nodeEnv !== "production") {
   const openApiPath = new URL(
