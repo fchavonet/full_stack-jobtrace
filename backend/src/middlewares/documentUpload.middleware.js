@@ -91,9 +91,13 @@ const documentStorage = multer.diskStorage({
 
 function documentFileFilter(request, file, callback) {
   if (!isAllowedDocument(file)) {
-    return callback(
-      new Error("Only PDF, DOC, DOCX, PNG, JPG and JPEG files are allowed.")
+    const error = new Error(
+      "Only PDF, DOC, DOCX, PNG, JPG and JPEG files are allowed."
     );
+
+    error.statusCode = 415;
+
+    return callback(error);
   }
 
   return callback(null, true);

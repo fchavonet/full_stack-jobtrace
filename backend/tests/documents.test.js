@@ -273,11 +273,37 @@ describe("Document routes", function () {
         contentType: "text/plain"
       });
 
-    expect(response.status).toBe(500);
+    expect(response.status).toBe(415);
 
     expect(response.body).toEqual({
       success: false,
       message: "Only PDF, DOC, DOCX, PNG, JPG and JPEG files are allowed.",
+      errors: []
+    });
+  });
+
+  test("POST /api/documents - Should reject oversized document file", async function () {
+    const { token } = await createAuthenticatedTestUser();
+
+    const oversizedFile = Buffer.alloc(
+      (5 * 1024 * 1024) + 1,
+      "a"
+    );
+
+    const response = await request(app)
+      .post("/api/documents")
+      .set("Authorization", `Bearer ${token}`)
+      .field("type", DOCUMENT_TYPE)
+      .attach("document", oversizedFile, {
+        filename: DOCUMENT_FILE_NAME,
+        contentType: "application/pdf"
+      });
+
+    expect(response.status).toBe(413);
+
+    expect(response.body).toEqual({
+      success: false,
+      message: "Document file is too large. Maximum size is 5 MB.",
       errors: []
     });
   });
