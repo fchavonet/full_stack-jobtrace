@@ -352,10 +352,89 @@ function SettingsPage() {
 
       await updateUserPassword(payload);
 
-      setPasswordForm(defaultPasswordForm);
-      showToast("Mot de passe mis à jour.", "success");
-    } catch {
-      showToast("Impossible de mettre à jour le mot de passe.", "error");
+      try {
+        await logout();
+      } catch {
+        /*
+         * Le changement de mot de passe invalide déjà
+         * la session côté backend.
+         */
+      }
+
+      showToast(
+        "Mot de passe mis à jour. Reconnectez-vous.",
+        "success"
+      );
+
+      navigate("/", {
+        replace: true,
+        state: {
+          openAuthModal: true,
+          authMode: "login",
+        },
+      });
+    } catch (error) {
+      let errorMessage = "";
+
+      if (
+        error
+        && typeof error.message === "string"
+      ) {
+        errorMessage = error.message;
+      }
+
+      if (
+        errorMessage
+        === "Current password is incorrect."
+      ) {
+        showToast(
+          "Le mot de passe actuel est incorrect.",
+          "error"
+        );
+
+        return;
+      }
+
+      const sessionErrorMessages = [
+        "Authentication token is required.",
+        "Authenticated user no longer exists.",
+        "Authentication session is no longer valid.",
+        "Authentication token is invalid or expired.",
+      ];
+
+      if (
+        sessionErrorMessages.includes(
+          errorMessage
+        )
+      ) {
+        try {
+          await logout();
+        } catch {
+          /*
+           * La session est déjà invalide.
+           */
+        }
+
+        showToast(
+          "Votre session a expiré. Reconnectez-vous.",
+          "error"
+        );
+
+        navigate("/", {
+          replace: true,
+          state: {
+            openAuthModal: true,
+            authMode: "login",
+          },
+        });
+
+        return;
+      }
+
+      showToast(
+        "Impossible de mettre à jour le mot de passe.",
+        "error"
+      );
     } finally {
       setPasswordSubmitting(false);
     }
