@@ -16,6 +16,8 @@ import {
 
 const NEW_PASSWORD = "NewPassword42";
 const WRONG_PASSWORD = "WrongPassword42";
+const OVERLONG_PASSWORD =
+  "A1a" + "x".repeat(70);
 
 const AUTH_REQUIRED_RESPONSE = {
   success: false,
@@ -283,6 +285,59 @@ describe("Profile routes", function () {
     expect(response.body).toEqual({
       success: false,
       message: "Current password is incorrect.",
+      errors: []
+    });
+  });
+
+  test("PATCH /api/profile/password - Should reject overlong current password", async function () {
+    const { token } =
+      await createAuthenticatedTestUser();
+
+    const response = await request(app)
+      .patch("/api/profile/password")
+      .set(
+        "Authorization",
+        `Bearer ${token}`
+      )
+      .send({
+        currentPassword:
+          OVERLONG_PASSWORD,
+        newPassword: NEW_PASSWORD
+      });
+
+    expect(response.status).toBe(400);
+
+    expect(response.body).toEqual({
+      success: false,
+      message:
+        "Current password must not exceed 72 bytes.",
+      errors: []
+    });
+  });
+
+  test("PATCH /api/profile/password - Should reject overlong new password", async function () {
+    const { token } =
+      await createAuthenticatedTestUser();
+
+    const response = await request(app)
+      .patch("/api/profile/password")
+      .set(
+        "Authorization",
+        `Bearer ${token}`
+      )
+      .send({
+        currentPassword:
+          TEST_AUTH_PASSWORD,
+        newPassword:
+          OVERLONG_PASSWORD
+      });
+
+    expect(response.status).toBe(400);
+
+    expect(response.body).toEqual({
+      success: false,
+      message:
+        "New password must not exceed 72 bytes.",
       errors: []
     });
   });

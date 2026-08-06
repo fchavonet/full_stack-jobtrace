@@ -38,6 +38,8 @@ const UNKNOWN_EMAIL = "unknown@jobtrace.test";
 const TEST_PASSWORD = "Password42";
 const NEW_PASSWORD = "NewPassword42";
 const WRONG_PASSWORD = "WrongPassword1";
+const OVERLONG_PASSWORD =
+  "A1a" + "x".repeat(70);
 const INVALID_TOKEN = "invalid-token";
 const TEST_DOCUMENT_TYPE = "resume";
 const TEST_DOCUMENT_FILE_NAME = "account-deletion-test.pdf";
@@ -237,6 +239,24 @@ describe("Authentication routes", function () {
     });
   });
 
+  test("POST /api/auth/register - Should reject password exceeding bcrypt limit", async function () {
+    const response = await request(app)
+      .post("/api/auth/register")
+      .send({
+        email: TEST_EMAIL,
+        password: OVERLONG_PASSWORD
+      });
+
+    expect(response.status).toBe(400);
+
+    expect(response.body).toEqual({
+      success: false,
+      message:
+        "Password must not exceed 72 bytes.",
+      errors: []
+    });
+  });
+
   test("POST /api/auth/register - Should reject duplicate email", async function () {
     await registerTestUser();
 
@@ -362,6 +382,24 @@ describe("Authentication routes", function () {
     expect(response.body).toEqual(
       INVALID_CREDENTIALS_RESPONSE
     );
+  });
+
+  test("POST /api/auth/login - Should reject password exceeding bcrypt limit", async function () {
+    const response = await request(app)
+      .post("/api/auth/login")
+      .send({
+        email: TEST_EMAIL,
+        password: OVERLONG_PASSWORD
+      });
+
+    expect(response.status).toBe(400);
+
+    expect(response.body).toEqual({
+      success: false,
+      message:
+        "Password must not exceed 72 bytes.",
+      errors: []
+    });
   });
 
   test("POST /api/auth/logout - Should clear authentication cookie", async function () {

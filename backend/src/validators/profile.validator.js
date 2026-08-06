@@ -1,3 +1,7 @@
+import {
+  isPasswordWithinByteLimit
+} from "../utils/password.utils.js";
+
 function sanitizeOptionalString(value) {
   if (typeof value !== "string") {
     return null;
@@ -152,10 +156,36 @@ function validatePasswordUpdatePayload(request, response, next) {
     });
   }
 
+  if (
+    !isPasswordWithinByteLimit(
+      currentPassword
+    )
+  ) {
+    return response.status(400).json({
+      success: false,
+      message:
+        "Current password must not exceed 72 bytes.",
+      errors: []
+    });
+  }
+
   if (!newPassword || typeof newPassword !== "string") {
     return response.status(400).json({
       success: false,
       message: "New password is required.",
+      errors: []
+    });
+  }
+
+  if (
+    !isPasswordWithinByteLimit(
+      newPassword
+    )
+  ) {
+    return response.status(400).json({
+      success: false,
+      message:
+        "New password must not exceed 72 bytes.",
       errors: []
     });
   }

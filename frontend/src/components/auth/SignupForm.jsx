@@ -3,6 +3,12 @@ import { useState } from "react";
 
 import { useAuth } from "../../hooks/useAuth";
 import { useToast } from "../../hooks/useToast";
+
+import {
+  isPasswordValid,
+  isPasswordWithinByteLimit
+} from "../../utils/password.utils";
+
 import PasswordRequirements from "./PasswordRequirements";
 
 function SignupForm({ setMode }) {
@@ -29,11 +35,10 @@ function SignupForm({ setMode }) {
 
   const isEmailInvalid = hasEmail && !isEmailValid;
 
-  const hasLength = password.length >= 6;
-  const hasLowercase = /[a-z]/.test(password);
-  const hasUppercase = /[A-Z]/.test(password);
-  const hasDigit = /\d/.test(password);
-  const isPasswordValid = hasLength && hasLowercase && hasUppercase && hasDigit;
+  const passwordIsWithinByteLimit =
+    isPasswordWithinByteLimit(password);
+  const passwordIsValid =
+    isPasswordValid(password);
   const hasPassword = password.length > 0;
 
   const hasPasswordConfirmation = passwordConfirmation.length > 0;
@@ -55,11 +60,11 @@ function SignupForm({ setMode }) {
     emailClassName = "input input-success w-full";
   }
 
-  if (hasPassword && !isPasswordValid) {
+  if (hasPassword && !passwordIsValid) {
     passwordClassName = "input input-error w-full pr-10";
   }
 
-  if (hasPassword && isPasswordValid) {
+  if (hasPassword && passwordIsValid) {
     passwordClassName = "input input-success w-full pr-10";
   }
 
@@ -101,6 +106,13 @@ function SignupForm({ setMode }) {
       return "Le mot de passe est obligatoire.";
     }
 
+    if (
+      error.message
+      === "Password must not exceed 72 bytes."
+    ) {
+      return "Le mot de passe ne doit pas dépasser 72 octets.";
+    }
+
     if (error.message === "Password must contain at least 6 characters, one lowercase letter, one uppercase letter and one digit.") {
       return "Le mot de passe ne respecte pas les critères requis.";
     }
@@ -123,7 +135,16 @@ function SignupForm({ setMode }) {
       return;
     }
 
-    if (!isPasswordValid) {
+    if (!passwordIsWithinByteLimit) {
+      showToast(
+        "Le mot de passe ne doit pas dépasser 72 octets.",
+        "error"
+      );
+
+      return;
+    }
+
+    if (!passwordIsValid) {
       showToast("Le mot de passe ne respecte pas les critères requis.", "error");
 
       return;

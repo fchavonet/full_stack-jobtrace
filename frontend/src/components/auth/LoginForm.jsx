@@ -5,6 +5,10 @@ import { useNavigate } from "react-router";
 import { useAuth } from "../../hooks/useAuth";
 import { useToast } from "../../hooks/useToast";
 
+import {
+  isPasswordWithinByteLimit
+} from "../../utils/password.utils";
+
 function LoginForm({ setMode, closeModal }) {
   const { login } = useAuth();
   const { showToast } = useToast();
@@ -30,6 +34,8 @@ function LoginForm({ setMode, closeModal }) {
   const isEmailInvalid = hasEmail && !isEmailValid;
 
   const hasPassword = password.length > 0;
+  const passwordIsWithinByteLimit =
+    isPasswordWithinByteLimit(password);
 
   let emailClassName = "input w-full";
   let passwordClassName = "input w-full pr-10";
@@ -45,8 +51,20 @@ function LoginForm({ setMode, closeModal }) {
     emailClassName = "input input-success w-full";
   }
 
-  if (hasPassword) {
-    passwordClassName = "input input-success w-full pr-10";
+  if (
+    hasPassword
+    && !passwordIsWithinByteLimit
+  ) {
+    passwordClassName =
+      "input input-error w-full pr-10";
+  }
+
+  if (
+    hasPassword
+    && passwordIsWithinByteLimit
+  ) {
+    passwordClassName =
+      "input input-success w-full pr-10";
   }
 
   if (showPassword) {
@@ -79,6 +97,13 @@ function LoginForm({ setMode, closeModal }) {
       return "Le mot de passe est obligatoire.";
     }
 
+    if (
+      error.message
+      === "Password must not exceed 72 bytes."
+    ) {
+      return "Le mot de passe ne doit pas dépasser 72 octets.";
+    }
+
     return "Impossible de se connecter pour le moment.";
   }
 
@@ -99,6 +124,15 @@ function LoginForm({ setMode, closeModal }) {
 
     if (!hasPassword) {
       showToast("Le mot de passe est obligatoire.", "error");
+
+      return;
+    }
+
+    if (!passwordIsWithinByteLimit) {
+      showToast(
+        "Le mot de passe ne doit pas dépasser 72 octets.",
+        "error"
+      );
 
       return;
     }

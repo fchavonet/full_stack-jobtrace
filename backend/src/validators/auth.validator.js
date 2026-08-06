@@ -1,3 +1,7 @@
+import {
+  isPasswordWithinByteLimit
+} from "../utils/password.utils.js";
+
 function isValidEmail(email) {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -36,6 +40,15 @@ function validateRegisterPayload(request, response, next) {
     return response.status(400).json({
       success: false,
       message: "Password is required.",
+      errors: []
+    });
+  }
+
+  if (!isPasswordWithinByteLimit(password)) {
+    return response.status(400).json({
+      success: false,
+      message:
+        "Password must not exceed 72 bytes.",
       errors: []
     });
   }
@@ -92,6 +105,15 @@ function validateLoginPayload(request, response, next) {
     });
   }
 
+  if (!isPasswordWithinByteLimit(password)) {
+    return response.status(400).json({
+      success: false,
+      message:
+        "Password must not exceed 72 bytes.",
+      errors: []
+    });
+  }
+
   next();
 }
 
@@ -136,6 +158,15 @@ function validateResetPasswordPayload(request, response, next) {
     });
   }
 
+  if (!isPasswordWithinByteLimit(password)) {
+    return response.status(400).json({
+      success: false,
+      message:
+        "Password must not exceed 72 bytes.",
+      errors: []
+    });
+  }
+
   if (!isValidPassword(password)) {
     return response.status(400).json({
       success: false,
@@ -166,6 +197,19 @@ function validateDeleteAccountPayload(
     return response.status(400).json({
       success: false,
       message: "Current password is required.",
+      errors: []
+    });
+  }
+
+  if (
+    !isPasswordWithinByteLimit(
+      currentPassword
+    )
+  ) {
+    return response.status(400).json({
+      success: false,
+      message:
+        "Current password must not exceed 72 bytes.",
       errors: []
     });
   }

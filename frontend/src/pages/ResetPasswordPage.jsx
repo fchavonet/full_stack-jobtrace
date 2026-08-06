@@ -6,6 +6,11 @@ import { resetPassword } from "../api/auth.api";
 import PasswordRequirements from "../components/auth/PasswordRequirements";
 import { useToast } from "../hooks/useToast";
 
+import {
+  isPasswordValid,
+  isPasswordWithinByteLimit
+} from "../utils/password.utils";
+
 function ResetPasswordPage() {
   const { showToast } = useToast();
   const navigate = useNavigate();
@@ -18,11 +23,10 @@ function ResetPasswordPage() {
   const [loading, setLoading] = useState(false);
   const [passwordUpdated, setPasswordUpdated] = useState(false);
 
-  const hasLength = password.length >= 6;
-  const hasLowercase = /[a-z]/.test(password);
-  const hasUppercase = /[A-Z]/.test(password);
-  const hasDigit = /\d/.test(password);
-  const isPasswordValid = hasLength && hasLowercase && hasUppercase && hasDigit;
+  const passwordIsWithinByteLimit =
+    isPasswordWithinByteLimit(password);
+  const passwordIsValid =
+    isPasswordValid(password);
   const hasPassword = password.length > 0;
 
   const hasPasswordConfirmation = passwordConfirmation.length > 0;
@@ -38,11 +42,11 @@ function ResetPasswordPage() {
   let submitLabel = "Réinitialiser le mot de passe";
   let passwordIcon = <Eye className="h-4 w-4" />;
 
-  if (hasPassword && !isPasswordValid) {
+  if (hasPassword && !passwordIsValid) {
     passwordClassName = "input input-error w-full pr-10";
   }
 
-  if (hasPassword && isPasswordValid) {
+  if (hasPassword && passwordIsValid) {
     passwordClassName = "input input-success w-full pr-10";
   }
 
@@ -103,6 +107,13 @@ function ResetPasswordPage() {
       return "Le nouveau mot de passe est obligatoire.";
     }
 
+    if (
+      error.message
+      === "Password must not exceed 72 bytes."
+    ) {
+      return "Le mot de passe ne doit pas dépasser 72 octets.";
+    }
+
     if (error.message === "Password must contain at least 6 characters, one lowercase letter, one uppercase letter and one digit.") {
       return "Le mot de passe ne respecte pas les critères requis.";
     }
@@ -121,7 +132,16 @@ function ResetPasswordPage() {
       return;
     }
 
-    if (!isPasswordValid) {
+    if (!passwordIsWithinByteLimit) {
+      showToast(
+        "Le mot de passe ne doit pas dépasser 72 octets.",
+        "error"
+      );
+
+      return;
+    }
+
+    if (!passwordIsValid) {
       showToast("Le mot de passe ne respecte pas les critères requis.", "error");
 
       return;

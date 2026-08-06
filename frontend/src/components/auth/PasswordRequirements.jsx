@@ -1,5 +1,9 @@
 import { Check, X } from "lucide-react";
 
+import {
+  isPasswordWithinByteLimit
+} from "../../utils/password.utils";
+
 function PasswordRequirement({ label, isValid }) {
   let icon = <X className="h-4 w-4 text-error" />;
   let textClassName = "text-error";
@@ -22,6 +26,8 @@ function PasswordRequirement({ label, isValid }) {
 
 function PasswordRequirements({ password, passwordConfirmation }) {
   const hasLength = password.length >= 6;
+  const hasAllowedByteLength =
+    isPasswordWithinByteLimit(password);
   const hasLowercase = /[a-z]/.test(password);
   const hasUppercase = /[A-Z]/.test(password);
   const hasDigit = /\d/.test(password);
@@ -37,6 +43,11 @@ function PasswordRequirements({ password, passwordConfirmation }) {
         <PasswordRequirement
           isValid={hasLength}
           label="Au moins 6 caractères"
+        />
+
+        <PasswordRequirement
+          isValid={hasAllowedByteLength}
+          label="72 octets maximum"
         />
 
         <PasswordRequirement

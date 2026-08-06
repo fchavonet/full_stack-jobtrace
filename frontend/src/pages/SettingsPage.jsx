@@ -16,6 +16,11 @@ import { useAuth } from "../hooks/useAuth";
 import { useTheme } from "../hooks/useTheme";
 import { useToast } from "../hooks/useToast";
 
+import {
+  isPasswordValid,
+  isPasswordWithinByteLimit
+} from "../utils/password.utils";
+
 import { getNumberValue, getProfileFromResponse, getProfileInitials, getTextValue, } from "../utils/profile/profile.utils";
 
 const defaultProfileForm = {
@@ -37,15 +42,6 @@ const defaultPasswordForm = {
 };
 
 // Password helpers
-function isPasswordValid(password) {
-  const hasLength = password.length >= 6;
-  const hasLowercase = /[a-z]/.test(password);
-  const hasUppercase = /[A-Z]/.test(password);
-  const hasDigit = /\d/.test(password);
-
-  return hasLength && hasLowercase && hasUppercase && hasDigit;
-}
-
 function arePasswordsMatching(passwordForm) {
   return (
     passwordForm.newPassword === passwordForm.confirmPassword
@@ -344,6 +340,32 @@ function SettingsPage() {
   async function handlePasswordSubmit(event) {
     event.preventDefault();
 
+    if (
+      !isPasswordWithinByteLimit(
+        passwordForm.currentPassword
+      )
+    ) {
+      showToast(
+        "Le mot de passe actuel ne doit pas dépasser 72 octets.",
+        "error"
+      );
+
+      return;
+    }
+
+    if (
+      !isPasswordWithinByteLimit(
+        passwordForm.newPassword
+      )
+    ) {
+      showToast(
+        "Le nouveau mot de passe ne doit pas dépasser 72 octets.",
+        "error"
+      );
+
+      return;
+    }
+
     if (!isPasswordValid(passwordForm.newPassword)) {
       showToast("Le mot de passe ne respecte pas les critères.", "error");
       return;
@@ -393,6 +415,42 @@ function SettingsPage() {
         && typeof error.message === "string"
       ) {
         errorMessage = error.message;
+      }
+
+      if (
+        errorMessage
+        === "Current password must not exceed 72 bytes."
+      ) {
+        showToast(
+          "Le mot de passe actuel ne doit pas dépasser 72 octets.",
+          "error"
+        );
+
+        return;
+      }
+
+      if (
+        errorMessage
+        === "New password must not exceed 72 bytes."
+      ) {
+        showToast(
+          "Le nouveau mot de passe ne doit pas dépasser 72 octets.",
+          "error"
+        );
+
+        return;
+      }
+
+      if (
+        errorMessage
+        === "Current password must not exceed 72 bytes."
+      ) {
+        showToast(
+          "Le mot de passe actuel ne doit pas dépasser 72 octets.",
+          "error"
+        );
+
+        return;
       }
 
       if (
@@ -471,6 +529,19 @@ function SettingsPage() {
     if (!deletePassword) {
       showToast(
         "Veuillez saisir votre mot de passe actuel.",
+        "error"
+      );
+
+      return;
+    }
+
+    if (
+      !isPasswordWithinByteLimit(
+        deletePassword
+      )
+    ) {
+      showToast(
+        "Le mot de passe actuel ne doit pas dépasser 72 octets.",
         "error"
       );
 
