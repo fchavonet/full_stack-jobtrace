@@ -180,6 +180,10 @@ const env = {
   databaseUrl: process.env.DATABASE_URL || "",
   jwtSecret: process.env.JWT_SECRET || "",
   jwtExpiresIn: process.env.JWT_EXPIRES_IN || "1d",
+  jwtIssuer:
+    process.env.JWT_ISSUER || "jobtrace-api",
+  jwtAudience:
+    process.env.JWT_AUDIENCE || "jobtrace-web",
   authCookieName:
     process.env.AUTH_COOKIE_NAME || "jobtrace_auth",
   authCookieMaxAge: parseNumber(

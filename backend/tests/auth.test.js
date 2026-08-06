@@ -1,6 +1,7 @@
 import { Buffer } from "node:buffer";
 import fs from "fs/promises";
 import path from "path";
+import jwt from "jsonwebtoken";
 import request from "supertest";
 import { afterAll, beforeEach, describe, expect, test, vi } from "vitest";
 
@@ -92,6 +93,20 @@ function expectAuthenticationCookie(response) {
   expect(authCookie).toContain("Path=/");
 
   return authCookie;
+}
+
+function getAuthenticationToken(
+  authenticationCookie
+) {
+  const cookieValue =
+    authenticationCookie.split(";")[0];
+
+  const separatorIndex =
+    cookieValue.indexOf("=");
+
+  return decodeURIComponent(
+    cookieValue.slice(separatorIndex + 1)
+  );
 }
 
 function expectClearedAuthenticationCookie(response) {
@@ -306,7 +321,31 @@ describe("Authentication routes", function () {
       response.body.data.token
     ).toBeUndefined();
 
-    expectAuthenticationCookie(response);
+    const authenticationCookie =
+      expectAuthenticationCookie(response);
+
+    const token = getAuthenticationToken(
+      authenticationCookie
+    );
+
+    const decodedToken = jwt.decode(
+      token,
+      {
+        complete: true
+      }
+    );
+
+    expect(
+      decodedToken.header.alg
+    ).toBe("HS256");
+
+    expect(
+      decodedToken.payload.iss
+    ).toBe(env.jwtIssuer);
+
+    expect(
+      decodedToken.payload.aud
+    ).toBe(env.jwtAudience);
   });
 
   test("POST /api/auth/login - Should reject invalid credentials", async function () {
@@ -389,6 +428,49 @@ describe("Authentication routes", function () {
     expect(
       response.body.data.user.updatedAt
     ).toEqual(expect.any(String));
+  });
+
+  test("GET /api/auth/me - Should reject token with invalid issuer", async function () {
+    const authCookie =
+      await getAuthenticatedCookie();
+
+    const validToken =
+      getAuthenticationToken(authCookie);
+
+    const decodedToken =
+      jwt.decode(validToken);
+
+    const invalidToken = jwt.sign(
+      {
+        userId: decodedToken.userId,
+        email: decodedToken.email,
+        authVersion:
+          decodedToken.authVersion
+      },
+      env.jwtSecret,
+      {
+        algorithm: "HS256",
+        expiresIn: "1h",
+        issuer: "another-application",
+        audience: env.jwtAudience
+      }
+    );
+
+    const response = await request(app)
+      .get("/api/auth/me")
+      .set(
+        "Authorization",
+        "Bearer " + invalidToken
+      );
+
+    expect(response.status).toBe(401);
+
+    expect(response.body).toEqual({
+      success: false,
+      message:
+        "Authentication token is invalid or expired.",
+      errors: []
+    });
   });
 
   test("GET /api/auth/me - Should reject request without authentication token", async function () {

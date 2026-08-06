@@ -76,7 +76,12 @@ async function authMiddleware(request, response, next) {
 
     const decodedToken = jwt.verify(
       token,
-      env.jwtSecret
+      env.jwtSecret,
+      {
+        algorithms: ["HS256"],
+        issuer: env.jwtIssuer,
+        audience: env.jwtAudience
+      }
     );
 
     const user = await prisma.user.findUnique({

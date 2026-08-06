@@ -33,7 +33,10 @@ function createAuthToken(user) {
     },
     env.jwtSecret,
     {
-      expiresIn: env.jwtExpiresIn
+      algorithm: "HS256",
+      expiresIn: env.jwtExpiresIn,
+      issuer: env.jwtIssuer,
+      audience: env.jwtAudience
     }
   );
 
