@@ -282,6 +282,50 @@ describe("Document routes", function () {
     });
   });
 
+  test("POST /api/documents - Should reject spoofed document file type", async function () {
+    const { token } =
+      await createAuthenticatedTestUser();
+
+    const response = await request(app)
+      .post("/api/documents")
+      .set(
+        "Authorization",
+        `Bearer ${token}`
+      )
+      .field("type", DOCUMENT_TYPE)
+      .attach(
+        "document",
+        Buffer.from(
+          "This file is not really a PDF."
+        ),
+        {
+          filename: DOCUMENT_FILE_NAME,
+          contentType: "application/pdf"
+        }
+      );
+
+    expect(response.status).toBe(415);
+
+    expect(response.body).toEqual({
+      success: false,
+      message:
+        "Document content does not match its file type.",
+      errors: []
+    });
+
+    const remainingFiles =
+      await fs.readdir(uploadDirectory);
+
+    const uploadedFiles =
+      remainingFiles.filter(function (
+        fileName
+      ) {
+        return fileName !== ".gitkeep";
+      });
+
+    expect(uploadedFiles).toEqual([]);
+  });
+
   test("POST /api/documents - Should reject oversized document file", async function () {
     const { token } = await createAuthenticatedTestUser();
 

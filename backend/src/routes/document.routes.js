@@ -10,7 +10,10 @@ import {
 } from "../controllers/document.controller.js";
 
 import authMiddleware from "../middlewares/auth.middleware.js";
-import { uploadDocument as uploadDocumentFile } from "../middlewares/documentUpload.middleware.js";
+import {
+  uploadDocument as uploadDocumentFile,
+  validateDocumentSignature
+} from "../middlewares/documentUpload.middleware.js";
 
 import {
   validateDocumentPayload,
@@ -24,6 +27,7 @@ router.post(
   "/",
   authMiddleware,
   uploadDocumentFile.single("document"),
+  validateDocumentSignature,
   validateDocumentPayload,
   uploadDocument
 );

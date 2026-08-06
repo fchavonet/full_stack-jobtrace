@@ -3,6 +3,10 @@ import fs from "fs";
 import multer from "multer";
 import path from "path";
 
+import {
+  fileTypeFromFile
+} from "file-type";
+
 let uploadDirectoryName = "documents";
 
 if (process.env.NODE_ENV === "test") {
@@ -30,6 +34,33 @@ const allowedExtensions = new Set([
   ".png",
   ".jpg",
   ".jpeg"
+]);
+
+const allowedDetectedTypes = new Map([
+  [
+    ".pdf",
+    new Set(["pdf"])
+  ],
+  [
+    ".doc",
+    new Set(["cfb"])
+  ],
+  [
+    ".docx",
+    new Set(["docx"])
+  ],
+  [
+    ".png",
+    new Set(["png"])
+  ],
+  [
+    ".jpg",
+    new Set(["jpg"])
+  ],
+  [
+    ".jpeg",
+    new Set(["jpg"])
+  ]
 ]);
 
 const maxFileSize = 5 * 1024 * 1024;
@@ -72,6 +103,89 @@ function isAllowedDocument(file) {
   }
 
   return true;
+}
+
+function isDetectedDocumentTypeAllowed(
+  file,
+  detectedType
+) {
+  if (!detectedType) {
+    return false;
+  }
+
+  const extension =
+    getFileExtension(file.originalname);
+
+  const allowedTypes =
+    allowedDetectedTypes.get(extension);
+
+  if (!allowedTypes) {
+    return false;
+  }
+
+  return allowedTypes.has(
+    detectedType.ext
+  );
+}
+
+async function rejectInvalidSignature(
+  request,
+  response,
+  next
+) {
+  try {
+    await removeUploadedDocumentFile(
+      request.file
+    );
+  } catch (error) {
+    return next(error);
+  }
+
+  return response.status(415).json({
+    success: false,
+    message:
+      "Document content does not match its file type.",
+    errors: []
+  });
+}
+
+async function validateDocumentSignature(
+  request,
+  response,
+  next
+) {
+  if (!request.file) {
+    return next();
+  }
+
+  let detectedType;
+
+  try {
+    detectedType = await fileTypeFromFile(
+      request.file.path
+    );
+  } catch {
+    return rejectInvalidSignature(
+      request,
+      response,
+      next
+    );
+  }
+
+  if (
+    !isDetectedDocumentTypeAllowed(
+      request.file,
+      detectedType
+    )
+  ) {
+    return rejectInvalidSignature(
+      request,
+      response,
+      next
+    );
+  }
+
+  return next();
 }
 
 const documentStorage = multer.diskStorage({
@@ -117,5 +231,6 @@ export {
   maxFileSize,
   removeUploadedDocumentFile,
   uploadDirectory,
-  uploadDocument
+  uploadDocument,
+  validateDocumentSignature
 };
