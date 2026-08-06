@@ -340,7 +340,10 @@ async function exportUserData(userId) {
   };
 }
 
-async function deleteUserAccount(userId) {
+async function deleteUserAccount(
+  userId,
+  currentPassword
+) {
   const user = await prisma.user.findUnique({
     where: {
       id: userId
@@ -350,6 +353,21 @@ async function deleteUserAccount(userId) {
   if (!user) {
     const error = new Error("User not found.");
     error.statusCode = 404;
+
+    throw error;
+  }
+
+  const passwordMatches = await bcrypt.compare(
+    currentPassword,
+    user.passwordHash
+  );
+
+  if (!passwordMatches) {
+    const error = new Error(
+      "Current password is incorrect."
+    );
+
+    error.statusCode = 401;
 
     throw error;
   }

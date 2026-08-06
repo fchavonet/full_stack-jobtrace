@@ -16,12 +16,14 @@ import {
 import authMiddleware from "../middlewares/auth.middleware.js";
 
 import {
+  accountDeletionRateLimiter,
   loginRateLimiter,
   passwordRecoveryRateLimiter,
   registrationRateLimiter
 } from "../middlewares/rateLimit.middleware.js";
 
 import {
+  validateDeleteAccountPayload,
   validateEmailVerificationPayload,
   validateForgotPasswordPayload,
   validateLoginPayload,
@@ -60,6 +62,8 @@ router.get("/me", authMiddleware, getMe);
 router.delete(
   "/me",
   authMiddleware,
+  accountDeletionRateLimiter,
+  validateDeleteAccountPayload,
   deleteAccount
 );
 

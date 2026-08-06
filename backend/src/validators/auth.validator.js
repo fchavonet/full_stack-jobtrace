@@ -147,7 +147,34 @@ function validateResetPasswordPayload(request, response, next) {
   next();
 }
 
+function validateDeleteAccountPayload(
+  request,
+  response,
+  next
+) {
+  let currentPassword;
+
+  if (request.body) {
+    currentPassword =
+      request.body.currentPassword;
+  }
+
+  if (
+    !currentPassword
+    || typeof currentPassword !== "string"
+  ) {
+    return response.status(400).json({
+      success: false,
+      message: "Current password is required.",
+      errors: []
+    });
+  }
+
+  next();
+}
+
 export {
+  validateDeleteAccountPayload,
   validateEmailVerificationPayload,
   validateForgotPasswordPayload,
   validateLoginPayload,

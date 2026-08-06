@@ -25,6 +25,7 @@ import {
 } from "./helpers/test-db.js";
 
 import {
+  TEST_AUTH_PASSWORD,
   createAuthenticatedTestUser
 } from "./helpers/test-auth.js";
 
@@ -115,7 +116,11 @@ describe(
           .set(
             "Authorization",
             "Bearer " + token
-          );
+          )
+          .send({
+            currentPassword:
+              TEST_AUTH_PASSWORD
+          });
 
         expect(deleteResponse.status).toBe(500);
 

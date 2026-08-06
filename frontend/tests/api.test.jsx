@@ -123,16 +123,21 @@ describe("Authentication API", function () {
   });
 
   test("DELETE /auth/me - Should request account deletion", async function () {
+    const payload = {
+      currentPassword: "Password42",
+    };
+
     apiRequest.mockResolvedValue({
       success: true,
     });
 
-    await deleteCurrentUser();
+    await deleteCurrentUser(payload);
 
     expect(apiRequest).toHaveBeenCalledWith(
       "/auth/me",
       {
         method: "DELETE",
+        body: JSON.stringify(payload),
       },
     );
   });

@@ -43,6 +43,12 @@ export function createRateLimiter(options) {
   return rateLimit(configuration);
 }
 
+export const accountDeletionRateLimiter = createRateLimiter({
+  windowMs: FIFTEEN_MINUTES_MS,
+  limit: 5,
+  skipSuccessfulRequests: true
+});
+
 export const loginRateLimiter = createRateLimiter({
   windowMs: FIFTEEN_MINUTES_MS,
   limit: 10,

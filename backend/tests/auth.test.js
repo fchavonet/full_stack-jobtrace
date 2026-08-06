@@ -601,7 +601,10 @@ describe("Authentication routes", function () {
 
     const deleteResponse = await request(app)
       .delete("/api/auth/me")
-      .set("Cookie", authCookie);
+      .set("Cookie", authCookie)
+      .send({
+        currentPassword: TEST_PASSWORD
+      });
 
     expect(deleteResponse.status).toBe(200);
 
@@ -661,7 +664,10 @@ describe("Authentication routes", function () {
 
       const deleteResponse = await request(app)
         .delete("/api/auth/me")
-        .set("Cookie", authCookie);
+        .set("Cookie", authCookie)
+        .send({
+          currentPassword: TEST_PASSWORD
+        });
 
       expect(deleteResponse.status).toBe(200);
 
@@ -675,6 +681,49 @@ describe("Authentication routes", function () {
         force: true
       });
     }
+  });
+
+  test("DELETE /api/auth/me - Should reject missing current password", async function () {
+    const authCookie =
+      await getAuthenticatedCookie();
+
+    const response = await request(app)
+      .delete("/api/auth/me")
+      .set("Cookie", authCookie)
+      .send({});
+
+    expect(response.status).toBe(400);
+
+    expect(response.body).toEqual({
+      success: false,
+      message: "Current password is required.",
+      errors: []
+    });
+  });
+
+  test("DELETE /api/auth/me - Should reject incorrect current password", async function () {
+    const authCookie =
+      await getAuthenticatedCookie();
+
+    const response = await request(app)
+      .delete("/api/auth/me")
+      .set("Cookie", authCookie)
+      .send({
+        currentPassword: WRONG_PASSWORD
+      });
+
+    expect(response.status).toBe(401);
+
+    expect(response.body).toEqual({
+      success: false,
+      message: "Current password is incorrect.",
+      errors: []
+    });
+
+    const loginResponse =
+      await loginTestUser();
+
+    expect(loginResponse.status).toBe(200);
   });
 
   test("DELETE /api/auth/me - Should reject request without authentication token", async function () {

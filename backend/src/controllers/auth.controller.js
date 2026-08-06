@@ -154,7 +154,10 @@ async function exportAccount(request, response, next) {
 
 async function deleteAccount(request, response, next) {
   try {
-    await deleteUserAccount(request.user.id);
+    await deleteUserAccount(
+      request.user.id,
+      request.body.currentPassword
+    );
 
     response.clearCookie(
       env.authCookieName,

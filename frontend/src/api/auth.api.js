@@ -32,9 +32,10 @@ export function getCurrentUser() {
   });
 }
 
-export function deleteCurrentUser() {
+export function deleteCurrentUser(payload) {
   return apiRequest("/auth/me", {
     method: "DELETE",
+    body: JSON.stringify(payload),
   });
 }
 

@@ -148,6 +148,8 @@ function SettingsPage() {
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [deleteConfirmation, setDeleteConfirmation] = useState("");
+  const [deletePassword, setDeletePassword] = useState("");
+  const [showDeletePassword, setShowDeletePassword] = useState(false);
   const [legalModalType, setLegalModalType] = useState(null);
 
   const preferencesSectionRef = useRef(null);
@@ -257,6 +259,16 @@ function SettingsPage() {
 
   function handleDeleteConfirmationChange(event) {
     setDeleteConfirmation(event.target.value);
+  }
+
+  function handleDeletePasswordChange(event) {
+    setDeletePassword(event.target.value);
+  }
+
+  function toggleDeletePasswordVisibility() {
+    setShowDeletePassword(function (currentValue) {
+      return !currentValue;
+    });
   }
 
   function toggleCurrentPasswordVisibility() {
@@ -456,21 +468,82 @@ function SettingsPage() {
   }
 
   async function handleDeleteAccount() {
+    if (!deletePassword) {
+      showToast(
+        "Veuillez saisir votre mot de passe actuel.",
+        "error"
+      );
+
+      return;
+    }
+
     if (deleteConfirmation !== "SUPPRIMER") {
-      showToast("Veuillez saisir SUPPRIMER pour confirmer.", "error");
+      showToast(
+        "Veuillez saisir SUPPRIMER pour confirmer.",
+        "error"
+      );
+
       return;
     }
 
     setDeleteSubmitting(true);
 
     try {
-      await deleteCurrentUser();
-      await logout();
+      await deleteCurrentUser({
+        currentPassword: deletePassword,
+      });
+
+      try {
+        await logout();
+      } catch {
+        /*
+         * Le compte est déjà supprimé côté backend.
+         */
+      }
 
       showToast("Compte supprimé.", "success");
-      navigate("/");
-    } catch {
-      showToast("Impossible de supprimer le compte.", "error");
+
+      navigate("/", {
+        replace: true,
+      });
+    } catch (error) {
+      let errorMessage = "";
+
+      if (
+        error
+        && typeof error.message === "string"
+      ) {
+        errorMessage = error.message;
+      }
+
+      if (
+        errorMessage
+        === "Current password is incorrect."
+      ) {
+        showToast(
+          "Le mot de passe actuel est incorrect.",
+          "error"
+        );
+
+        return;
+      }
+
+      if (
+        errorMessage
+        === "Current password is required."
+      ) {
+        showToast(
+          "Veuillez saisir votre mot de passe actuel.",
+          "error"
+        );
+
+        return;
+      }
+
+      showToast(
+        "Impossible de supprimer le compte.",
+        "error"
+      );
     } finally {
       setDeleteSubmitting(false);
     }
@@ -533,7 +606,7 @@ function SettingsPage() {
                   name="firstName"
                   type="text"
                   autoComplete="off"
-                  placeholder="Entrer votre prénom"
+                  placeholder="Entrez votre prénom"
                   value={profileForm.firstName}
                   onChange={handleProfileChange}
                 />
@@ -549,7 +622,7 @@ function SettingsPage() {
                   name="lastName"
                   type="text"
                   autoComplete="off"
-                  placeholder="Entrer votre nom"
+                  placeholder="Entrez votre nom"
                   value={profileForm.lastName}
                   onChange={handleProfileChange}
                 />
@@ -695,7 +768,7 @@ function SettingsPage() {
                   type={getPasswordInputType(showNewPassword)}
                   value={passwordForm.newPassword}
                   onChange={handlePasswordChange}
-                  placeholder="Entrer votre nouveau mot de passe"
+                  placeholder="Entrez votre nouveau mot de passe"
                   autoComplete="new-password"
                   required
                 />
@@ -754,7 +827,7 @@ function SettingsPage() {
                 type={getPasswordInputType(showCurrentPassword)}
                 value={passwordForm.currentPassword}
                 onChange={handlePasswordChange}
-                placeholder="Entrer votre mot de passe actuel"
+                placeholder="Entrez votre mot de passe actuel"
                 autoComplete="current-password"
                 required
               />
@@ -849,18 +922,50 @@ function SettingsPage() {
               </div>
 
               <div className="mt-auto pt-6">
-                <label className="form-control w-full">
-                  <input
-                    className="input input-bordered w-full"
-                    type="text"
-                    value={deleteConfirmation}
-                    onChange={handleDeleteConfirmationChange}
-                    placeholder="Tapez SUPPRIMER pour confirmer"
-                  />
-                </label>
+                <div className="w-full grid grid-cols-1 lg:grid-cols-2 gap-4">
+                  <label className="form-control w-full">
+                    <div className="relative">
+                      <input
+                        className="input input-bordered w-full pr-10"
+                        type={getPasswordInputType(showDeletePassword)}
+                        value={deletePassword}
+                        onChange={handleDeletePasswordChange}
+                        placeholder="Entrez votre mot de passe actuel"
+                        autoComplete="current-password"
+                        required
+                      />
+
+                      <button
+                        className="absolute top-1/2 right-3 -translate-y-1/2 text-base-content/60 hover:text-base-content cursor-pointer"
+                        type="button"
+                        onClick={toggleDeletePasswordVisibility}
+                        aria-label="Afficher ou masquer le mot de passe de suppression"
+                      >
+                        {showDeletePassword && (
+                          <EyeOff className="w-4 h-4" />
+                        )}
+
+                        {!showDeletePassword && (
+                          <Eye className="w-4 h-4" />
+                        )}
+                      </button>
+                    </div>
+                  </label>
+
+                  <label className="form-control w-full">
+                    <input
+                      className="input input-bordered w-full"
+                      type="text"
+                      value={deleteConfirmation}
+                      onChange={handleDeleteConfirmationChange}
+                      placeholder="Tapez SUPPRIMER pour confirmer"
+                      autoComplete="off"
+                    />
+                  </label>
+                </div>
 
                 <button
-                  className="btn btn-error w-full mt-4 text-primar-content"
+                  className="btn btn-error w-full mt-4 text-error-content"
                   type="button"
                   disabled={deleteSubmitting}
                   onClick={handleDeleteAccount}
