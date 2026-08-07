@@ -43,6 +43,10 @@ services:
     volumes:
       - document_uploads:/app/uploads/documents
     restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
     depends_on:
       database:
         condition: service_healthy
