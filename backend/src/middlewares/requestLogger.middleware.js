@@ -40,6 +40,8 @@ function requestLoggerMiddleware(
 ) {
   const requestId = randomUUID();
   const startedAt = process.hrtime.bigint();
+  const requestPath =
+    request.originalUrl.split("?")[0];
 
   request.requestId = requestId;
 
@@ -51,7 +53,7 @@ function requestLoggerMiddleware(
   response.on("finish", function () {
     if (
       response.statusCode < 400 &&
-      HEALTH_PATHS.has(request.path)
+      HEALTH_PATHS.has(requestPath)
     ) {
       return;
     }
@@ -72,7 +74,7 @@ function requestLoggerMiddleware(
       type: "http_request",
       requestId,
       method: request.method,
-      path: request.path,
+      path: requestPath,
       statusCode: response.statusCode,
       durationMs: Number(
         durationMs.toFixed(2)
