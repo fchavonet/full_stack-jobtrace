@@ -10,6 +10,7 @@ import env from "./config/env.js";
 import errorMiddleware from "./middlewares/error.middleware.js";
 import notFoundMiddleware from "./middlewares/notFound.middleware.js";
 import originProtectionMiddleware from "./middlewares/originProtection.middleware.js";
+import requestLoggerMiddleware from "./middlewares/requestLogger.middleware.js";
 
 import achievementRoutes from "./routes/achievement.routes.js";
 import applicationRoutes from "./routes/application.routes.js";
@@ -66,6 +67,10 @@ if (env.nodeEnv === "production") {
 }
 
 app.disable("x-powered-by");
+
+if (env.nodeEnv === "production") {
+  app.use(requestLoggerMiddleware);
+}
 
 app.use(helmet(createHelmetOptions()));
 app.use(cors(corsOptions));
