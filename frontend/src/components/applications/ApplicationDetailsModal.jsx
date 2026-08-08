@@ -511,7 +511,7 @@ function ApplicationDetailsModal({
     return (
       <div className="w-full overflow-x-auto">
         <div className="tabs tabs-lift w-full min-w-full" role="tablist">
-          <button className={getTabClassName(activeTab, "announcement")} type="button" role="tab" onClick={showAnnouncementTab} aria-label="Annonce">
+          <button className={getTabClassName(activeTab, "announcement")} type="button" role="tab" aria-selected={activeTab === "announcement"} onClick={showAnnouncementTab} aria-label="Annonce">
             <BriefcaseBusiness className="w-6 h-6 md:hidden" />
 
             <span className="hidden md:inline">
@@ -519,7 +519,7 @@ function ApplicationDetailsModal({
             </span>
           </button>
 
-          <button className={getTabClassName(activeTab, "contacts")} type="button" role="tab" onClick={showContactsTab} disabled={isEditingAnnouncement} aria-label="Contacts">
+          <button className={getTabClassName(activeTab, "contacts")} type="button" role="tab" aria-selected={activeTab === "contacts"} onClick={showContactsTab} disabled={isEditingAnnouncement} aria-label="Contacts">
             <Users className="w-6 h-6 md:hidden" />
 
             <span className="hidden md:inline">
@@ -527,7 +527,7 @@ function ApplicationDetailsModal({
             </span>
           </button>
 
-          <button className={getTabClassName(activeTab, "documents")} type="button" role="tab" onClick={showDocumentsTab} disabled={isEditingAnnouncement} aria-label="Documents">
+          <button className={getTabClassName(activeTab, "documents")} type="button" role="tab" aria-selected={activeTab === "documents"} onClick={showDocumentsTab} disabled={isEditingAnnouncement} aria-label="Documents">
             <FileText className="w-6 h-6 md:hidden" />
 
             <span className="hidden md:inline">
@@ -535,7 +535,7 @@ function ApplicationDetailsModal({
             </span>
           </button>
 
-          <button className={getTabClassName(activeTab, "history")} type="button" role="tab" onClick={showHistoryTab} disabled={isEditingAnnouncement} aria-label="Historique">
+          <button className={getTabClassName(activeTab, "history")} type="button" role="tab" aria-selected={activeTab === "history"} onClick={showHistoryTab} disabled={isEditingAnnouncement} aria-label="Historique">
             <History className="w-6 h-6 md:hidden" />
 
             <span className="hidden md:inline">
@@ -680,7 +680,7 @@ function ApplicationDetailsModal({
     return (
       <SectionCard title="Contacts associés">
         <div className="flex flex-col md:flex-row gap-4">
-          <select className="select select-bordered w-full" value={selectedContactId} onChange={handleSelectedContactChange} disabled={contactsLoading || relationsUpdating || contactOptions.length === 0}>
+          <select className="select select-bordered w-full" aria-label="Sélectionner un contact à associer" value={selectedContactId} onChange={handleSelectedContactChange} disabled={contactsLoading || relationsUpdating || contactOptions.length === 0}>
             <option value="">
               Ajouter un contact existant
             </option>
@@ -745,7 +745,7 @@ function ApplicationDetailsModal({
     return (
       <SectionCard title="Documents associés">
         <div className="flex flex-col md:flex-row gap-4">
-          <select className="select select-bordered w-full" value={selectedDocumentId} onChange={handleSelectedDocumentChange} disabled={documentsLoading || relationsUpdating || documentOptions.length === 0}>
+          <select className="select select-bordered w-full" aria-label="Sélectionner un document à associer" value={selectedDocumentId} onChange={handleSelectedDocumentChange} disabled={documentsLoading || relationsUpdating || documentOptions.length === 0}>
             <option value="">
               Ajouter un document existant
             </option>

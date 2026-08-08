@@ -21,7 +21,7 @@ function Search({
       }
     >
       <label className="input input-bordered w-full flex flex-row justify-start items-center gap-2">
-        <SearchIcon className="w-4 h-4 text-base-content/40" />
+        <SearchIcon className="w-4 h-4 text-base-content/40" aria-hidden="true" />
 
         <input
           className="grow"
@@ -29,6 +29,7 @@ function Search({
           value={value}
           onChange={onChange}
           placeholder={placeholder}
+          aria-label={title || placeholder || "Rechercher"}
         />
       </label>
     </SectionCard>

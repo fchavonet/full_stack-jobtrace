@@ -112,7 +112,8 @@ function HomePage() {
     <div className="h-screen flex flex-col text-base-content bg-[color-mix(in_oklab,var(--color-primary)_10%,var(--color-base-200))] overflow-hidden">
       <Header onOpenLogin={openLoginModal} onOpenSignup={openSignupModal} />
 
-      <main className="relative w-full min-h-0 flex-1 bg-base-200 overflow-y-auto scroll-smooth">
+      <main className="relative w-full min-h-0 flex-1 bg-[color-mix(in_oklab,var(--color-primary)_10%,var(--color-base-200))] overflow-y-auto scroll-smooth">
+        <div className="relative min-h-full bg-base-200">
         <div className="absolute inset-x-0 top-0 h-80 bg-gradient-to-b from-primary/10 to-transparent pointer-events-none " aria-hidden="true" />
 
         {/* Hero section */}
@@ -224,79 +225,124 @@ function HomePage() {
               </h2>
 
               <p className="max-w-xl text-base md:text-lg leading-relaxed text-base-content/60">
-                Retrouvez les réponses aux principales questions que vous nous avez posé concernant{" "}<span className="font-bold text-base-content">Job<span className="text-primary">Trace</span></span>.
+                Retrouvez les réponses aux principales questions que vous nous avez posé concernant{" "}
+                <span className="font-bold text-base-content">
+                  Job<span className="text-primary">Trace</span>
+                </span>.
               </p>
             </div>
 
             <div className="w-full max-w-4xl mt-6 flex flex-col justify-start items-stretch gap-2">
-              <div className="collapse collapse-arrow rounded-2xl bg-base-100 shadow-sm">
-                <input type="radio" name="homepage-faq" defaultChecked />
-
-                <div className="collapse-title pr-12 text-lg font-bold text-base-content">
-                  À quoi sert <span className="font-bold text-base-content">Job<span className="text-primary">Trace</span></span> ?
-                </div>
+              <details
+                className="collapse collapse-arrow rounded-2xl bg-base-100 shadow-sm"
+                name="homepage-faq"
+                open
+              >
+                <summary className="collapse-title min-h-14 pr-12 flex items-center text-lg font-bold text-base-content cursor-pointer touch-manipulation">
+                  À quoi sert{" "}
+                  <span className="ml-1 font-bold text-base-content">
+                    Job<span className="text-primary">Trace</span>
+                  </span>{" "}
+                  ?
+                </summary>
 
                 <div className="collapse-content">
                   <p className="text-sm text-base-content/60">
-                    <span className="font-bold text-base-content">Job<span className="text-primary">Trace</span></span> vous permet de centraliser vos candidatures, vos contacts, vos documents et vos relances afin de suivre votre recherche d’emploi depuis un espace unique.
+                    <span className="font-bold text-base-content">
+                      Job<span className="text-primary">Trace</span>
+                    </span>{" "}
+                    vous permet de centraliser vos candidatures, vos contacts,
+                    vos documents et vos relances afin de suivre votre recherche
+                    d’emploi depuis un espace unique.
                   </p>
                 </div>
-              </div>
+              </details>
 
-              <div className="collapse collapse-arrow rounded-2xl bg-base-100 shadow-sm">
-                <input type="radio" name="homepage-faq" />
-
-                <div className="collapse-title pr-12 text-lg font-bold text-base-content">
-                  <span className="font-bold text-base-content">Job<span className="text-primary">Trace</span></span> est-il adapté à une recherche de stage ou d’alternance ?
-                </div>
+              <details
+                className="collapse collapse-arrow rounded-2xl bg-base-100 shadow-sm"
+                name="homepage-faq"
+              >
+                <summary className="collapse-title min-h-14 pr-12 flex items-center text-lg font-bold text-base-content cursor-pointer touch-manipulation">
+                  <span className="font-bold text-base-content">
+                    Job<span className="text-primary">Trace</span>
+                  </span>{" "}
+                  est-il adapté à une recherche de stage ou d’alternance ?
+                </summary>
 
                 <div className="collapse-content">
                   <p className="text-sm leading-relaxed text-base-content/60">
-                    Oui. <span className="font-bold text-base-content">Job<span className="text-primary">Trace</span></span> peut être utilisé pour organiser une recherche d’emploi, de stage ou d’alternance, quel que soit le secteur d’activité.
+                    Oui.{" "}
+                    <span className="font-bold text-base-content">
+                      Job<span className="text-primary">Trace</span>
+                    </span>{" "}
+                    peut être utilisé pour organiser une recherche d’emploi, de
+                    stage ou d’alternance, quel que soit le secteur d’activité.
                   </p>
                 </div>
-              </div>
+              </details>
 
-              <div className="collapse collapse-arrow rounded-2xl bg-base-100 shadow-sm">
-                <input type="radio" name="homepage-faq" />
-
-                <div className="collapse-title pr-12 text-lg font-bold text-base-content">
+              <details
+                className="collapse collapse-arrow rounded-2xl bg-base-100 shadow-sm"
+                name="homepage-faq"
+              >
+                <summary className="collapse-title min-h-14 pr-12 flex items-center text-lg font-bold text-base-content cursor-pointer touch-manipulation">
                   Ai-je besoin d'installer un logiciel ?
-                </div>
+                </summary>
 
                 <div className="collapse-content">
                   <p className="text-sm text-base-content/60">
-                    Non. <span className="font-bold text-base-content">Job<span className="text-primary">Trace</span></span> est une application web accessible directement depuis votre navigateur. Il suffit de créer un compte pour commencer à gérer vos candidatures.                  </p>
-                </div>
-              </div>
-
-              <div className="collapse collapse-arrow rounded-2xl bg-base-100 shadow-sm">
-                <input type="radio" name="homepage-faq" />
-
-                <div className="collapse-title pr-12 text-lg font-bold text-base-content">
-                  Dois-je payer pour utiliser <span className="font-bold text-base-content">Job<span className="text-primary">Trace</span></span> ?
-                </div>
-
-                <div className="collapse-content">
-                  <p className="text-sm text-base-content/60">
-                    Non. <span className="font-bold text-base-content">Job<span className="text-primary">Trace</span></span> est actuellement accessible gratuitement. Vous pouvez créer un compte, gérer vos candidatures et profiter de l'ensemble des fonctionnalités disponibles sans abonnement.
+                    Non.{" "}
+                    <span className="font-bold text-base-content">
+                      Job<span className="text-primary">Trace</span>
+                    </span>{" "}
+                    est une application web accessible directement depuis votre
+                    navigateur. Il suffit de créer un compte pour commencer à
+                    gérer vos candidatures.
                   </p>
                 </div>
-              </div>
+              </details>
 
-              <div className="collapse collapse-arrow rounded-2xl bg-base-100 shadow-sm">
-                <input type="radio" name="homepage-faq" />
+              <details
+                className="collapse collapse-arrow rounded-2xl bg-base-100 shadow-sm"
+                name="homepage-faq"
+              >
+                <summary className="collapse-title min-h-14 pr-12 flex items-center text-lg font-bold text-base-content cursor-pointer touch-manipulation">
+                  Dois-je payer pour utiliser{" "}
+                  <span className="ml-1 font-bold text-base-content">
+                    Job<span className="text-primary">Trace</span>
+                  </span>{" "}
+                  ?
+                </summary>
 
-                <div className="collapse-title pr-12 text-lg font-bold text-base-content">
+                <div className="collapse-content">
+                  <p className="text-sm text-base-content/60">
+                    Non.{" "}
+                    <span className="font-bold text-base-content">
+                      Job<span className="text-primary">Trace</span>
+                    </span>{" "}
+                    est actuellement accessible gratuitement. Vous pouvez créer
+                    un compte, gérer vos candidatures et profiter de l'ensemble
+                    des fonctionnalités disponibles sans abonnement.
+                  </p>
+                </div>
+              </details>
+
+              <details
+                className="collapse collapse-arrow rounded-2xl bg-base-100 shadow-sm"
+                name="homepage-faq"
+              >
+                <summary className="collapse-title min-h-14 pr-12 flex items-center text-lg font-bold text-base-content cursor-pointer touch-manipulation">
                   Mes données sont-elles privées ?
-                </div>
+                </summary>
 
                 <div className="collapse-content">
                   <p className="text-sm text-base-content/60">
-                    Oui. Chaque utilisateur accède uniquement à ses propres candidatures, contacts et documents depuis un espace personnel protégé.
+                    Oui. Chaque utilisateur accède uniquement à ses propres
+                    candidatures, contacts et documents depuis un espace
+                    personnel protégé.
                   </p>
                 </div>
-              </div>
+              </details>
             </div>
           </div>
         </section>
@@ -390,6 +436,7 @@ function HomePage() {
               </div>
             </div>
           </footer>
+        </div>
         </div>
       </main>
 

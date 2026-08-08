@@ -205,7 +205,7 @@ function DocumentPreview({
 function DocumentInfoRow({ icon: Icon, children }) {
   return (
     <div className="w-full min-w-0 flex flex-row justify-start items-center gap-2">
-      <Icon className="w-4 h-4 shrink-0 text-primary" />
+      <Icon className="w-4 h-4 shrink-0 text-primary" aria-hidden="true" />
 
       <span className="min-w-0 text-sm font-normal text-base-content/70 truncate">
         {children}
