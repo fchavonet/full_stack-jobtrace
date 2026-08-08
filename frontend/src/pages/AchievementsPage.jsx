@@ -429,6 +429,18 @@ function getAchievementCardClassName(
   return "border-t-4 border-warning";
 }
 
+function getAchievementIconBackgroundClassName(achievement) {
+  if (achievement.unlocked) {
+    return "bg-success";
+  }
+
+  return "bg-warning";
+}
+
+function getAchievementIconClassName() {
+  return "text-white";
+}
+
 function AchievementCard({ achievement }) {
   return (
     <ItemCard
@@ -440,6 +452,8 @@ function AchievementCard({ achievement }) {
         <div className="min-w-0 flex-1 flex flex-row justify-start items-start gap-4">
           <IconBox
             icon={getAchievementIcon(achievement.icon)}
+            backgroundClassName={getAchievementIconBackgroundClassName(achievement)}
+            iconClassName={getAchievementIconClassName(achievement)}
             size={40}
             iconSize={18}
           />
