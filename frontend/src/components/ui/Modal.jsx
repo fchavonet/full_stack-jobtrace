@@ -70,7 +70,10 @@ function Modal({
         disabled={closeDisabled}
         aria-label={closeAriaLabel}
       >
-        <X className="w-5 h-5" />
+        <X
+          className="w-5 h-5"
+          aria-hidden="true"
+        />
       </button>
     </div>
   );
@@ -83,6 +86,9 @@ function Modal({
     <div className="modal modal-open bg-black/40 backdrop-blur-sm">
       <Component
         className={getModalBoxClassName(maxWidthClassName, className)}
+        role="dialog"
+        aria-modal="true"
+        aria-label={title || description || "Fenêtre de dialogue"}
         {...props}
       >
         {headerContent}
