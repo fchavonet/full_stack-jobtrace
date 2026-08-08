@@ -74,7 +74,7 @@ function TermsOfUseContent() {
           <li>D’utiliser le service à des fins frauduleuses ou illicites.</li>
           <li>De tenter d’accéder au compte d’un autre utilisateur.</li>
           <li>De contourner les mécanismes de sécurité.</li>
-          <li>de perturber le fonctionnement technique du service.</li>
+          <li>De perturber le fonctionnement technique du service.</li>
           <li>D’importer des contenus illicites ou malveillants.</li>
           <li>De porter atteinte aux droits de tiers.</li>
         </ul>
@@ -180,7 +180,7 @@ function TermsOfUseContent() {
         </p>
 
         <p className="mt-1">
-          Dernière mise à jour : juillet 2026.
+          Dernière mise à jour : août 2026.
         </p>
       </section>
     </div>

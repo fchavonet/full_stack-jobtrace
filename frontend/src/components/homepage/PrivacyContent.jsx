@@ -11,7 +11,7 @@ function PrivacyContent() {
         </p>
 
         <p className="mt-1">
-          Pour toute question concernant vos données personnelles, vous pouvez écrire à l’adresse suivante :{" "}<a className="font-semibold text-primary hover:underline" href="mailto:jobtracde.app@gmail.com">jobtracde.app@gmail.com</a>.
+          Pour toute question concernant vos données personnelles, vous pouvez écrire à l’adresse suivante :{" "}<a className="font-semibold text-primary hover:underline" href="mailto:jobtrace.app@gmail.com">jobtrace.app@gmail.com</a>.
         </p>
       </section>
 
@@ -48,7 +48,7 @@ function PrivacyContent() {
           <li>Créer et gérer le compte utilisateur.</li>
           <li>Authentifier l’utilisateur et sécuriser son accès.</li>
           <li>Enregistrer et organiser ses candidatures.</li>
-          <li>Gérer relances, objectifsses, contacts et documents, .</li>
+          <li>Gérer les relances, les objectifs, les contacts et les documents.</li>
           <li>Afficher son tableau de bord et ses statistiques.</li>
           <li>Assurer le fonctionnement et la sécurité de JobTrace.</li>
           <li>Répondre aux demandes adressées à l’éditeur.</li>
@@ -107,7 +107,7 @@ function PrivacyContent() {
 
       <section>
         <h3 className="font-semibold text-base-content">
-          Cookies et authentification
+          Cookies et stockage local
         </h3>
 
         <p className="mt-1">
@@ -115,7 +115,25 @@ function PrivacyContent() {
         </p>
 
         <p className="mt-1">
-          Ce cookie n’est pas utilisé à des fins publicitaires ou de profilage. Sa désactivation peut empêcher le fonctionnement normal de l’authentification.
+          Une préférence d’affichage est également enregistrée localement dans le navigateur afin de mémoriser le thème clair ou sombre choisi par l’utilisateur.
+        </p>
+
+        <p className="mt-1">
+          Ces mécanismes ne sont pas utilisés à des fins publicitaires, de profilage ou de mesure d’audience.
+        </p>
+      </section>
+
+      <section>
+        <h3 className="font-semibold text-base-content">
+          Services externes
+        </h3>
+
+        <p className="mt-1">
+          La recherche de villes utilise l’API géographique publique geo.api.gouv.fr afin de proposer des résultats d’autocomplétion.
+        </p>
+
+        <p className="mt-1">
+          La carte des candidatures utilise des données cartographiques fournies par OpenStreetMap. Le chargement de ces services entraîne des requêtes réseau vers leurs infrastructures.
         </p>
       </section>
 
@@ -149,7 +167,7 @@ function PrivacyContent() {
         </ul>
 
         <p className="mt-1">
-          Pour exercer vos droits, vous pouvez envoyer une demande à{" "}<a className="font-semibold text-primary hover:underline" href="jobtrace.app@gmail.com">jobtrace.app@gmail.com</a>.
+          Pour exercer vos droits, vous pouvez envoyer une demande à{" "}<a className="font-semibold text-primary hover:underline" href="mailto:jobtrace.app@gmail.com">jobtrace.app@gmail.com</a>.
         </p>
       </section>
 
@@ -173,7 +191,7 @@ function PrivacyContent() {
         </p>
 
         <p className="mt-1">
-          Dernière mise à jour : juillet 2026.
+          Dernière mise à jour : août 2026.
         </p>
       </section>
     </div>
