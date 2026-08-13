@@ -1,4 +1,4 @@
-import { BarChart3, CalendarDays, ChevronDown, FilePen, FileText, Target, UsersRound, } from "lucide-react";
+import { BarChart3, CalendarDays, ChevronDown, FilePen, FileText, Info, Target, UsersRound, } from "lucide-react";
 
 import { lazy, Suspense, useState } from "react";
 import { Link, useLocation } from "react-router";
@@ -139,6 +139,16 @@ function HomePage() {
       <main className="relative w-full min-h-0 flex-1 bg-[color-mix(in_oklab,var(--color-primary)_10%,var(--color-base-200))] overflow-y-auto scroll-smooth">
         <div className="relative min-h-full bg-base-200">
           <div className="absolute inset-x-0 top-0 h-80 bg-gradient-to-b from-primary/10 to-transparent pointer-events-none " aria-hidden="true" />
+
+          <div className="relative z-10 w-full bg-warning text-warning-content">
+            <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 py-2.5 flex items-start sm:items-center justify-center gap-2">
+              <Info className="w-4 h-4 mt-0.5 sm:mt-0 shrink-0" aria-hidden="true" />
+
+              <p className="text-xs sm:text-sm leading-relaxed text-left sm:text-center">
+                <span className="text-base-content font-bold">Job<span className="text-primary">Trace</span></span>{" "}est encore un projet étudiant, mais pleinement fonctionnel. Cette version est proposée à titre de démonstration.
+              </p>
+            </div>
+          </div>
 
           {/* Hero section */}
           <section className="relative w-full px-6 py-12 flex flex-col justify-center items-center z-10">
