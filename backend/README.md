@@ -196,11 +196,7 @@ npm run test
 
 5. For a detailed understanding of the API behavior, available routes, expected responses and tested scenarios, refer to the [manual API testing documentation](./docs/manual-tests.md).
 
-6. The following screenshot shows the interactive API documentation generated with Swagger UI.
-
-![Swagger](../assets/images/screenshots/backend-swagger-dark.webp)
-
-7. The following screenshot shows the generated backend code coverage report.
+6. The following screenshot shows the generated backend code coverage report.
 
 ![Tests coverage](../assets/images/screenshots/backend-tests-coverage.webp)
 
