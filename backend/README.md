@@ -200,7 +200,7 @@ npm run test
 
 ![Swagger](../assets/images/screenshots/backend-swagger-dark.webp)
 
-7. The following screenshot shows the generated frontend code coverage report.
+7. The following screenshot shows the generated backend code coverage report.
 
 ![Tests coverage](../assets/images/screenshots/backend-tests-coverage.webp)
 
@@ -210,9 +210,6 @@ You can also test the project online by clicking [here](https://www.jobtrace.fr/
 
 ## What's Next?
 
-- Strengthen API security with additional HTTP security headers.
-- Add rate limiting to sensitive endpoints.
-- Improve validation and error handling.
 - Continue expanding automated test coverage.
 - Complete the CI/CD pipeline with automated deployment to the VPS.
 

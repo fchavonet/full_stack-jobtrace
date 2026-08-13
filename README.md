@@ -4,7 +4,7 @@
 
 JobTrace is a full-stack web application designed to help job seekers centralize, organize and monitor their job applications.
 
-Instead of managing multiple spreadsheets, emails and documents, JobTrace provides a single workspace where users can manage applications, companies, contacts and documents while keeping track of interviews, follow-ups and personal objectives.
+Instead of managing multiple spreadsheets, emails and documents, JobTrace provides a single workspace where users can manage applications, contacts and documents while keeping track of interviews, follow-ups and personal objectives.
 
 The project was developed as part of the French RNCP Level 6 "Concepteur Développeur d'Applications" certification and focuses on building a modern, secure and maintainable web application using current development practices.
 
@@ -12,7 +12,7 @@ The project was developed as part of the French RNCP Level 6 "Concepteur Dévelo
 
 - Centralize every job application in a single dashboard.
 - Simplify application tracking and follow-up management.
-- Manage companies, recruiters and professional contacts.
+- Manage recruiters and professional contacts.
 - Store documents related to applications.
 - Visualize application progress and personal statistics.
 - Apply modern web development, testing and security practices.
@@ -84,18 +84,8 @@ You can also test the project online by clicking [here](https://www.jobtrace.fr/
 
 > To better understand the project’s design and development process, you can consult the [RNCP project report](./docs/rncp/project_report_%28fr%29.pdf), along with the [project diagrams and supporting resources](./docs/). These documents are written in French. For more detailed technical information, refer to the dedicated README files located in the [`frontend/`](./frontend/) and [`backend/`](./backend/) directories.
 
-<p align="center">
-    <picture>
-        <source media="(prefers-color-scheme: light)" srcset="./assets/images/screenshots/dashboard-light.webp">
-        <source media="(prefers-color-scheme: dark)" srcset="./assets/images/screenshots/dashboard-dark.webp">
-        <img width="100%" src="./assets/images/screenshots/dashboard-light.webp" alt="Dashboard">
-    </picture>
-</p>
-
 ## What's Next?
 
-- Strengthen application security.
-- Add city autocomplete using an external API.
 - Improve the user interface and overall user experience.
 - Complete the CI/CD pipeline with automated deployment to the VPS.
 

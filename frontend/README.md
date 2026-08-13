@@ -89,11 +89,7 @@ cp .env.example .env
 
 6. Configure the required environment variables inside the `.env` file.
 
-7. Open a second Terminal, navigate to the root directory of the project, and start the PostgreSQL database:
-
-```
-docker compose up database -d
-```
+7. Make sure the JobTrace backend and PostgreSQL database are running. For detailed backend installation and startup instructions, refer to the [backend README](../backend/README.md).
 
 8. Return to the first Terminal, which should still be located in the `frontend/` directory, and start the frontend development server:
 
@@ -140,73 +136,73 @@ You can also test the project online by clicking [here](https://www.jobtrace.fr/
 
 <p align="center">
     <picture>
-        <source media="(prefers-color-scheme: light)" srcset="../assets/images/screenshots/dashboard-light.webp">
-        <source media="(prefers-color-scheme: dark)" srcset="../assets/images/screenshots/dashboard-dark.webp">
-        <img width="100%" src="../assets/images/screenshots/dashboard-light.webp" alt="Dashboard">
+        <source media="(prefers-color-scheme: light)" srcset="../assets/images/screenshots/jobtrace-light/dashboard-light.webp">
+        <source media="(prefers-color-scheme: dark)" srcset="../assets/images/screenshots/jobtrace-dark/dashboard-dark.webp">
+        <img width="100%" src="../assets/images/screenshots/jobtrace-light/dashboard-light.webp" alt="Dashboard">
     </picture>
 </p>
 
 <p align="center">
     <picture>
-        <source media="(prefers-color-scheme: light)" srcset="../assets/images/screenshots/applications-light.webp">
-        <source media="(prefers-color-scheme: dark)" srcset="../assets/images/screenshots/applications-dark.webp">
-        <img width="100%" src="../assets/images/screenshots/applications-light.webp" alt="Applications">
+        <source media="(prefers-color-scheme: light)" srcset="../assets/images/screenshots/jobtrace-light/applications-light.webp">
+        <source media="(prefers-color-scheme: dark)" srcset="../assets/images/screenshots/jobtrace-dark/applications-dark.webp">
+        <img width="100%" src="../assets/images/screenshots/jobtrace-light/applications-light.webp" alt="Applications">
     </picture>
 </p>
 
 <p align="center">
     <picture>
-        <source media="(prefers-color-scheme: light)" srcset="../assets/images/screenshots/application_form-light.webp">
-        <source media="(prefers-color-scheme: dark)" srcset="../assets/images/screenshots/application_form-dark.webp">
-        <img width="100%" src="../assets/images/screenshots/application_form-light.webp" alt="Application form">
+        <source media="(prefers-color-scheme: light)" srcset="../assets/images/screenshots/jobtrace-light/application_form-light.webp">
+        <source media="(prefers-color-scheme: dark)" srcset="../assets/images/screenshots/jobtrace-dark/application_form-dark.webp">
+        <img width="100%" src="../assets/images/screenshots/jobtrace-light/application_form-light.webp" alt="Application form">
     </picture>
 </p>
 
 <p align="center">
     <picture>
-        <source media="(prefers-color-scheme: light)" srcset="../assets/images/screenshots/calendar-light.webp">
-        <source media="(prefers-color-scheme: dark)" srcset="../assets/images/screenshots/calendar-dark.webp">
-        <img width="100%" src="../assets/images/screenshots/calendar-light.webp" alt="Calendar">
+        <source media="(prefers-color-scheme: light)" srcset="../assets/images/screenshots/jobtrace-light/calendar-light.webp">
+        <source media="(prefers-color-scheme: dark)" srcset="../assets/images/screenshots/jobtrace-dark/calendar-dark.webp">
+        <img width="100%" src="../assets/images/screenshots/jobtrace-light/calendar-light.webp" alt="Calendar">
     </picture>
 </p>
 
 <p align="center">
     <picture>
-        <source media="(prefers-color-scheme: light)" srcset="../assets/images/screenshots/achievements-light.webp">
-        <source media="(prefers-color-scheme: dark)" srcset="../assets/images/screenshots/achievements-dark.webp">
-        <img width="100%" src="../assets/images/screenshots/achievements-light.webp" alt="Achievements">
+        <source media="(prefers-color-scheme: light)" srcset="../assets/images/screenshots/jobtrace-light/achievements-light.webp">
+        <source media="(prefers-color-scheme: dark)" srcset="../assets/images/screenshots/jobtrace-dark/achievements-dark.webp">
+        <img width="100%" src="../assets/images/screenshots/jobtrace-light/achievements-light.webp" alt="Achievements">
     </picture>
 </p>
 
 <p align="center">
     <picture>
-        <source media="(prefers-color-scheme: light)" srcset="../assets/images/screenshots/contacts-light.webp">
-        <source media="(prefers-color-scheme: dark)" srcset="../assets/images/screenshots/contacts-dark.webp">
-        <img width="100%" src="../assets/images/screenshots/contacts-light.webp" alt="Contacts">
+        <source media="(prefers-color-scheme: light)" srcset="../assets/images/screenshots/jobtrace-light/contacts-light.webp">
+        <source media="(prefers-color-scheme: dark)" srcset="../assets/images/screenshots/jobtrace-dark/contacts-dark.webp">
+        <img width="100%" src="../assets/images/screenshots/jobtrace-light/contacts-light.webp" alt="Contacts">
     </picture>
 </p>
 
 <p align="center">
     <picture>
-        <source media="(prefers-color-scheme: light)" srcset="../assets/images/screenshots/documents-light.webp">
-        <source media="(prefers-color-scheme: dark)" srcset="../assets/images/screenshots/documents-dark.webp">
-        <img width="100%" src="../assets/images/screenshots/documents-light.webp" alt="Documents">
+        <source media="(prefers-color-scheme: light)" srcset="../assets/images/screenshots/jobtrace-light/documents-light.webp">
+        <source media="(prefers-color-scheme: dark)" srcset="../assets/images/screenshots/jobtrace-dark/documents-dark.webp">
+        <img width="100%" src="../assets/images/screenshots/jobtrace-light/documents-light.webp" alt="Documents">
     </picture>
 </p>
 
 <p align="center">
     <picture>
-        <source media="(prefers-color-scheme: light)" srcset="../assets/images/screenshots/statistics-light.webp">
-        <source media="(prefers-color-scheme: dark)" srcset="../assets/images/screenshots/statistics-dark.webp">
-        <img width="100%" src="../assets/images/screenshots/statistics-light.webp" alt="Statistics">
+        <source media="(prefers-color-scheme: light)" srcset="../assets/images/screenshots/jobtrace-light/statistics-light.webp">
+        <source media="(prefers-color-scheme: dark)" srcset="../assets/images/screenshots/jobtrace-dark/statistics-dark.webp">
+        <img width="100%" src="../assets/images/screenshots/jobtrace-light/statistics-light.webp" alt="Statistics">
     </picture>
 </p>
 
 <p align="center">
     <picture>
-        <source media="(prefers-color-scheme: light)" srcset="../assets/images/screenshots/settings-light.webp">
-        <source media="(prefers-color-scheme: dark)" srcset="../assets/images/screenshots/settings-dark.webp">
-        <img width="100%" src="../assets/images/screenshots/settings-light.webp" alt="Settings">
+        <source media="(prefers-color-scheme: light)" srcset="../assets/images/screenshots/jobtrace-light/settings-light.webp">
+        <source media="(prefers-color-scheme: dark)" srcset="../assets/images/screenshots/jobtrace-dark/settings-dark.webp">
+        <img width="100%" src="../assets/images/screenshots/jobtrace-light/settings-light.webp" alt="Settings">
     </picture>
 </p>
 
@@ -219,23 +215,23 @@ You can also test the project online by clicking [here](https://www.jobtrace.fr/
     <tr valign="top">
         <td align="center">
             <picture>
-                <source media="(prefers-color-scheme: light)" srcset="../assets/images/screenshots/homepage-desktop-light.webp">
-                <source media="(prefers-color-scheme: dark)" srcset="../assets/images/screenshots/homepage-desktop-dark.webp">
-                <img width="100%" src="../assets/images/screenshots/homepage-desktop-light.webp" alt="Desktop Screenshot">
+                <source media="(prefers-color-scheme: light)" srcset="../assets/images/screenshots/jobtrace-light/homepage-desktop-light.webp">
+                <source media="(prefers-color-scheme: dark)" srcset="../assets/images/screenshots/jobtrace-dark/homepage-desktop-dark.webp">
+                <img width="100%" src="../assets/images/screenshots/jobtrace-light/homepage-desktop-light.webp" alt="Desktop Screenshot">
             </picture>
         </td>
         <td align="center">
             <picture>
-                <source media="(prefers-color-scheme: light)" srcset="../assets/images/screenshots/homepage-tablet-light.webp">
-                <source media="(prefers-color-scheme: dark)" srcset="../assets/images/screenshots/homepage-tablet-dark.webp">
-                <img width="100%" src="../assets/images/screenshots/homepage-tablet-light.webp" alt="Tablet Screenshot">
+                <source media="(prefers-color-scheme: light)" srcset="../assets/images/screenshots/jobtrace-light/homepage-tablet-light.webp">
+                <source media="(prefers-color-scheme: dark)" srcset="../assets/images/screenshots/jobtrace-dark/homepage-tablet-dark.webp">
+                <img width="100%" src="../assets/images/screenshots/jobtrace-light/homepage-tablet-light.webp" alt="Tablet Screenshot">
             </picture>
         </td>
         <td align="center">
             <picture>
-                <source media="(prefers-color-scheme: light)" srcset="../assets/images/screenshots/homepage-mobile-light.webp">
-                <source media="(prefers-color-scheme: dark)" srcset="../assets/images/screenshots/homepage-mobile-dark.webp">
-                <img width="100%" src="../assets/images/screenshots/homepage-mobile-light.webp" alt="Mobile Screenshot">
+                <source media="(prefers-color-scheme: light)" srcset="../assets/images/screenshots/jobtrace-light/homepage-mobile-light.webp">
+                <source media="(prefers-color-scheme: dark)" srcset="../assets/images/screenshots/jobtrace-dark/homepage-mobile-dark.webp">
+                <img width="100%" src="../assets/images/screenshots/jobtrace-light/homepage-mobile-light.webp" alt="Mobile Screenshot">
             </picture>
         </td>
     </tr>
@@ -243,9 +239,6 @@ You can also test the project online by clicking [here](https://www.jobtrace.fr/
 
 ## What's Next?
 
-- Improve the user interface and overall user experience.
-- Continue improving accessibility across the application.
-- Add city autocomplete using an external API.
 - Improve application performance and loading times.
 - Continue expanding automated test coverage.
 - Complete the CI/CD pipeline with automated deployment to the VPS.
